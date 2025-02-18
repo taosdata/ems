@@ -126,6 +126,109 @@ jobs:
             echo "td_runner_names=${td_runner_names}" >> $GITHUB_OUTPUT
           fi
 
+  upload-hosts-info:
+    needs: filter-runners
+
+    strategy:
+      matrix:
+        runner: ${{ fromJson(needs.filter-runners.outputs.runners || '[]') }}
+    runs-on:
+      group: ${{ matrix.runner.group }}
+      labels: ${{ matrix.runner.labels }}
+    steps:
+      - name: Print Runner Info
+        run: |
+          echo "🔄 Running on group: ${{ matrix.runner.group }}"
+          echo "🔄 Name: ${{ matrix.runner.name }}"
+
+      - name: Get IP and Hostname
+        id: get-ip-hostname
+        run: |
+          echo "🔄 Getting IP and hostname for the runner..."
+
+          # Get IP and hostname
+          ip=$(hostname -I | awk '{print $1}')
+          hostname=$(hostname)
+
+          echo "IP: $ip"
+          echo "Hostname: $hostname"
+
+          # Save IP and hostname to a file
+          echo "$ip $hostname" > ip_hostname_${{ matrix.runner.name }}.txt
+
+      - name: Upload IP and Hostname Info
+        uses: actions/upload-artifact@v4
+        with:
+          name: ip_hostname_${{ matrix.runner.name }}
+          path: ip_hostname_${{ matrix.runner.name }}.txt
+
+  combine-and-update-hosts:
+    needs:
+      - upload-hosts-info
+      - filter-runners
+    strategy:
+      matrix:
+        runner: ${{ fromJson(needs.filter-runners.outputs.runners || '[]') }}
+    runs-on:
+      group: ${{ matrix.runner.group }}
+      labels: ${{ matrix.runner.labels }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install GitHub CLI
+        shell: bash
+        run: |
+          echo "🔄 Installing GitHub CLI..."
+          sudo apt-get update
+          sudo apt-get install gh -y
+
+      - name: Authenticate GitHub CLI
+        run: |
+          echo "🔄 Authenticating GitHub CLI..."
+          echo "${{ secrets.RUNNER_PAT }}" | gh auth login --with-token
+
+      - name: Download IP and Hostname Info
+        run: |
+          echo "🔄 Downloading IP and hostname info for each runner..."
+          runner_name=${{ needs.filter-runners.outputs.runner_names }}
+          echo "Runner Name: $runner_name"
+
+          IFS=',' read -r -a names_array <<< "$runner_name"
+          echo "Extracted names: $names_array"
+          for name in "${names_array[@]}"; do
+            echo "Downloading artifact for runner: $name"
+            gh run download $GITHUB_RUN_ID --name "ip_hostname_$name" --dir ip_hostname
+          done
+
+      - name: Combine IP and Hostname Info
+        run: |
+          echo "🔄 Combining IP and hostname info..."
+
+          # Read all files in the ip_hostname directory and combine them
+          ip_hostname_info=$(cat ip_hostname/*.txt | sort | uniq)
+
+          # Save the combined IP and hostname info to an environment variable
+          echo "ip_hostname_info<<EOF" >> $GITHUB_ENV
+          echo -e "$ip_hostname_info" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Update /etc/hosts
+        run: |
+          echo "🔄 Updating /etc/hosts..."
+
+          while IFS= read -r line; do
+            # Check if the line already exists in /etc/hosts
+            if ! grep -Fxq "$line" /etc/hosts; then
+              # Append the line to /etc/hosts if it doesn't exist
+              echo "$line" | sudo tee -a /etc/hosts
+            else
+              echo "✅ Skipping (already exists): $line"
+            fi
+          done <<< "$ip_hostname_info"
+
+          echo "✅ Updated /etc/hosts with runner IPs and hostnames:"
+          cat /etc/hosts
 
 
 
