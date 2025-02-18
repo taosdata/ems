@@ -254,7 +254,7 @@ jobs:
   set-runners:
     runs-on: ubuntu-latest
     outputs:
-      runner_combinations: ${{ steps.set-runner-combinations.outputs.runner_combinations }}  
+      runner_combinations: ${{ steps.set-runner-combinations.outputs.runner_combinations }}
     steps:
       - name: Set Runner Combinations
         id: set-runner-combinations
@@ -276,9 +276,9 @@ jobs:
       matrix:
         combination: ${{ fromJSON(needs.set-runners.outputs.runner_combinations) }}
 
-    runs-on: 
+    runs-on:
       group: fractal
-      labels: 
+      labels:
         - self-hosted
         - Linux
         - X64
@@ -290,11 +290,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      
-      - name: Install flashmq
-        uses: taosdata/.github/.github/actions/install-flashmq@fractal
 
-      
+      - name: Install Flashmq
+        uses: taosdata/.github/.github/actions/install-flashmq@main
+
+
       - name: Get IP Addresses
         id: get-ip
         run: |
@@ -312,9 +312,9 @@ jobs:
     strategy:
       matrix:
         combination: ${{ fromJSON(needs.set-runners.outputs.runner_combinations) }}
-    runs-on: 
+    runs-on:
       group: fractal
-      labels: 
+      labels:
         - self-hosted
         - Linux
         - X64
@@ -323,16 +323,16 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      
-      - name: Replace Sources    
+
+      - name: Replace Sources
         run: |
           cd /root/tools/deploy && ./setup_system.sh replace_sources
       - name: Install MQTT CLI
-        uses: taosdata/.github/.github/actions/install-mqtt-simulator@fractal
+        uses: taosdata/.github/.github/actions/install-mqtt-simulator@main
         with:
           res_app_id: ${{ vars.RES_APP_ID }}
           res_app_key: ${{ secrets.RES_APP_KEY }}
-      
+
       - name: Find mqtt_pub binary and fractal toml
         run: |
             mqtt_pub_path=$(find /root /opt -name mqtt_pub 2>/dev/null)
@@ -355,7 +355,7 @@ jobs:
         with:
           name: ${{ matrix.combination.fractal_edge }}-ip
           path: ./ip_artifacts
-        
+
       - name: Use Fractal Edges IPs
         run: |
               fractal_ip=$(cat ./ip_artifacts/${{ matrix.combination.fractal_edge }}.txt)
