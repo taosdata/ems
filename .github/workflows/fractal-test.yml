@@ -250,7 +250,7 @@ jobs:
           echo "🔄 Name: ${{ matrix.runner.name }}"
 
       - name: Install TDengine Enterprise
-        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@main
+        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
         with:
           version: ${{ github.event.inputs.td-version }}
           nas_download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
