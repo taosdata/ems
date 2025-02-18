@@ -252,7 +252,7 @@ jobs:
       - name: Install TDengine Enterprise
         uses: taosdata/.github/.github/actions/install-tdengine-enterprise@main
         with:
-          version: ${{ github.event.inputs.version }}
+          version: ${{ github.event.inputs.td-version }}
           nas_download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
   set-runners:
     runs-on: ubuntu-latest
