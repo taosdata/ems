@@ -335,14 +335,14 @@ jobs:
 
       - name: Find mqtt_pub binary and fractal toml
         run: |
-            mqtt_pub_path=$(find /root /opt -name mqtt_pub 2>/dev/null)
+            mqtt_pub_path=$(find /root /opt -name mqtt_pub 2>/dev/null | head -n 1)
               if [ -n "$mqtt_pub_path" ]; then
                 echo "mqtt_pub found at $mqtt_pub_path"
               else
                 echo "mqtt_pub not found"
               fi
               echo "MQTT_PUB_PATH=$mqtt_pub_path" >> $GITHUB_ENV
-            fractal_toml=$(find /root /opt -name fractal.toml 2>/dev/null)
+            fractal_toml=$(find /root /opt -name fractal.toml 2>/dev/null | head -n 1)
               if [ -n "$fractal_toml" ]; then
                 echo "fractal.toml found at $fractal_toml"
               else
