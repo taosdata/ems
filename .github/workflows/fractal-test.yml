@@ -40,7 +40,9 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       runners: ${{ steps.get-runners.outputs.matrix}}
+      td_runners: ${{ steps.get-runners.outputs.td_matrix}}
       runner_names: ${{ steps.get-runners.outputs.names}}
+      td_runner_names: ${{ steps.get-runners.outputs.td_names}}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
