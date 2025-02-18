@@ -1,0 +1,368 @@
+name: Fractal Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      td-version:
+        description: 'Enter the version of TDengine to install'
+        required: true
+        default: '3.3.5.5'
+        type: string
+      edge-dnode-count:
+        description: 'edge-dnode-count (1~N)'
+        required: true
+        default: 1
+        type: choice
+        options:
+          - 1
+          - 2
+      center-dnode-count:
+        description: 'center-dnode-count (1~N)'
+        required: true
+        default: 1
+        type: choice
+        options:
+          - 1
+          - 2
+      db-config:
+        description: 'config-json to create database'
+        required: true
+        default: '{"vgroups": 10, "stt_trigger": 2, "buffer": 4096, "minrows": 100}'
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  filter-runners:
+    runs-on: ubuntu-latest
+    outputs:
+      runners: ${{ steps.get-runners.outputs.matrix}}
+      runner_names: ${{ steps.get-runners.outputs.names}}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get Available Runners
+        env:
+          GITHUB_TOKEN: ${{ secrets.RUNNER_PAT }}
+        id: get-runners
+        run: |
+          set -euo pipefail
+          echo "Fetching available runners..."
+          response_file=$(mktemp)
+          gh api /orgs/${{ github.repository_owner }}/actions/runners \
+            --paginate \
+            --jq '.runners' > "$response_file"
+
+          # set dnode_count
+          edge_dnode_count=${{ github.event.inputs.edge-dnode-count }}
+          center_dnode_count=${{ github.event.inputs.center-dnode-count }}
+
+          filter_and_format() {
+            local count=$1
+            local label1=$2
+            local label2=$3
+
+            jq -c --argjson count "$count" --arg label1 "$label1" --arg label2 "$label2" '
+              map(
+                select(
+                  .labels |
+                  (map(.name) | index($label1)) != null and
+                  (map(.name) | index($label2)) != null
+                )
+                | {
+                    name,
+                    group: (
+                      if .labels | map(.name) | index("fractal") != null then "fractal"
+                      else "default"
+                      end
+                    ),
+                    labels: (
+                      .labels | map(.name) | join(", ") |
+                      split(", ") |
+                      map(select(. != "")) |
+                      ["self-hosted", "Linux", "X64"] + .
+                    )
+                  }
+              )[:$count]
+            ' "$response_file"
+          }
+          # filter_and_format "$edge_dnode_count" "fractal" "mqtt"
+          filtered_mqtt_runners=$(filter_and_format "$edge_dnode_count" "fractal" "mqtt")
+          filtered_edge_runners=$(filter_and_format "$edge_dnode_count" "fractal" "edge_td")
+          filtered_center_runners=$(filter_and_format "$center_dnode_count" "fractal" "center_td")
+
+          echo "✅ Selected runners with formatted labels:"
+          echo "$filtered_mqtt_runners"
+          echo "$filtered_edge_runners"
+          echo "$filtered_center_runners"
+
+          # All runners
+          filtered_runners=$(jq -s '[.[][]]' <(echo "$filtered_mqtt_runners") <(echo "$filtered_edge_runners") <(echo "$filtered_center_runners"))
+          echo "✅ Selected runners with formatted labels:"
+          echo "$filtered_runners"
+
+          # TDengine runners
+          td_runners=$(jq -s '[.[][]]' <(echo "$filtered_edge_runners") <(echo "$filtered_center_runners"))
+          echo "✅ Selected td-runners with formatted labels:"
+          echo "$td_runners"
+
+          # make sure filtered_runners is a valid JSON array
+          if [ -z "$filtered_runners" ]; then
+            echo "No runners found. Setting empty matrix."
+            echo "matrix=[]" >> $GITHUB_OUTPUT
+            echo "names=[]" >> $GITHUB_OUTPUT
+          else
+            echo "matrix="$filtered_runners"" >> $GITHUB_OUTPUT
+            names=$(echo "$filtered_runners" | jq -r '.[].name' | tr '\n' ',')
+            names=${names%,}
+            echo "names=${names}" >> $GITHUB_OUTPUT
+
+            echo "td_matrix="$td_runners"" >> $GITHUB_OUTPUT
+            td_runner_names=$(echo "$td_runners" | jq -r '.[].name' | tr '\n' ',')
+            td_runner_names=${td_runner_names%,}
+            echo "td_runner_names=${td_runner_names}" >> $GITHUB_OUTPUT
+          fi
+
+  upload-hosts-info:
+    needs: filter-runners
+
+    strategy:
+      matrix:
+        runner: ${{ fromJson(needs.filter-runners.outputs.runners || '[]') }}
+    runs-on:
+      group: ${{ matrix.runner.group }}
+      labels: ${{ matrix.runner.labels }}
+    steps:
+      - name: Print Runner Info
+        run: |
+          echo "🔄 Running on group: ${{ matrix.runner.group }}"
+          echo "🔄 Name: ${{ matrix.runner.name }}"
+
+      - name: Get IP and Hostname
+        id: get-ip-hostname
+        run: |
+          echo "🔄 Getting IP and hostname for the runner..."
+
+          # Get IP and hostname
+          ip=$(hostname -I | awk '{print $1}')
+          hostname=$(hostname)
+
+          echo "IP: $ip"
+          echo "Hostname: $hostname"
+
+          # Save IP and hostname to a file
+          echo "$ip $hostname" > ip_hostname_${{ matrix.runner.name }}.txt
+
+      - name: Upload IP and Hostname Info
+        uses: actions/upload-artifact@v4
+        with:
+          name: ip_hostname_${{ matrix.runner.name }}
+          path: ip_hostname_${{ matrix.runner.name }}.txt
+
+  combine-and-update-hosts:
+    needs:
+      - upload-hosts-info
+      - filter-runners
+    strategy:
+      matrix:
+        runner: ${{ fromJson(needs.filter-runners.outputs.runners || '[]') }}
+    runs-on:
+      group: ${{ matrix.runner.group }}
+      labels: ${{ matrix.runner.labels }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install GitHub CLI
+        shell: bash
+        run: |
+          echo "🔄 Installing GitHub CLI..."
+          sudo apt-get update
+          sudo apt-get install gh -y
+
+      - name: Authenticate GitHub CLI
+        run: |
+          echo "🔄 Authenticating GitHub CLI..."
+          echo "${{ secrets.RUNNER_PAT }}" | gh auth login --with-token
+
+      - name: Download IP and Hostname Info
+        run: |
+          echo "🔄 Downloading IP and hostname info for each runner..."
+          runner_name=${{ needs.filter-runners.outputs.runner_names }}
+          echo "Runner Name: $runner_name"
+
+          IFS=',' read -r -a names_array <<< "$runner_name"
+          echo "Extracted names: $names_array"
+          for name in "${names_array[@]}"; do
+            echo "Downloading artifact for runner: $name"
+            gh run download $GITHUB_RUN_ID --name "ip_hostname_$name" --dir ip_hostname
+          done
+
+      - name: Combine IP and Hostname Info
+        run: |
+          echo "🔄 Combining IP and hostname info..."
+
+          # Read all files in the ip_hostname directory and combine them
+          ip_hostname_info=$(cat ip_hostname/*.txt | sort | uniq)
+
+          # Save the combined IP and hostname info to an environment variable
+          echo "ip_hostname_info<<EOF" >> $GITHUB_ENV
+          echo -e "$ip_hostname_info" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Update /etc/hosts
+        run: |
+          echo "🔄 Updating /etc/hosts..."
+
+          while IFS= read -r line; do
+            # Check if the line already exists in /etc/hosts
+            if ! grep -Fxq "$line" /etc/hosts; then
+              # Append the line to /etc/hosts if it doesn't exist
+              echo "$line" | sudo tee -a /etc/hosts
+            else
+              echo "✅ Skipping (already exists): $line"
+            fi
+          done <<< "$ip_hostname_info"
+
+          echo "✅ Updated /etc/hosts with runner IPs and hostnames:"
+          cat /etc/hosts
+
+  install-tdengine:
+    needs:
+     - combine-and-update-hosts
+     - filter-runners
+    strategy:
+      matrix:
+        runner: ${{ fromJson(needs.filter-runners.outputs.td_runners || '[]') }}
+    runs-on:
+      group: ${{ matrix.runner.group }}
+      labels: ${{ matrix.runner.labels }}
+    steps:
+      - name: Print Runner Info
+        run: |
+          echo "🔄 Running on group: ${{ matrix.runner.group }}"
+          echo "🔄 Name: ${{ matrix.runner.name }}"
+
+      - name: Install TDengine Enterprise
+          uses: taosdata/.github/.github/actions/install-tdengine-enterprise@main
+          with:
+            version: ${{ github.event.inputs.version }}
+            nas_download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
+  set-runners:
+    runs-on: ubuntu-latest
+    outputs:
+      runner_combinations: ${{ steps.set-runner-combinations.outputs.runner_combinations }}
+    steps:
+      - name: Set Runner Combinations
+        id: set-runner-combinations
+        run: |
+            echo "Setting Runner Combinations"
+            # 生成 mqtt-client 和 fractal-edge 的标签数组
+            mqtt_client=$(seq 1 ${{github.event.inputs.edge-dnode-count}} | sed 's/^/mqtt-client/')
+            fractal_edge=$(seq 1 ${{github.event.inputs.edge-dnode-count}} | sed 's/^/fractal-edge-/')
+
+            mqtt_json=$(echo "$mqtt_client" | jq -R -s -c 'split("\n")[:-1]')  # 去除末尾空元素
+            fractal_json=$(echo "$fractal_edge" | jq -R -s -c 'split("\n")[:-1]')
+
+            combinations=$(jq -n --argjson a "$mqtt_json" --argjson b "$fractal_json" '$a | to_entries | map({ mqtt_client: .value, fractal_edge: $b[.key] })'| jq -c .)
+            echo "Generated combinations: $combinations"
+            echo "::set-output name=runner_combinations::$combinations"
+  deploy-fractal-edge:
+    needs: set-runners
+    strategy:
+      matrix:
+        combination: ${{ fromJSON(needs.set-runners.outputs.runner_combinations) }}
+
+    runs-on:
+      group: fractal
+      labels:
+        - self-hosted
+        - Linux
+        - X64
+        - edge_td
+        - fractal
+        - ${{ matrix.combination.fractal_edge }}
+    outputs:
+      fractal_ip: ${{ steps.get-ip.outputs.local_ip }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Flashmq
+        uses: taosdata/.github/.github/actions/install-flashmq@main
+
+
+      - name: Get IP Addresses
+        id: get-ip
+        run: |
+          local_ip=$(hostname -I | awk '{print $1}')
+          echo "Local IP Address: $local_ip"
+          echo "$local_ip" > ${{ matrix.combination.fractal_edge }}.txt
+
+      - name: Upload IP Address as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.combination.fractal_edge }}-ip
+          path: ${{ matrix.combination.fractal_edge }}.txt
+  deploy-mqtt-client:
+    needs: [set-runners,deploy-fractal-edge]
+    strategy:
+      matrix:
+        combination: ${{ fromJSON(needs.set-runners.outputs.runner_combinations) }}
+    runs-on:
+      group: fractal
+      labels:
+        - self-hosted
+        - Linux
+        - X64
+        - fractal
+        - ${{ matrix.combination.mqtt_client }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Replace Sources
+        run: |
+          cd /root/tools/deploy && ./setup_system.sh replace_sources
+      - name: Install MQTT CLI
+        uses: taosdata/.github/.github/actions/install-mqtt-simulator@main
+        with:
+          res_app_id: ${{ vars.RES_APP_ID }}
+          res_app_key: ${{ secrets.RES_APP_KEY }}
+
+      - name: Find mqtt_pub binary and fractal toml
+        run: |
+            mqtt_pub_path=$(find /root /opt -name mqtt_pub 2>/dev/null)
+              if [ -n "$mqtt_pub_path" ]; then
+                echo "mqtt_pub found at $mqtt_pub_path"
+              else
+                echo "mqtt_pub not found"
+              fi
+              echo "MQTT_PUB_PATH=$mqtt_pub_path" >> $GITHUB_ENV
+            fractal_toml=$(find /root /opt -name fractal.toml 2>/dev/null)
+              if [ -n "$fractal_toml" ]; then
+                echo "fractal.toml found at $fractal_toml"
+              else
+                echo "fractal.toml not found"
+              fi
+              echo "FRACTAL_TOML=$fractal_toml" >> $GITHUB_ENV
+        shell: bash
+      - name: Download IP Address Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.combination.fractal_edge }}-ip
+          path: ./ip_artifacts
+
+      - name: Use Fractal Edges IPs
+        run: |
+              fractal_ip=$(cat ./ip_artifacts/${{ matrix.combination.fractal_edge }}.txt)
+              echo "Fractal IPs: $fractal_ip"
+              echo "FRACTAL_IP=$fractal_ip" >> $GITHUB_ENV
+      - name: Run MQTT CLI
+        run: |
+          mqtt_pub_path=$MQTT_PUB_PATH
+          fractal_ip=$FRACTAL_IP
+          nohup $MQTT_PUB_PATH --schema $FRACTAL_TOML --host $FRACTAL_IP --interval 0ms 2>1&
