@@ -11,7 +11,7 @@ on:
       edge-dnode-count:
         description: 'edge-dnode-count (1~N)'
         required: true
-        default: '1'
+        default: "1"
         type: choice
         options:
           - 1
@@ -19,11 +19,12 @@ on:
       center-dnode-count:
         description: 'center-dnode-count (1~N)'
         required: true
-        default: '1'
+        default: "1"
         type: choice
         options:
           - 1
           - 2
+          - 3
       db-config:
         description: 'config-json to create database'
         required: true
@@ -251,7 +252,6 @@ jobs:
         with:
           version: ${{ github.event.inputs.version }}
           nas_download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
-
   set-runners:
     runs-on: ubuntu-latest
     outputs:
@@ -271,7 +271,6 @@ jobs:
             combinations=$(jq -n --argjson a "$mqtt_json" --argjson b "$fractal_json" '$a | to_entries | map({ mqtt_client: .value, fractal_edge: $b[.key] })'| jq -c .)
             echo "Generated combinations: $combinations"
             echo "::set-output name=runner_combinations::$combinations"
-
   deploy-fractal-edge:
     needs: set-runners
     strategy:
@@ -309,7 +308,6 @@ jobs:
         with:
           name: ${{ matrix.combination.fractal_edge }}-ip
           path: ${{ matrix.combination.fractal_edge }}.txt
-
   deploy-mqtt-client:
     needs: [set-runners,deploy-fractal-edge]
     strategy:
@@ -333,8 +331,8 @@ jobs:
       - name: Install MQTT CLI
         uses: taosdata/.github/.github/actions/install-mqtt-simulator@main
         with:
-          res_app_id: ${{ vars.RES_APP_ID }}
-          res_app_key: ${{ secrets.RES_APP_KEY }}
+          res_app_id: ${{ vars.TAOSDATA_BOT_ID }}
+          res_app_key: ${{ secrets.TAOSDATA_BOT_KEY }}
 
       - name: Find mqtt_pub binary and fractal toml
         run: |
