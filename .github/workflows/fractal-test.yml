@@ -41,8 +41,10 @@ jobs:
     outputs:
       runners: ${{ steps.get-runners.outputs.matrix}}
       td_runners: ${{ steps.get-runners.outputs.td_matrix}}
+      taostest_runners: ${{ steps.get-runners.outputs.taostest_matrix}}
       runner_names: ${{ steps.get-runners.outputs.names}}
       td_runner_names: ${{ steps.get-runners.outputs.td_names}}
+      taostest_runner_names: ${{ steps.get-runners.outputs.taostest_names}}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -93,17 +95,19 @@ jobs:
             ' "$response_file"
           }
           # filter_and_format "$edge_dnode_count" "fractal" "mqtt"
+          filtered_taostest_runners=$(filter_and_format "1" "fractal" "taostest")
           filtered_mqtt_runners=$(filter_and_format "$edge_dnode_count" "fractal" "mqtt")
           filtered_edge_runners=$(filter_and_format "$edge_dnode_count" "fractal" "edge_td")
           filtered_center_runners=$(filter_and_format "$center_dnode_count" "fractal" "center_td")
 
           echo "✅ Selected runners with formatted labels:"
+          echo "$filtered_taostest_runners"
           echo "$filtered_mqtt_runners"
           echo "$filtered_edge_runners"
           echo "$filtered_center_runners"
 
           # All runners
-          filtered_runners=$(jq -s '[.[][]]' <(echo "$filtered_mqtt_runners") <(echo "$filtered_edge_runners") <(echo "$filtered_center_runners"))
+          filtered_runners=$(jq -s '[.[][]]' <(echo "$filtered_taostest_runners") <(echo "$filtered_mqtt_runners") <(echo "$filtered_edge_runners") <(echo "$filtered_center_runners"))
           echo "✅ Selected runners with formatted labels:"
           echo "$filtered_runners"
 
@@ -111,6 +115,11 @@ jobs:
           td_runners=$(jq -s '[.[][]]' <(echo "$filtered_edge_runners") <(echo "$filtered_center_runners"))
           echo "✅ Selected td-runners with formatted labels:"
           echo "$td_runners"
+
+          # Taostest runners
+          taostest_runners=$(jq -s '[.[][]]' <(echo "$filtered_taostest_runners"))
+          echo "✅ Selected taostest-runners with formatted labels:"
+          echo "$taostest_runners"
 
           # make sure filtered_runners is a valid JSON array
           if [ -z "$filtered_runners" ]; then
@@ -127,6 +136,11 @@ jobs:
             td_runner_names=$(echo "$td_runners" | jq -r '.[].name' | tr '\n' ',')
             td_runner_names=${td_runner_names%,}
             echo "td_runner_names=${td_runner_names}" >> $GITHUB_OUTPUT
+
+            echo "taostest_matrix="$taostest_runners"" >> $GITHUB_OUTPUT
+            taostest_runner_names=$(echo "$taostest_runners" | jq -r '.[].name' | tr '\n' ',')
+            taostest_runner_names=${taostest_runner_names%,}
+            echo "taostest_runner_names=${taostest_runner_names}" >> $GITHUB_OUTPUT
           fi
 
   upload-hosts-info:
@@ -254,6 +268,30 @@ jobs:
         with:
           version: ${{ github.event.inputs.td-version }}
           nas_download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
+  install-taostest-testng:
+    needs:
+     - combine-and-update-hosts
+     - filter-runners
+    strategy:
+      matrix:
+        runner: ${{ fromJson(needs.filter-runners.outputs.taostest_runners || '[]') }}
+    runs-on:
+      group: ${{ matrix.runner.group }}
+      labels: ${{ matrix.runner.labels }}
+    steps:
+      - name: Print Runner Info
+        run: |
+          echo "🔄 Running on group: ${{ matrix.runner.group }}"
+          echo "🔄 Name: ${{ matrix.runner.name }}"
+
+      - name: Install Taostest And TestNG
+        uses: taosdata/.github/.github/actions/install-taostest-testng@test/fractal
+        with:
+          res_app_id: ${{ vars.TAOSDATA_BOT_ID }}
+          res_app_key: ${{ secrets.TAOSDATA_BOT_KEY }}
+          taostest-branch: "master"
+          testng-branch: "master"
+
   set-runners:
     runs-on: ubuntu-latest
     outputs:
