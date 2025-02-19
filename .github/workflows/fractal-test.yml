@@ -368,4 +368,4 @@ jobs:
         run: |
           mqtt_pub_path=$MQTT_PUB_PATH
           fractal_ip=$FRACTAL_IP
-          nohup $MQTT_PUB_PATH --schema $FRACTAL_TOML --host $FRACTAL_IP --interval 0ms 2>1&
+          nohup $MQTT_PUB_PATH --schema $FRACTAL_TOML --host $FRACTAL_IP --interval 0ms > mqtt_pub.log 2>&1 &
