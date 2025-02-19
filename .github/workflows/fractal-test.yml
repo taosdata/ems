@@ -284,8 +284,8 @@ jobs:
           echo "🔄 Running on group: ${{ matrix.runner.group }}"
           echo "🔄 Name: ${{ matrix.runner.name }}"
 
-      - name: Install Taostest And TestNG
-        uses: taosdata/.github/.github/actions/install-taostest-testng@test/fractal
+      - name: Deploy Taostest And TestNG
+        uses: taosdata/.github/.github/actions/deploy-taostest-testng@test/fractal
         with:
           res_app_id: ${{ vars.TAOSDATA_BOT_ID }}
           res_app_key: ${{ secrets.TAOSDATA_BOT_KEY }}
