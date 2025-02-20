@@ -247,7 +247,7 @@ jobs:
           echo "✅ Updated /etc/hosts with runner IPs and hostnames:"
           cat /etc/hosts
 
-  install-tdengine:
+  install-tdengine-nodes:
     needs:
      - combine-and-update-hosts
      - filter-runners
@@ -258,6 +258,9 @@ jobs:
       group: ${{ matrix.runner.group }}
       labels: ${{ matrix.runner.labels }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Print Runner Info
         run: |
           echo "🔄 Running on group: ${{ matrix.runner.group }}"
@@ -274,6 +277,12 @@ jobs:
 
       - name: Install Process Exporter
         uses: taosdata/.github/.github/actions/install-process-exporter@test/fractal
+
+      - name: Update Process Exporter YAML
+        uses: taosdata/.github/.github/actions/update-process-exporter-yml@test/fractal
+        with:
+          yml_file_path: "/etc/process_exporter.yml"
+          process_names: "taosd,taosadapter"
 
   deploy-taostest-node:
     needs:
@@ -316,6 +325,12 @@ jobs:
 
       - name: Install Process Exporter
         uses: taosdata/.github/.github/actions/install-process-exporter@test/fractal
+
+      - name: Update Process Exporter YAML
+        uses: taosdata/.github/.github/actions/update-process-exporter-yml@test/fractal
+        with:
+          yml_file_path: "/etc/process_exporter.yml"
+          process_names: "taosBenchmark,taos,taostest"
 
   set-runners:
     runs-on: ubuntu-latest
