@@ -325,6 +325,28 @@ jobs:
           yml_file_path: "/etc/process_exporter.yml"
           process_names: "taosBenchmark,taos,taostest"
 
+      - name: Download IP and Hostname Info
+        uses: actions/download-artifact@v4
+        with:
+          name: ip_hostname_${{ matrix.runner.name }}
+          path: ip_hostname_${{ matrix.runner.name }}.txt
+
+      - name: Get hosts
+        run: |
+          echo "🔄 Get hosts..."
+
+          # Read all files in the ip_hostname directory and combine them
+          hostname_info=$(cat ip_hostname/*.txt | awk '{print $2}' | sort | uniq | tr '\n' ',')
+          hostname_info=${hostname_info%,}
+          echo "hostname_info=$hostname_info" >> $GITHUB_ENV
+
+      - name: Update Prometheus YAML
+        uses: taosdata/.github/.github/actions/update-prometheus-yml@test/fractal
+        with:
+          yml_file_path: "/etc/prometheus/prometheus.yml"
+          node_exporter_hosts: ${{ env.hostname_info }}
+          process_exporter_hosts: ${{ env.hostname_info }}
+
   set-runners:
     runs-on: ubuntu-latest
     outputs:
