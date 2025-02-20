@@ -206,10 +206,16 @@ jobs:
           echo "${{ secrets.RUNNER_PAT }}" | gh auth login --with-token
 
       - name: Download IP and Hostname Info
-        uses: actions/download-artifact@v4
-        with:
-          name: ip_hostname_${{ matrix.runner.name }}
-          path: ip_hostname_${{ matrix.runner.name }}.txt
+        run: |
+          echo "🔄 Downloading IP and hostname info for each runner..."
+          runner_name=${{ needs.filter-runners.outputs.runner_names }}
+          echo "Runner Name: $runner_name"
+          IFS=',' read -r -a names_array <<< "$runner_name"
+          echo "Extracted names: $names_array"
+          for name in "${names_array[@]}"; do
+            echo "Downloading artifact for runner: $name"
+            gh run download $GITHUB_RUN_ID --name "ip_hostname_$name" --dir ip_hostname
+          done
 
       - name: Combine IP and Hostname Info
         run: |
