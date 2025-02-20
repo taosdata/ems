@@ -112,7 +112,7 @@ jobs:
           echo "$filtered_runners"
 
           # TDengine runners
-          td_runners=$(jq -s '[.[][]]' <(echo "$filtered_edge_runners") <(echo "$filtered_center_runners"))
+          td_runners=$(jq -s '[.[][]]' <(echo "$filtered_taostest_runners") <(echo "$filtered_edge_runners") <(echo "$filtered_center_runners"))
           echo "✅ Selected td-runners with formatted labels:"
           echo "$td_runners"
 
@@ -268,7 +268,14 @@ jobs:
         with:
           version: ${{ github.event.inputs.td-version }}
           nas_download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
-  install-taostest-testng:
+
+      - name: Install Node Exporter
+        uses: taosdata/.github/.github/actions/install-node-exporter@test/fractal
+
+      - name: Install Process Exporter
+        uses: taosdata/.github/.github/actions/install-process-exporter@test/fractal
+
+  deploy-taostest-node:
     needs:
      - combine-and-update-hosts
      - filter-runners
@@ -291,6 +298,24 @@ jobs:
           res_app_key: ${{ secrets.TAOSDATA_BOT_KEY }}
           taostest-branch: "master"
           testng-branch: "master"
+
+      - name: Install TDengine Enterprise
+        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
+        with:
+            version: ${{ github.event.inputs.td-version }}
+            nas_download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
+
+      - name: Install Grafana
+        uses: taosdata/.github/.github/actions/install-grafana@test/fractal
+
+      - name: Install Prometheus
+        uses: taosdata/.github/.github/actions/install-prometheus@test/fractal
+
+      - name: Install Node Exporter
+        uses: taosdata/.github/.github/actions/install-node-exporter@test/fractal
+
+      - name: Install Process Exporter
+        uses: taosdata/.github/.github/actions/install-process-exporter@test/fractal
 
   set-runners:
     runs-on: ubuntu-latest
