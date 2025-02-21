@@ -41,8 +41,10 @@ jobs:
     outputs:
       runners: ${{ steps.get-runners.outputs.matrix}}
       td_runners: ${{ steps.get-runners.outputs.td_matrix}}
+      taostest_runners: ${{ steps.get-runners.outputs.taostest_matrix}}
       runner_names: ${{ steps.get-runners.outputs.names}}
       td_runner_names: ${{ steps.get-runners.outputs.td_names}}
+      taostest_runner_names: ${{ steps.get-runners.outputs.taostest_names}}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -93,24 +95,31 @@ jobs:
             ' "$response_file"
           }
           # filter_and_format "$edge_dnode_count" "fractal" "mqtt"
+          filtered_taostest_runners=$(filter_and_format "1" "fractal" "taostest")
           filtered_mqtt_runners=$(filter_and_format "$edge_dnode_count" "fractal" "mqtt")
           filtered_edge_runners=$(filter_and_format "$edge_dnode_count" "fractal" "edge_td")
           filtered_center_runners=$(filter_and_format "$center_dnode_count" "fractal" "center_td")
 
           echo "✅ Selected runners with formatted labels:"
+          echo "$filtered_taostest_runners"
           echo "$filtered_mqtt_runners"
           echo "$filtered_edge_runners"
           echo "$filtered_center_runners"
 
           # All runners
-          filtered_runners=$(jq -s '[.[][]]' <(echo "$filtered_mqtt_runners") <(echo "$filtered_edge_runners") <(echo "$filtered_center_runners"))
+          filtered_runners=$(jq -s '[.[][]]' <(echo "$filtered_taostest_runners") <(echo "$filtered_mqtt_runners") <(echo "$filtered_edge_runners") <(echo "$filtered_center_runners"))
           echo "✅ Selected runners with formatted labels:"
           echo "$filtered_runners"
 
           # TDengine runners
-          td_runners=$(jq -s '[.[][]]' <(echo "$filtered_edge_runners") <(echo "$filtered_center_runners"))
+          td_runners=$(jq -s '[.[][]]' <(echo "$filtered_taostest_runners") <(echo "$filtered_edge_runners") <(echo "$filtered_center_runners"))
           echo "✅ Selected td-runners with formatted labels:"
           echo "$td_runners"
+
+          # Taostest runners
+          taostest_runners=$(jq -s '[.[][]]' <(echo "$filtered_taostest_runners"))
+          echo "✅ Selected taostest-runners with formatted labels:"
+          echo "$taostest_runners"
 
           # make sure filtered_runners is a valid JSON array
           if [ -z "$filtered_runners" ]; then
@@ -127,6 +136,11 @@ jobs:
             td_runner_names=$(echo "$td_runners" | jq -r '.[].name' | tr '\n' ',')
             td_runner_names=${td_runner_names%,}
             echo "td_runner_names=${td_runner_names}" >> $GITHUB_OUTPUT
+
+            echo "taostest_matrix="$taostest_runners"" >> $GITHUB_OUTPUT
+            taostest_runner_names=$(echo "$taostest_runners" | jq -r '.[].name' | tr '\n' ',')
+            taostest_runner_names=${taostest_runner_names%,}
+            echo "taostest_runner_names=${taostest_runner_names}" >> $GITHUB_OUTPUT
           fi
 
   upload-hosts-info:
@@ -196,7 +210,6 @@ jobs:
           echo "🔄 Downloading IP and hostname info for each runner..."
           runner_name=${{ needs.filter-runners.outputs.runner_names }}
           echo "Runner Name: $runner_name"
-
           IFS=',' read -r -a names_array <<< "$runner_name"
           echo "Extracted names: $names_array"
           for name in "${names_array[@]}"; do
@@ -233,7 +246,7 @@ jobs:
           echo "✅ Updated /etc/hosts with runner IPs and hostnames:"
           cat /etc/hosts
 
-  install-tdengine:
+  install-tdengine-nodes:
     needs:
      - combine-and-update-hosts
      - filter-runners
@@ -244,6 +257,9 @@ jobs:
       group: ${{ matrix.runner.group }}
       labels: ${{ matrix.runner.labels }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Print Runner Info
         run: |
           echo "🔄 Running on group: ${{ matrix.runner.group }}"
@@ -254,6 +270,100 @@ jobs:
         with:
           version: ${{ github.event.inputs.td-version }}
           nas_download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
+
+      - name: Install Node Exporter
+        uses: taosdata/.github/.github/actions/install-node-exporter@test/fractal
+
+      - name: Install Process Exporter
+        uses: taosdata/.github/.github/actions/install-process-exporter@test/fractal
+
+      - name: Update Process Exporter YAML
+        uses: taosdata/.github/.github/actions/update-process-exporter-yml@test/fractal
+        with:
+          yml_file_path: "/etc/process_exporter.yml"
+          process_names: "taosd,taosadapter"
+
+  deploy-taostest-node:
+    needs:
+     - combine-and-update-hosts
+     - filter-runners
+    strategy:
+      matrix:
+        runner: ${{ fromJson(needs.filter-runners.outputs.taostest_runners || '[]') }}
+    runs-on:
+      group: ${{ matrix.runner.group }}
+      labels: ${{ matrix.runner.labels }}
+    steps:
+      - name: Print Runner Info
+        run: |
+          echo "🔄 Running on group: ${{ matrix.runner.group }}"
+          echo "🔄 Name: ${{ matrix.runner.name }}"
+
+      - name: Deploy Taostest And TestNG
+        uses: taosdata/.github/.github/actions/deploy-taostest-testng@test/fractal
+        with:
+          res_app_id: ${{ vars.TAOSDATA_BOT_ID }}
+          res_app_key: ${{ secrets.TAOSDATA_BOT_KEY }}
+          taostest-branch: "master"
+          testng-branch: "master"
+
+      - name: Install TDengine Enterprise
+        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
+        with:
+            version: ${{ github.event.inputs.td-version }}
+            nas_download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
+
+      - name: Install Grafana
+        uses: taosdata/.github/.github/actions/install-grafana@test/fractal
+
+      - name: Install Prometheus
+        uses: taosdata/.github/.github/actions/install-prometheus@test/fractal
+
+      - name: Install Node Exporter
+        uses: taosdata/.github/.github/actions/install-node-exporter@test/fractal
+
+      - name: Install Process Exporter
+        uses: taosdata/.github/.github/actions/install-process-exporter@test/fractal
+
+      - name: Update Process Exporter YAML
+        uses: taosdata/.github/.github/actions/update-process-exporter-yml@test/fractal
+        with:
+          yml_file_path: "/etc/process_exporter.yml"
+          process_names: "taosBenchmark,taos,taostest"
+
+      - name: Authenticate GitHub CLI
+        run: |
+          echo "🔄 Authenticating GitHub CLI..."
+          echo "${{ secrets.RUNNER_PAT }}" | gh auth login --with-token
+
+      - name: Download IP and Hostname Info
+        run: |
+          echo "🔄 Downloading IP and hostname info for each runner..."
+          runner_name=${{ needs.filter-runners.outputs.runner_names }}
+          echo "Runner Name: $runner_name"
+          IFS=',' read -r -a names_array <<< "$runner_name"
+          echo "Extracted names: $names_array"
+          for name in "${names_array[@]}"; do
+            echo "Downloading artifact for runner: $name"
+            gh run download $GITHUB_RUN_ID --name "ip_hostname_$name" --dir ip_hostname
+          done
+
+      - name: Get hosts
+        run: |
+          echo "🔄 Get hosts..."
+
+          # Read all files in the ip_hostname directory and combine them
+          hostname_info=$(cat ip_hostname/*.txt | awk '{print $2}' | sort | uniq | tr '\n' ',')
+          hostname_info=${hostname_info%,}
+          echo "hostname_info=$hostname_info" >> $GITHUB_ENV
+
+      - name: Update Prometheus YAML
+        uses: taosdata/.github/.github/actions/update-prometheus-yml@test/fractal
+        with:
+          yml_file_path: "/etc/prometheus/prometheus.yml"
+          node_exporter_hosts: ${{ env.hostname_info }}
+          process_exporter_hosts: ${{ env.hostname_info }}
+
   set-runners:
     runs-on: ubuntu-latest
     outputs:
