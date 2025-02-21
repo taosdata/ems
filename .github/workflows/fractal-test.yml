@@ -331,6 +331,11 @@ jobs:
           yml_file_path: "/etc/process_exporter.yml"
           process_names: "taosBenchmark,taos,taostest"
 
+      - name: Authenticate GitHub CLI
+        run: |
+          echo "🔄 Authenticating GitHub CLI..."
+          echo "${{ secrets.RUNNER_PAT }}" | gh auth login --with-token
+
       - name: Download IP and Hostname Info
         run: |
           echo "🔄 Downloading IP and hostname info for each runner..."
