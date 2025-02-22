@@ -360,7 +360,7 @@ jobs:
           hostname_info=$(cat ip_hostname/*.txt | awk '{print $2}' | sort | uniq | tr '\n' ',')
           hostname_info=${hostname_info%,}
           echo "hostname_info=$hostname_info" >> $GITHUB_ENV
-          echo "TEST_ROOT: ${{ steps.deploy-taostest-testng.outputs.TEST_ROOT }}"
+          echo "TEST_ROOT: ${{ steps.deploy-taostest-testng.outputs.test_root }}"
 
       - name: Update Prometheus YAML
         uses: taosdata/.github/.github/actions/update-prometheus-yml@test/fractal
