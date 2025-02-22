@@ -348,6 +348,9 @@ jobs:
             gh run download $GITHUB_RUN_ID --name "ip_hostname_$name" --dir ip_hostname
           done
 
+      - name: Gen Taostest Hosts
+        uses: taosdata/.github/.github/actions/gen-taostest-env@test/fractal
+
       - name: Get hosts
         run: |
           echo "🔄 Get hosts..."
@@ -402,7 +405,7 @@ jobs:
       fractal_ip: ${{ steps.get-ip.outputs.local_ip }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Flashmq
         uses: taosdata/.github/.github/actions/install-flashmq@main
@@ -435,7 +438,7 @@ jobs:
         - ${{ matrix.combination.mqtt_client }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Replace Sources
         run: |
@@ -479,3 +482,24 @@ jobs:
           mqtt_pub_path=$MQTT_PUB_PATH
           fractal_ip=$FRACTAL_IP
           nohup $MQTT_PUB_PATH --schema $FRACTAL_TOML --host $FRACTAL_IP --interval 0ms > mqtt_pub.log 2>&1 &
+  run-test:
+    needs: [filter-runners, deploy-taostest-node, deploy-fractal-edge, deploy-mqtt-client, install-tdengine-nodes]
+    strategy:
+      matrix:
+        runner: ${{ fromJson(needs.filter-runners.outputs.taostest_runners || '[]') }}
+    runs-on:
+      group: ${{ matrix.runner.group }}
+      labels: ${{ matrix.runner.labels }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Test
+        run: |
+          echo "🔄 Running test..."
+          echo "🔄 Test version: ${{ github.event.inputs.td-version }}"
+          echo "🔄 Edge dnode count: ${{ github.event.inputs.edge-dnode-count }}"
+          echo "🔄 Center dnode count: ${{ github.event.inputs.center-dnode-count }}"
+          echo "🔄 DB config: ${{ github.event.inputs.db-config }}"
+          echo "🔄 Test started at $(date)"
+          echo "🔄 Test finished at $(date)"
