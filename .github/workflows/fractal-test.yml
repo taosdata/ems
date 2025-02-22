@@ -300,6 +300,7 @@ jobs:
           echo "🔄 Name: ${{ matrix.runner.name }}"
 
       - name: Deploy Taostest And TestNG
+        id: deploy-taostest-testng
         uses: taosdata/.github/.github/actions/deploy-taostest-testng@test/fractal
         with:
           res_app_id: ${{ vars.TAOSDATA_BOT_ID }}
@@ -359,6 +360,7 @@ jobs:
           hostname_info=$(cat ip_hostname/*.txt | awk '{print $2}' | sort | uniq | tr '\n' ',')
           hostname_info=${hostname_info%,}
           echo "hostname_info=$hostname_info" >> $GITHUB_ENV
+          echo "TEST_ROOT: ${{ steps.deploy-taostest-testng.outputs.TEST_ROOT }}"
 
       - name: Update Prometheus YAML
         uses: taosdata/.github/.github/actions/update-prometheus-yml@test/fractal
