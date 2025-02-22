@@ -2,9 +2,7 @@
 [[schema]]
 topics = [
     "ems/site/site_1/root/allowed_max_p/data",
-    "ems/site/site_1/meter/meter_1/hz/data",
-    "ems/site/site_1/unit/unit_1/root/run_mode/data",
-    "ems/site/site_1/unit/unit_1/pcs/pcs_1/status/data",
+
 ]
 qos = 0
 
@@ -19,10 +17,8 @@ value = { type = "option", value = { type = "string", length = { range = { min =
 
 [[schema]]
 topics = [
-    "ems/site/site_1/root/allowed_max_p/data",
     "ems/site/site_1/meter/meter_1/hz/data",
-    "ems/site/site_1/unit/unit_1/root/run_mode/data",
-    "ems/site/site_1/unit/unit_1/pcs/pcs_1/status/data",
+
 ]
 qos = 0
 
@@ -37,10 +33,7 @@ value = { type = "number", range = { min = 1, max = 1000 } }
 
 [[schema]]
 topics = [
-    "ems/site/site_1/root/allowed_max_p/data",
-    "ems/site/site_1/meter/meter_1/hz/data",
     "ems/site/site_1/unit/unit_1/root/run_mode/data",
-    "ems/site/site_1/unit/unit_1/pcs/pcs_1/status/data",
 ]
 qos = 0
 
@@ -55,9 +48,6 @@ value = { type = "float", range = { min = 0.1, max = 0.9 } }
 
 [[schema]]
 topics = [
-    "ems/site/site_1/root/allowed_max_p/data",
-    "ems/site/site_1/meter/meter_1/hz/data",
-    "ems/site/site_1/unit/unit_1/root/run_mode/data",
     "ems/site/site_1/unit/unit_1/pcs/pcs_1/status/data",
 ]
 qos = 0
