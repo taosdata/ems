@@ -363,6 +363,22 @@ jobs:
           # TODO CONFIRM
           echo "TEST_ROOT: ${{ steps.deploy-taostest-testng.outputs.test_root }}"
 
+      - name: Create combined JSON file From Inputs
+        run: |
+          # Get Inputs
+          DB_CONFIG="${{ github.event.inputs.db-config }}"
+          # EXEC_TIME="${{ github.event.inputs.exec-time }}"
+
+          # Combine Inputs
+          # COMBINED_JSON=$(jq -n --argjson dbConfig "$DB_CONFIG" --arg execTime "$EXEC_TIME" '{db_config: $dbConfig, exec_time: $execTime}')
+          COMBINED_JSON=$(jq -n --argjson dbConfig "$DB_CONFIG" '{db_config: $dbConfig}')
+
+          # Write to File
+          echo "$COMBINED_JSON" > combined_config.json
+
+          # Print File
+          cat combined_config.json
+
       - name: Copy json to testng
         run: |
           echo "🔄 Copy json to testng..."
