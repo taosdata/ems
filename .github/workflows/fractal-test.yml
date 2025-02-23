@@ -521,7 +521,7 @@ jobs:
           taostest --convert-json=fractal-edge-1.json
           taostest --convert-json=fractal-edge-2.json
           taostest --setup=fractal-center.yaml --case=customer_scenarios/fractal/start.py --keep
-          taostest --setup=fractal-edge-1.json --case=customer_scenarios/fractal/start.py --keep
-          taostest --setup=fractal-edge-2.json --case=customer_scenarios/fractal/start.py --keep
+          taostest --setup=fractal-edge-1.yaml --case=customer_scenarios/fractal/start.py --keep
+          taostest --setup=fractal-edge-2.yaml --case=customer_scenarios/fractal/start.py --keep
           echo "🔄 Test finished at $(date)"
 
