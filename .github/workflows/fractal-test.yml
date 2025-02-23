@@ -305,8 +305,8 @@ jobs:
         with:
           res_app_id: ${{ vars.TAOSDATA_BOT_ID }}
           res_app_key: ${{ secrets.TAOSDATA_BOT_KEY }}
-          taostest-branch: "master"
-          testng-branch: "master"
+          taostest-branch: "feat/TD-33672"
+          testng-branch: "test/TD-33672"
 
       - name: Install TDengine Enterprise
         uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
@@ -517,4 +517,11 @@ jobs:
           echo "🔄 Center dnode count: ${{ github.event.inputs.center-dnode-count }}"
           echo "🔄 DB config: ${{ github.event.inputs.db-config }}"
           echo "🔄 Test started at $(date)"
+          taostest --convert-json=fractal-center.json
+          taostest --convert-json=fractal-edge-1.json
+          taostest --convert-json=fractal-edge-2.json
+          taostest --setup=fractal-center.yaml --case=customer_scenarios/fractal/start.py --keep
+          taostest --setup=fractal-edge-1.json --case=customer_scenarios/fractal/start.py --keep
+          taostest --setup=fractal-edge-2.json --case=customer_scenarios/fractal/start.py --keep
           echo "🔄 Test finished at $(date)"
+
