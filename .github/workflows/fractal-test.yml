@@ -380,10 +380,10 @@ jobs:
           # COMBINED_JSON=$(jq -n --argjson dbConfig "$FORMATTED_DB_CONFIG" '{db_config: $dbConfig}')
 
           # Write to File
-          echo "$COMBINED_JSON" > combined_config.json
+          echo "$COMBINED_JSON" > workflow_config.json
 
           # Print File
-          cat combined_config.json
+          cat workflow_config.json
 
       - name: Copy Json To TestNG Env
         run: |
