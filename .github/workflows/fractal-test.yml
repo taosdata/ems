@@ -357,9 +357,9 @@ jobs:
       - name: Gen Taostest Hosts
         uses: taosdata/.github/.github/actions/gen-taostest-env@test/fractal
 
-      - name: Get hosts
+      - name: Get Hosts
         run: |
-          echo "🔄 Get hosts..."
+          echo "🔄 Get Hosts..."
 
           # Read all files in the ip_hostname directory and combine them
           hostname_info=$(cat ip_hostname/*.txt | awk '{print $2}' | sort | uniq | tr '\n' ',')
@@ -373,10 +373,11 @@ jobs:
           # Get Inputs
           DB_CONFIG="${{ github.event.inputs.db-config }}"
           EXEC_TIME="${{ github.event.inputs.exec-time }}"
+          FORMATTED_DB_CONFIG=$(echo "$DB_CONFIG" | sed -E 's/([a-zA-Z_][a-zA-Z0-9_]*)/"\1"/g; s/:/:/g')
 
           # Combine Inputs
-          COMBINED_JSON=$(jq -n --argjson dbConfig "$DB_CONFIG" --arg execTime "$EXEC_TIME" '{db_config: $dbConfig, exec_time: $execTime}')
-          # COMBINED_JSON=$(jq -n --argjson dbConfig "$DB_CONFIG" '{db_config: $dbConfig}')
+          COMBINED_JSON=$(jq -n --argjson dbConfig "$FORMATTED_DB_CONFIG" --arg execTime "$EXEC_TIME" '{db_config: $dbConfig, exec_time: $execTime}')
+          # COMBINED_JSON=$(jq -n --argjson dbConfig "$FORMATTED_DB_CONFIG" '{db_config: $dbConfig}')
 
           # Write to File
           echo "$COMBINED_JSON" > combined_config.json
@@ -384,9 +385,9 @@ jobs:
           # Print File
           cat combined_config.json
 
-      - name: Copy json to testng
+      - name: Copy Json To TestNG Env
         run: |
-          echo "🔄 Copy json to testng..."
+          echo "🔄 Copy Json To TestNG Env..."
           cp *.json ~/TestNG/env
 
       - name: Configure SSH-Keyless Login
@@ -444,7 +445,6 @@ jobs:
 
       - name: Install Flashmq
         uses: taosdata/.github/.github/actions/install-flashmq@main
-
 
       - name: Get IP Addresses
         id: get-ip
@@ -537,6 +537,7 @@ jobs:
           echo "🔄 Edge dnode count: ${{ github.event.inputs.edge-dnode-count }}"
           echo "🔄 Center dnode count: ${{ github.event.inputs.center-dnode-count }}"
           echo "🔄 DB config: ${{ github.event.inputs.db-config }}"
+          echo "🔄 Exec time: ${{ github.event.inputs.exec-time }}"
           echo "🔄 Test started at $(date)"
           taostest --convert-json=fractal-center.json
           taostest --convert-json=fractal-edge-1.json
