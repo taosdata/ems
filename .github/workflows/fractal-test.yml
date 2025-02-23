@@ -30,6 +30,11 @@ on:
         required: true
         default: '{"vgroups": 10, "stt_trigger": 2, "buffer": 4096, "minrows": 100}'
         type: string
+      exec-time:
+        description: 'exec-time, unit: s'
+        required: true
+        default: '300'
+        type: string
 
 permissions:
   actions: read
@@ -367,11 +372,11 @@ jobs:
         run: |
           # Get Inputs
           DB_CONFIG="${{ github.event.inputs.db-config }}"
-          # EXEC_TIME="${{ github.event.inputs.exec-time }}"
+          EXEC_TIME="${{ github.event.inputs.exec-time }}"
 
           # Combine Inputs
-          # COMBINED_JSON=$(jq -n --argjson dbConfig "$DB_CONFIG" --arg execTime "$EXEC_TIME" '{db_config: $dbConfig, exec_time: $execTime}')
-          COMBINED_JSON=$(jq -n --argjson dbConfig "$DB_CONFIG" '{db_config: $dbConfig}')
+          COMBINED_JSON=$(jq -n --argjson dbConfig "$DB_CONFIG" --arg execTime "$EXEC_TIME" '{db_config: $dbConfig, exec_time: $execTime}')
+          # COMBINED_JSON=$(jq -n --argjson dbConfig "$DB_CONFIG" '{db_config: $dbConfig}')
 
           # Write to File
           echo "$COMBINED_JSON" > combined_config.json
