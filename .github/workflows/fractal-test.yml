@@ -368,6 +368,12 @@ jobs:
           echo "🔄 Copy json to testng..."
           cp *.json ~/TestNG/env
 
+      - name: Configure SSH-Keyless Login
+        uses: taosdata/.github/.github/actions/ssh-keyless-login@test/fractal
+        with:
+          target_hosts: ${{ env.hostname_info }}
+          password: ${{ secrets.VM_PASSWD }}
+
       - name: Update Prometheus YAML
         uses: taosdata/.github/.github/actions/update-prometheus-yml@test/fractal
         with:
