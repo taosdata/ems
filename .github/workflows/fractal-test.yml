@@ -516,7 +516,29 @@ jobs:
         run: |
           mqtt_pub_path=$MQTT_PUB_PATH
           fractal_ip=$FRACTAL_IP
-          nohup $MQTT_PUB_PATH --schema $FRACTAL_TOML --host $FRACTAL_IP --interval 0ms > mqtt_pub.log 2>&1 &
+          setsid nohup $MQTT_PUB_PATH --schema $FRACTAL_TOML --host $FRACTAL_IP --interval 0ms > mqtt_pub.log 2>&1 & echo $! > /tmp/process.pid
+  stop-mqtt-client:
+    needs: deploy-mqtt-client
+    
+    strategy:
+      matrix:
+        combination: ${{ fromJSON(needs.set-runners.outputs.runner_combinations) }}
+    runs-on: 
+      group: fractal
+      labels:
+        - self-hosted
+        - Linux
+        - X64
+        - fractal
+        - ${{ matrix.combination.mqtt_client }}
+    steps:
+      - name: Stop MQTT Client
+        run: |
+          if [ -f /tmp/process.pid ]; then
+            kill $(cat /tmp/process.pid) || true
+            rm /tmp/process.pid
+          fi
+  
   # run-test:
   #   # needs: [filter-runners, deploy-taostest-node, deploy-fractal-edge, deploy-mqtt-client, install-tdengine-nodes]
   #   needs: [filter-runners, deploy-taostest-node, deploy-fractal-edge, install-tdengine-nodes]
