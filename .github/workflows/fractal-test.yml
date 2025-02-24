@@ -518,7 +518,7 @@ jobs:
           fractal_ip=$FRACTAL_IP
           setsid nohup $MQTT_PUB_PATH --schema $FRACTAL_TOML --host $FRACTAL_IP --interval 0ms > mqtt_pub.log 2>&1 & echo $! > /tmp/process.pid
   stop-mqtt-client:
-    needs: deploy-mqtt-client
+    needs: [set-runners,deploy-mqtt-client]
     
     strategy:
       matrix:
