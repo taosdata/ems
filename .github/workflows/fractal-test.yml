@@ -464,7 +464,9 @@ jobs:
             echo "Generated combinations: $combinations"
             echo "::set-output name=runner_combinations::$combinations"
   deploy-fractal-edge:
-    needs: set-runners
+    needs:
+      - set-runners
+      - deploy-taostest-node
     strategy:
       matrix:
         combination: ${{ fromJSON(needs.set-runners.outputs.runner_combinations) }}
@@ -499,6 +501,7 @@ jobs:
         with:
           name: ${{ matrix.combination.fractal_edge }}-ip
           path: ${{ matrix.combination.fractal_edge }}.txt
+
   deploy-mqtt-client:
     needs: [set-runners,deploy-fractal-edge]
     strategy:
@@ -602,6 +605,8 @@ jobs:
           echo "🔄 Center dnode count: ${{ github.event.inputs.center-dnode-count }}"
           echo "🔄 DB config: ${{ github.event.inputs.db-config }}"
           echo "🔄 Exec time: ${{ github.event.inputs.exec-time }}"
+          echo "🔄 Source interval: ${{ github.event.inputs.source-interval }}
+          echo "🔄 Enable compression: ${{ github.event.inputs.enable-compression }}"
           echo "🔄 Test started at $(date)"
           taostest --convert-json=fractal-center.json
           taostest --convert-json=fractal-edge-1.json
