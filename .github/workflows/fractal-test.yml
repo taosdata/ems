@@ -401,20 +401,20 @@ jobs:
           CENTER_DNODE_HOSTS=$CLUSTER_HOSTS
           FORMATTED_DB_CONFIG=$(echo "$DB_CONFIG" | sed -E 's/([a-zA-Z_][a-zA-Z0-9_]*)/"\1"/g; s/:/:/g')
 
-          # Combine Inputs
+          # Combine Inputs into a single JSON object
           COMBINED_JSON=$(jq -n \
             --argjson dbConfig "$FORMATTED_DB_CONFIG" \
             --arg execTime "$EXEC_TIME" \
-            --arg mqttHosts "$MQTT_HOSTS" \
-            --arg edgeDnodeHosts "$EDGE_DNODE_HOSTS" \
-            --arg taosBenchmarkHosts "$TAOS_BENCHMARK_HOSTS" \
-            --arg centerDnodeHosts "$CENTER_DNODE_HOSTS" \
+            --argjson mqttHosts "$(echo $MQTT_HOSTS | jq -R 'split(",")')" \
+            --argjson edgeDnodeHosts "$(echo $EDGE_DNODE_HOSTS | jq -R 'split(",")')" \
+            --argjson taosBenchmarkHosts "$(echo $TAOS_BENCHMARK_HOSTS | jq -R 'split(",")')" \
+            --argjson centerDnodeHosts "$(echo $CENTER_DNODE_HOSTS | jq -R 'split(",")')" \
             '{
               db_config: $dbConfig,
               exec_time: $execTime,
               mqtt_hosts: $mqttHosts,
               edge_dnode_hosts: $edgeDnodeHosts,
-              taosBenchmark_hosts: $taosBenchmarkHosts,
+              taos_benchmark_hosts: $taosBenchmarkHosts,
               center_dnode_hosts: $centerDnodeHosts
             }')
           # COMBINED_JSON=$(jq -n --argjson dbConfig "$FORMATTED_DB_CONFIG" --arg execTime "$EXEC_TIME" '{db_config: $dbConfig, exec_time: $execTime}')
