@@ -492,6 +492,7 @@ jobs:
                 echo "mqtt_pub not found"
               fi
               echo "MQTT_PUB_PATH=$mqtt_pub_path" >> $GITHUB_ENV
+            rm /usr/bin/mqtt_pub && cp $mqtt_pub_path /usr/bin/mqtt_pub
             fractal_toml=$(find /root /opt -name fractal.toml 2>/dev/null | head -n 1)
               if [ -n "$fractal_toml" ]; then
                 echo "fractal.toml found at $fractal_toml"
@@ -499,6 +500,7 @@ jobs:
                 echo "fractal.toml not found"
               fi
               echo "FRACTAL_TOML=$fractal_toml" >> $GITHUB_ENV
+            rm cp $fractal_toml /etc/taos/test.toml
         shell: bash
       - name: Download IP Address Artifact
         uses: actions/download-artifact@v4
@@ -506,16 +508,16 @@ jobs:
           name: ${{ matrix.combination.fractal_edge }}-ip
           path: ./ip_artifacts
 
-      - name: Use Fractal Edges IPs
-        run: |
-              fractal_ip=$(cat ./ip_artifacts/${{ matrix.combination.fractal_edge }}.txt)
-              echo "Fractal IPs: $fractal_ip"
-              echo "FRACTAL_IP=$fractal_ip" >> $GITHUB_ENV
-      - name: Run MQTT CLI
-        run: |
-          mqtt_pub_path=$MQTT_PUB_PATH
-          fractal_ip=$FRACTAL_IP
-          setsid nohup $MQTT_PUB_PATH --schema $FRACTAL_TOML --host $FRACTAL_IP --interval 0ms > mqtt_pub.log 2>&1 & echo $! > /tmp/process.pid
+      # - name: Use Fractal Edges IPs
+      #   run: |
+      #         fractal_ip=$(cat ./ip_artifacts/${{ matrix.combination.fractal_edge }}.txt)
+      #         echo "Fractal IPs: $fractal_ip"
+      #         echo "FRACTAL_IP=$fractal_ip" >> $GITHUB_ENV
+      # - name: Run MQTT CLI
+      #   run: |
+      #     mqtt_pub_path=$MQTT_PUB_PATH
+      #     fractal_ip=$FRACTAL_IP
+      #     setsid nohup $MQTT_PUB_PATH --schema $FRACTAL_TOML --host $FRACTAL_IP --interval 0ms > mqtt_pub.log 2>&1 & echo $! > /tmp/process.pid
   stop-mqtt-client:
     needs: [set-runners,deploy-mqtt-client]
 
