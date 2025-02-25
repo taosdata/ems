@@ -35,6 +35,19 @@ on:
         required: true
         default: '300'
         type: string
+      source-interval:
+        description: 'source-interval, unit: s'
+        required: true
+        default: '1'
+        type: string
+      enable-compression:
+        description: 'enable-compression'
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - true
+          - false
 
 permissions:
   actions: read
@@ -222,7 +235,7 @@ jobs:
             gh run download $GITHUB_RUN_ID --name "ip_hostname_$name" --dir ip_hostname
           done
 
-      - name: Combine IP and Hostname Info
+      - name: Combine IP and Hostname Info In Each Runner
         run: |
           echo "🔄 Combining IP and hostname info..."
 
@@ -234,7 +247,7 @@ jobs:
           echo -e "$ip_hostname_info" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-      - name: Update /etc/hosts
+      - name: Update /etc/hosts In Each Runner
         run: |
           echo "🔄 Updating /etc/hosts..."
 
@@ -276,13 +289,13 @@ jobs:
       #     version: ${{ github.event.inputs.td-version }}
       #     nas_download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
 
-      - name: Install Node Exporter
+      - name: Install Node Exporter In TDengine Nodes
         uses: taosdata/.github/.github/actions/install-node-exporter@test/fractal
 
-      - name: Install Process Exporter
+      - name: Install Process Exporter In TDengine Nodes
         uses: taosdata/.github/.github/actions/install-process-exporter@test/fractal
 
-      - name: Update Process Exporter YAML
+      - name: Update Process Exporter YAML In TDengine Nodes
         uses: taosdata/.github/.github/actions/update-process-exporter-yml@test/fractal
         with:
           yml_file_path: "/etc/process_exporter.yml"
@@ -319,19 +332,19 @@ jobs:
       #       version: ${{ github.event.inputs.td-version }}
       #       nas_download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
 
-      - name: Install Grafana
+      - name: Install Grafana In Taostest Node
         uses: taosdata/.github/.github/actions/install-grafana@test/fractal
 
-      - name: Install Prometheus
+      - name: Install Prometheus In Taostest Node
         uses: taosdata/.github/.github/actions/install-prometheus@test/fractal
 
-      - name: Install Node Exporter
+      - name: Install Node Exporter In Taostest Node
         uses: taosdata/.github/.github/actions/install-node-exporter@test/fractal
 
-      - name: Install Process Exporter
+      - name: Install Process Exporter In Taostest Node
         uses: taosdata/.github/.github/actions/install-process-exporter@test/fractal
 
-      - name: Update Process Exporter YAML
+      - name: Update Process Exporter YAML In Taostest Node
         uses: taosdata/.github/.github/actions/update-process-exporter-yml@test/fractal
         with:
           yml_file_path: "/etc/process_exporter.yml"
