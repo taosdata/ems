@@ -481,7 +481,7 @@ jobs:
       - name: Install MQTT CLI
         uses: taosdata/.github/.github/actions/install-mqtt-simulator@main
         with:
-          nas_public_url: ${{ secrets.nas_public_url }}
+          nas_public_url: ${{ secrets.nas_download_url }}
 
       - name: Find mqtt_pub binary and fractal toml
         run: |
