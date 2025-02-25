@@ -368,7 +368,24 @@ jobs:
           done
 
       - name: Gen Taostest Hosts
+        id: gen_taostest_env
         uses: taosdata/.github/.github/actions/gen-taostest-env@test/fractal
+
+      - name: Print Taostest Hosts
+        run: |
+          echo "Test In Workflow 1"
+          echo "MQTT Hosts: $MQTT_HOSTS"
+          echo "Single Dnode Hosts: $SINGLE_DNODE_HOSTS"
+          echo "Taos Benchmark Hosts: $TAOS_BENCHMARK_HOSTS"
+          echo "Cluster Hosts: $CLUSTER_HOSTS"
+
+      - name: Print hosts
+        run: |
+          echo "Test In Workflow 2"
+          echo ${{ steps.gen_taostest_env.outputs.MQTT_HOSTS }}
+          echo ${{ steps.gen_taostest_env.outputs.SINGLE_DNODE_HOSTS }}
+          echo ${{ steps.gen_taostest_env.outputs.TAOS_BENCHMARK_HOSTS }}
+          echo ${{ steps.gen_taostest_env.outputs.CLUSTER_HOSTS }}
 
       - name: Get Hosts
         run: |
