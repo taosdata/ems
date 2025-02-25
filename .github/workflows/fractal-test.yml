@@ -522,7 +522,7 @@ jobs:
                 echo "mqtt_pub not found"
               fi
               echo "MQTT_PUB_PATH=$mqtt_pub_path" >> $GITHUB_ENV
-            rm /usr/bin/mqtt_pub && cp $mqtt_pub_path /usr/bin/mqtt_pub
+            rm -f /usr/bin/mqtt_pub && cp $mqtt_pub_path /usr/bin/mqtt_pub
             fractal_toml=$(find /root /opt -name fractal.toml 2>/dev/null | head -n 1)
               if [ -n "$fractal_toml" ]; then
                 echo "fractal.toml found at $fractal_toml"
@@ -530,7 +530,7 @@ jobs:
                 echo "fractal.toml not found"
               fi
               echo "FRACTAL_TOML=$fractal_toml" >> $GITHUB_ENV
-            rm cp $fractal_toml /etc/taos/test.toml
+            rm -f /etc/taos/test.toml && cp $fractal_toml /etc/taos/test.toml
         shell: bash
       - name: Download IP Address Artifact
         uses: actions/download-artifact@v4
