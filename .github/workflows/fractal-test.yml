@@ -31,12 +31,12 @@ on:
         default: '{"vgroups": 10, "stt_trigger": 2, "buffer": 4096, "minrows": 100}'
         type: string
       exec-time:
-        description: 'exec-time, unit: s'
+        description: 'exec-time (unit: s)'
         required: true
         default: '300'
         type: string
       source-interval:
-        description: 'source-interval, unit: s'
+        description: 'source-interval (unit: s)'
         required: true
         default: '1'
         type: string
