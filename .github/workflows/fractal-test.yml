@@ -379,14 +379,6 @@ jobs:
           echo "Taos Benchmark Hosts: $TAOS_BENCHMARK_HOSTS"
           echo "Cluster Hosts: $CLUSTER_HOSTS"
 
-      - name: Print hosts
-        run: |
-          echo "Test In Workflow 2"
-          echo ${{ steps.gen_taostest_env.outputs.MQTT_HOSTS }}
-          echo ${{ steps.gen_taostest_env.outputs.SINGLE_DNODE_HOSTS }}
-          echo ${{ steps.gen_taostest_env.outputs.TAOS_BENCHMARK_HOSTS }}
-          echo ${{ steps.gen_taostest_env.outputs.CLUSTER_HOSTS }}
-
       - name: Get Hosts
         run: |
           echo "🔄 Get Hosts..."
@@ -403,10 +395,29 @@ jobs:
           # Get Inputs
           DB_CONFIG="${{ github.event.inputs.db-config }}"
           EXEC_TIME="${{ github.event.inputs.exec-time }}"
+          MQTT_HOSTS="$MQTT_HOSTS"
+          EDGE_DNODE_HOSTS="$SINGLE_DNODE_HOSTS"
+          TAOS_BENCHMARK_HOSTS="$TAOS_BENCHMARK_HOSTS"
+          CENTER_DNODE_HOSTS="$CLUSTER_HOSTS"
           FORMATTED_DB_CONFIG=$(echo "$DB_CONFIG" | sed -E 's/([a-zA-Z_][a-zA-Z0-9_]*)/"\1"/g; s/:/:/g')
 
           # Combine Inputs
-          COMBINED_JSON=$(jq -n --argjson dbConfig "$FORMATTED_DB_CONFIG" --arg execTime "$EXEC_TIME" '{db_config: $dbConfig, exec_time: $execTime}')
+          COMBINED_JSON=$(jq -n \
+            --argjson dbConfig "$FORMATTED_DB_CONFIG" \
+            --arg execTime "$EXEC_TIME" \
+            --arg mqttHosts "$MQTT_HOSTS" \
+            --arg edgeDnodeHosts "$EDGE_DNODE_HOSTS" \
+            --arg taosBenchmarkHosts "$TAOS_BENCHMARK_HOSTS" \
+            --arg centerDnodeHosts "$CENTER_DNODE_HOSTS" \
+            '{
+              db_config: $dbConfig,
+              exec_time: $execTime,
+              mqtt_hosts: $mqttHosts,
+              edge_dnode_hosts: $edgeDnodeHosts,
+              taosBenchmark_hosts: $taosBenchmarkHosts,
+              center_dnode_hosts: $centerDnodeHosts
+            }')
+          # COMBINED_JSON=$(jq -n --argjson dbConfig "$FORMATTED_DB_CONFIG" --arg execTime "$EXEC_TIME" '{db_config: $dbConfig, exec_time: $execTime}')
           # COMBINED_JSON=$(jq -n --argjson dbConfig "$FORMATTED_DB_CONFIG" '{db_config: $dbConfig}')
 
           # Write to File
