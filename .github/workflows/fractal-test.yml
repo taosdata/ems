@@ -500,7 +500,7 @@ jobs:
                 echo "fractal.toml not found"
               fi
               echo "FRACTAL_TOML=$fractal_toml" >> $GITHUB_ENV
-            rm cp $fractal_toml /etc/taos/test.toml
+            rm $fractal_toml cp $fractal_toml /etc/taos/test.toml
         shell: bash
       - name: Download IP Address Artifact
         uses: actions/download-artifact@v4
