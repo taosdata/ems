@@ -331,7 +331,26 @@ jobs:
       #   with:
       #       version: ${{ github.event.inputs.td-version }}
       #       nas_download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
+      # tmp
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{ vars.TAOSDATA_BOT_ID }}
+          private_key: ${{ secrets.TAOSDATA_BOT_KEY }}
 
+      - name: Set GitHub App Token as secret
+        run: echo "GITHUB_APP_TOKEN=${{ steps.app-token.outputs.token }}" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Check out another private repository
+        uses: actions/checkout@v4
+        with:
+          repository: taosdata/.github
+          token: ${{ env.GITHUB_APP_TOKEN }}
+          path: .github
+          ref: 'test/fractal'
+      # tmp
       - name: Install Grafana In Taostest Node
         uses: taosdata/.github/.github/actions/install-grafana@test/fractal
 
