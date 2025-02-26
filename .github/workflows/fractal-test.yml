@@ -524,9 +524,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # - name: Replace Sources
-      #   run: |
-      #     cd /root/tools/deploy && ./setup_system.sh replace_sources
       - name: Install MQTT CLI
         uses: taosdata/.github/.github/actions/install-mqtt-simulator@main
         with:
@@ -556,18 +553,6 @@ jobs:
         with:
           name: ${{ matrix.combination.fractal_edge }}-ip
           path: ./ip_artifacts
-
-      # - name: Use Fractal Edges IPs
-      #   run: |
-      #         fractal_ip=$(cat ./ip_artifacts/${{ matrix.combination.fractal_edge }}.txt)
-      #         echo "Fractal IPs: $fractal_ip"
-      #         echo "FRACTAL_IP=$fractal_ip" >> $GITHUB_ENV
-      # - name: Run MQTT CLI
-      #   run: |
-      #     mqtt_pub_path=$MQTT_PUB_PATH
-      #     fractal_ip=$FRACTAL_IP
-      #     setsid nohup $MQTT_PUB_PATH --schema $FRACTAL_TOML --host $FRACTAL_IP --interval 0ms > mqtt_pub.log 2>&1 & echo $! > /tmp/process.pid
-
   run-test:
     # needs: [filter-runners, deploy-taostest-node, deploy-fractal-edge, deploy-mqtt-client, install-tdengine-nodes]
     needs: [filter-runners, deploy-taostest-node, deploy-fractal-edge, install-tdengine-nodes]
@@ -598,5 +583,8 @@ jobs:
           taostest --setup=fractal-center.yaml --case=customer_scenarios/fractal/start.py --keep
           taostest --setup=fractal-edge-1.yaml --case=customer_scenarios/fractal/start.py --keep
           taostest --setup=fractal-edge-2.yaml --case=customer_scenarios/fractal/start.py --keep
+          taostest --use=fractal-edge-1.yaml --case=customer_scenarios/fractal/fractal_edge.py --keep
+          taostest --use=fractal-edge-2.yaml --case=customer_scenarios/fractal/fractal_edge.py --keep
+          taostest --use=fractal-center.yaml --case=customer_scenarios/fractal/fractal_center.py --keep
           echo "🔄 Test finished at $(date)"
 
