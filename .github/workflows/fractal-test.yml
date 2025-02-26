@@ -395,6 +395,8 @@ jobs:
           # Get Inputs
           DB_CONFIG="${{ github.event.inputs.db-config }}"
           EXEC_TIME="${{ github.event.inputs.exec-time }}"
+          SOURCE_INTERVAL="${{ github.event.inputs.source-interval }}"
+          ENABLE_COMPRESSION="${{ github.event.inputs.enable-compression }}"
           MQTT_HOSTS=$MQTT_HOSTS
           EDGE_DNODE_HOSTS=$SINGLE_DNODE_HOSTS
           TAOS_BENCHMARK_HOSTS=$TAOS_BENCHMARK_HOSTS
@@ -405,6 +407,8 @@ jobs:
           COMBINED_JSON=$(jq -n \
             --argjson dbConfig "$FORMATTED_DB_CONFIG" \
             --arg execTime "$EXEC_TIME" \
+            --arg sourceInterval "$SOURCE_INTERVAL" \
+            --arg enableCompression "$ENABLE_COMPRESSION" \
             --argjson mqttHosts "$MQTT_HOSTS" \
             --argjson edgeDnodeHosts "$EDGE_DNODE_HOSTS" \
             --argjson taosBenchmarkHosts "$TAOS_BENCHMARK_HOSTS" \
@@ -412,6 +416,8 @@ jobs:
             '{
               db_config: $dbConfig,
               exec_time: $execTime,
+              source_interval: $sourceInterval,
+              enable_compression: $enableCompression,
               mqtt_hosts: $mqttHosts,
               edge_dnode_hosts: $edgeDnodeHosts,
               taos_benchmark_hosts: $taosBenchmarkHosts,
