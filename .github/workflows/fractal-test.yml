@@ -520,9 +520,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Replace Sources
-        run: |
-          cd /root/tools/deploy && ./setup_system.sh replace_sources
+      # - name: Replace Sources
+      #   run: |
+      #     cd /root/tools/deploy && ./setup_system.sh replace_sources
       - name: Install MQTT CLI
         uses: taosdata/.github/.github/actions/install-mqtt-simulator@main
         with:
@@ -545,7 +545,7 @@ jobs:
                 echo "fractal.toml not found"
               fi
               echo "FRACTAL_TOML=$fractal_toml" >> $GITHUB_ENV
-            rm -f /etc/taos/test.toml && cp $fractal_toml /etc/taos/test.toml
+            rm -f /etc/taos/test.toml && mkdir -p /etc/taos && cp $fractal_toml /etc/taos/test.toml
         shell: bash
       - name: Download IP Address Artifact
         uses: actions/download-artifact@v4
