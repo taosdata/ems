@@ -312,6 +312,13 @@ jobs:
       group: ${{ matrix.runner.group }}
       labels: ${{ matrix.runner.labels }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          repository: taosdata/.github
+          path: .github
+          ref: test/fractal
+
       - name: Print Runner Info
         run: |
           echo "🔄 Running on group: ${{ matrix.runner.group }}"
@@ -334,10 +341,6 @@ jobs:
 
       - name: Install Grafana In Taostest Node
         uses: taosdata/.github/.github/actions/install-grafana@test/fractal
-        with:
-          repository: taosdata/.github
-          path: .github
-          ref: test/fractal
 
       - name: Install Prometheus In Taostest Node
         uses: taosdata/.github/.github/actions/install-prometheus@test/fractal
