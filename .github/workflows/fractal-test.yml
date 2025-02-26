@@ -98,7 +98,7 @@ jobs:
                 | {
                     name,
                     group: (
-                      if .labels | map(.name) | index("fractal") != null then "fractal"
+                      if .labels | map(.name) | index("customers") != null then "customers"
                       else "default"
                       end
                     ),
@@ -112,11 +112,11 @@ jobs:
               )[:$count]
             ' "$response_file"
           }
-          # filter_and_format "$edge_dnode_count" "fractal" "mqtt"
-          filtered_taostest_runners=$(filter_and_format "1" "fractal" "taostest")
-          filtered_mqtt_runners=$(filter_and_format "$edge_dnode_count" "fractal" "mqtt")
-          filtered_edge_runners=$(filter_and_format "$edge_dnode_count" "fractal" "edge_td")
-          filtered_center_runners=$(filter_and_format "$center_dnode_count" "fractal" "center_td")
+          # filter_and_format "$edge_dnode_count" "customers" "mqtt"
+          filtered_taostest_runners=$(filter_and_format "1" "customers" "taostest")
+          filtered_mqtt_runners=$(filter_and_format "$edge_dnode_count" "customers" "mqtt")
+          filtered_edge_runners=$(filter_and_format "$edge_dnode_count" "customers" "edge_td")
+          filtered_center_runners=$(filter_and_format "$center_dnode_count" "customers" "center_td")
 
           echo "✅ Selected runners with formatted labels:"
           echo "$filtered_taostest_runners"
@@ -473,13 +473,13 @@ jobs:
         combination: ${{ fromJSON(needs.set-runners.outputs.runner_combinations) }}
 
     runs-on:
-      group: fractal
+      group: customers
       labels:
         - self-hosted
         - Linux
         - X64
         - edge_td
-        - fractal
+        - customers
         - ${{ matrix.combination.fractal_edge }}
     outputs:
       fractal_ip: ${{ steps.get-ip.outputs.local_ip }}
@@ -509,12 +509,12 @@ jobs:
       matrix:
         combination: ${{ fromJSON(needs.set-runners.outputs.runner_combinations) }}
     runs-on:
-      group: fractal
+      group: customers
       labels:
         - self-hosted
         - Linux
         - X64
-        - fractal
+        - customers
         - ${{ matrix.combination.mqtt_client }}
     steps:
       - name: Checkout code
@@ -595,4 +595,4 @@ jobs:
           taostest --setup=fractal-edge-1.yaml --case=customer_scenarios/fractal/start.py --keep
           taostest --setup=fractal-edge-2.yaml --case=customer_scenarios/fractal/start.py --keep
           echo "🔄 Test finished at $(date)"
-  
+
