@@ -479,7 +479,7 @@ jobs:
         - Linux
         - X64
         - edge_td
-        - customers
+        - fractal
         - ${{ matrix.combination.fractal_edge }}
     outputs:
       fractal_ip: ${{ steps.get-ip.outputs.local_ip }}
@@ -514,7 +514,7 @@ jobs:
         - self-hosted
         - Linux
         - X64
-        - customers
+        - fractal
         - ${{ matrix.combination.mqtt_client }}
     steps:
       - name: Checkout code
