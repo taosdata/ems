@@ -98,7 +98,7 @@ jobs:
                 | {
                     name,
                     group: (
-                      if .labels | map(.name) | index("fractal") != null then "fractal"
+                      if .labels | map(.name) | index("fractal") != null then "customers"
                       else "default"
                       end
                     ),
