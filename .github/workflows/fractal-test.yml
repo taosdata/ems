@@ -334,6 +334,10 @@ jobs:
 
       - name: Install Grafana In Taostest Node
         uses: taosdata/.github/.github/actions/install-grafana@test/fractal
+        with:
+          repository: taosdata/.github
+          path: .github
+          ref: test/fractal
 
       - name: Install Prometheus In Taostest Node
         uses: taosdata/.github/.github/actions/install-prometheus@test/fractal
@@ -473,13 +477,13 @@ jobs:
         combination: ${{ fromJSON(needs.set-runners.outputs.runner_combinations) }}
 
     runs-on:
-      group: fractal
+      group: customers
       labels:
         - self-hosted
         - Linux
         - X64
         - edge_td
-        - fractal
+        - customers
         - ${{ matrix.combination.fractal_edge }}
     outputs:
       fractal_ip: ${{ steps.get-ip.outputs.local_ip }}
@@ -509,12 +513,12 @@ jobs:
       matrix:
         combination: ${{ fromJSON(needs.set-runners.outputs.runner_combinations) }}
     runs-on:
-      group: fractal
+      group: customers
       labels:
         - self-hosted
         - Linux
         - X64
-        - fractal
+        - customers
         - ${{ matrix.combination.mqtt_client }}
     steps:
       - name: Checkout code
@@ -583,4 +587,4 @@ jobs:
           taostest --use=fractal-edge-2.yaml --case=customer_scenarios/fractal/fractal_edge.py --keep
           taostest --use=fractal-center.yaml --case=customer_scenarios/fractal/fractal_center.py --keep
           echo "🔄 Test finished at $(date)"
-  
+
