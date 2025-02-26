@@ -98,7 +98,7 @@ jobs:
                 | {
                     name,
                     group: (
-                      if .labels | map(.name) | index("customers") != null then "customers"
+                      if .labels | map(.name) | index("fractal") != null then "fractal"
                       else "default"
                       end
                     ),
@@ -112,11 +112,11 @@ jobs:
               )[:$count]
             ' "$response_file"
           }
-          # filter_and_format "$edge_dnode_count" "customers" "mqtt"
-          filtered_taostest_runners=$(filter_and_format "1" "customers" "taostest")
-          filtered_mqtt_runners=$(filter_and_format "$edge_dnode_count" "customers" "mqtt")
-          filtered_edge_runners=$(filter_and_format "$edge_dnode_count" "customers" "edge_td")
-          filtered_center_runners=$(filter_and_format "$center_dnode_count" "customers" "center_td")
+          # filter_and_format "$edge_dnode_count" "fractal" "mqtt"
+          filtered_taostest_runners=$(filter_and_format "1" "fractal" "taostest")
+          filtered_mqtt_runners=$(filter_and_format "$edge_dnode_count" "fractal" "mqtt")
+          filtered_edge_runners=$(filter_and_format "$edge_dnode_count" "fractal" "edge_td")
+          filtered_center_runners=$(filter_and_format "$center_dnode_count" "fractal" "center_td")
 
           echo "✅ Selected runners with formatted labels:"
           echo "$filtered_taostest_runners"
@@ -334,6 +334,10 @@ jobs:
 
       - name: Install Grafana In Taostest Node
         uses: taosdata/.github/.github/actions/install-grafana@test/fractal
+        with:
+          repository: taosdata/.github
+          path: .github
+          ref: test/fractal
 
       - name: Install Prometheus In Taostest Node
         uses: taosdata/.github/.github/actions/install-prometheus@test/fractal
