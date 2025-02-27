@@ -557,7 +557,7 @@ jobs:
           path: ./ip_artifacts
   run-test:
     # needs: [filter-runners, deploy-taostest-node, deploy-fractal-edge, deploy-mqtt-client, install-tdengine-nodes]
-    needs: [filter-runners, deploy-taostest-node, deploy-fractal-edge, install-tdengine-nodes]
+    needs: [filter-runners, deploy-taostest-node, deploy-fractal-edge, install-tdengine-nodes,deploy-mqtt-client]
     strategy:
       matrix:
         runner: ${{ fromJson(needs.filter-runners.outputs.taostest_runners || '[]') }}
