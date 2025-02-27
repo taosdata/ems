@@ -30,6 +30,11 @@ on:
         required: true
         default: '{"vgroups": 10, "stt_trigger": 2, "buffer": 4096, "minrows": 100}'
         type: string
+      query-config:
+        description: 'custom query config for taosBenchmark'
+        required: true
+        default: '{"query_times": 100, "concurrent": 10, "query_interval": 10}'
+        type: string
       exec-time:
         description: 'exec-time (unit: s)'
         required: true
@@ -394,6 +399,7 @@ jobs:
         run: |
           # Get Inputs
           DB_CONFIG="${{ github.event.inputs.db-config }}"
+          QUERY_CONFIG="${{ github.event.inputs.query-config }}"
           EXEC_TIME="${{ github.event.inputs.exec-time }}"
           SOURCE_INTERVAL="${{ github.event.inputs.source-interval }}"
           ENABLE_COMPRESSION="${{ github.event.inputs.enable-compression }}"
@@ -406,6 +412,7 @@ jobs:
           # Combine Inputs into a single JSON object
           COMBINED_JSON=$(jq -n \
             --argjson dbConfig "$FORMATTED_DB_CONFIG" \
+            --arg queryConfig "$QUERY_CONFIG" \
             --arg execTime "$EXEC_TIME" \
             --arg sourceInterval "$SOURCE_INTERVAL" \
             --arg enableCompression "$ENABLE_COMPRESSION" \
@@ -415,6 +422,7 @@ jobs:
             --argjson centerDnodeHosts "$CENTER_DNODE_HOSTS" \
             '{
               db_config: $dbConfig,
+              query_config: $queryConfig,
               exec_time: $execTime,
               source_interval: $sourceInterval,
               enable_compression: $enableCompression,
@@ -576,6 +584,7 @@ jobs:
           echo "🔄 Edge dnode count: ${{ github.event.inputs.edge-dnode-count }}"
           echo "🔄 Center dnode count: ${{ github.event.inputs.center-dnode-count }}"
           echo "🔄 DB config: ${{ github.event.inputs.db-config }}"
+          echo "🔄 Query config: ${{ github.event.inputs.query-config }}"
           echo "🔄 Exec time: ${{ github.event.inputs.exec-time }}"
           echo "🔄 Source interval: ${{ github.event.inputs.source-interval }}"
           echo "🔄 Enable compression: ${{ github.event.inputs.enable-compression }}"
