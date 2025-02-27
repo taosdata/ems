@@ -541,6 +541,7 @@ jobs:
               fi
               echo "MQTT_PUB_PATH=$mqtt_pub_path" >> $GITHUB_ENV
             rm -f /usr/bin/mqtt_pub && cp $mqtt_pub_path /usr/bin/mqtt_pub
+            chmod +x /usr/bin/mqtt_pub
             fractal_toml=$(find /root /opt -name fractal.toml 2>/dev/null | head -n 1)
               if [ -n "$fractal_toml" ]; then
                 echo "fractal.toml found at $fractal_toml"
