@@ -412,7 +412,7 @@ jobs:
           # Combine Inputs into a single JSON object
           COMBINED_JSON=$(jq -n \
             --argjson dbConfig "$FORMATTED_DB_CONFIG" \
-            --arg queryConfig "$QUERY_CONFIG" \
+            --argjson queryConfig "$QUERY_CONFIG" \
             --arg execTime "$EXEC_TIME" \
             --arg sourceInterval "$SOURCE_INTERVAL" \
             --arg enableCompression "$ENABLE_COMPRESSION" \
