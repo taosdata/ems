@@ -41,9 +41,9 @@ on:
         default: '300'
         type: string
       source-interval:
-        description: 'source-interval (unit: s)'
+        description: 'source-interval (unit: ms)'
         required: true
-        default: '1'
+        default: '1000'
         type: string
       enable-compression:
         description: 'enable-compression'
