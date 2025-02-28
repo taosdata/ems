@@ -592,7 +592,7 @@ jobs:
           echo "🔄 Test started at $(date)"
           echo "%PWD%: $PWD"
           test_start_time=$(date +"%Y%m%d_%H%M%S")
-          jq --arg test_start_time "$test_start_time" '. + {test_start_time: $test_start_time}' "~/TestNG/env/workflow_config.json" > tmp.json && mv tmp.json "~/TestNG/env/workflow_config.json"
+          jq --arg test_start_time "$test_start_time" '. + {test_start_time: $test_start_time}' ~/TestNG/env/workflow_config.json > tmp.json && mv tmp.json ~/TestNG/env/workflow_config.json
           taostest --convert-json=fractal-center.json
           taostest --convert-json=fractal-edge-1.json
           taostest --convert-json=fractal-edge-2.json
