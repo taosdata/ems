@@ -598,5 +598,7 @@ jobs:
           taostest --use=fractal-edge-1.yaml --case=customer_scenarios/fractal/fractal_edge.py --keep
           taostest --use=fractal-edge-2.yaml --case=customer_scenarios/fractal/fractal_edge.py --keep
           taostest --use=fractal-center.yaml --case=customer_scenarios/fractal/fractal_center.py --keep
+          taostest --use=fractal-query.yaml --case=customer_scenarios/fractal/fractal_query.py --keep
+          sleep ${{ github.event.inputs.exec-time }}
           echo "🔄 Test finished at $(date)"
 
