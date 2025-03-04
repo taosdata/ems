@@ -63,7 +63,7 @@ jobs:
     name: Select Target Runners
     runs-on: ubuntu-latest
     outputs:
-      runner_list: ${{ steps.get-runners.outputs.SELECTED_RUNNERS }}
+      runner_list: ${{ steps.get-runners.outputs.runners }}
     steps:
       - name: Checkout customer-scenarios
         uses: actions/checkout@v4
@@ -85,11 +85,9 @@ jobs:
           required_count: 3
           gh_token: ${{ secrets.RUNNER_PAT }}
 
-      - name: test
-        run: |
-          echo "----selected runners--- $SELECTED_RUNNERS"
-          echo "outputs.SELECTED_RUNNERS::::::::${{ steps.get-runners.outputs.SELECTED_RUNNERS }}"
-
+      # - name: Output Selected Runners
+      #   run: |
+      #     echo "SELECTED_RUNNERS="$SELECTED_RUNNERS"" >> $GITHUB_OUTPUT
 
   deploy-services:
     name: Deploy to Selected Runners
