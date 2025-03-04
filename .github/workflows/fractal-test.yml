@@ -11,7 +11,7 @@ on:
       edge-dnode-count:
         description: 'edge-dnode-count (1~N)'
         required: true
-        default: "1"
+        default: "2"
         type: choice
         options:
           - 1
@@ -19,7 +19,7 @@ on:
       center-dnode-count:
         description: 'center-dnode-count (1~N)'
         required: true
-        default: "1"
+        default: "3"
         type: choice
         options:
           - 1
@@ -59,555 +59,585 @@ permissions:
   contents: read
 
 jobs:
-  filter-runners:
+  select-runners:
+    name: Select Target Runners
     runs-on: ubuntu-latest
     outputs:
-      runners: ${{ steps.get-runners.outputs.matrix}}
-      td_runners: ${{ steps.get-runners.outputs.td_matrix}}
-      taostest_runners: ${{ steps.get-runners.outputs.taostest_matrix}}
-      runner_names: ${{ steps.get-runners.outputs.names}}
-      td_runner_names: ${{ steps.get-runners.outputs.td_names}}
-      taostest_runner_names: ${{ steps.get-runners.outputs.taostest_names}}
+      runner_list: ${{ steps.get-runners.outputs.SELECTED_RUNNERS }}
     steps:
-      - name: Checkout code
+      - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: Get Available Runners
-        env:
-          GITHUB_TOKEN: ${{ secrets.RUNNER_PAT }}
+      - name: Get Runners from Repo B
         id: get-runners
-        run: |
-          set -euo pipefail
-          echo "Fetching available runners..."
-          response_file=$(mktemp)
-          gh api /orgs/${{ github.repository_owner }}/actions/runners \
-            --paginate \
-            --jq '.runners' > "$response_file"
-
-          # set dnode_count
-          edge_dnode_count=${{ github.event.inputs.edge-dnode-count }}
-          center_dnode_count=${{ github.event.inputs.center-dnode-count }}
-
-          filter_and_format() {
-            local count=$1
-            local label1=$2
-            local label2=$3
-
-            jq -c --argjson count "$count" --arg label1 "$label1" --arg label2 "$label2" '
-              map(
-                select(
-                  .labels |
-                  (map(.name) | index($label1)) != null and
-                  (map(.name) | index($label2)) != null
-                )
-                | {
-                    name,
-                    group: (
-                      if .labels | map(.name) | index("fractal") != null then "customers"
-                      else "default"
-                      end
-                    ),
-                    labels: (
-                      .labels | map(.name) | join(", ") |
-                      split(", ") |
-                      map(select(. != "")) |
-                      ["self-hosted", "Linux", "X64"] + .
-                    )
-                  }
-              )[:$count]
-            ' "$response_file"
-          }
-          # filter_and_format "$edge_dnode_count" "fractal" "mqtt"
-          filtered_taostest_runners=$(filter_and_format "1" "fractal" "taostest")
-          filtered_mqtt_runners=$(filter_and_format "$edge_dnode_count" "fractal" "mqtt")
-          filtered_edge_runners=$(filter_and_format "$edge_dnode_count" "fractal" "edge_td")
-          filtered_center_runners=$(filter_and_format "$center_dnode_count" "fractal" "center_td")
-
-          echo "✅ Selected runners with formatted labels:"
-          echo "$filtered_taostest_runners"
-          echo "$filtered_mqtt_runners"
-          echo "$filtered_edge_runners"
-          echo "$filtered_center_runners"
-
-          # All runners
-          filtered_runners=$(jq -s '[.[][]]' <(echo "$filtered_taostest_runners") <(echo "$filtered_mqtt_runners") <(echo "$filtered_edge_runners") <(echo "$filtered_center_runners"))
-          echo "✅ Selected runners with formatted labels:"
-          echo "$filtered_runners"
-
-          # TDengine runners
-          td_runners=$(jq -s '[.[][]]' <(echo "$filtered_taostest_runners") <(echo "$filtered_edge_runners") <(echo "$filtered_center_runners"))
-          echo "✅ Selected td-runners with formatted labels:"
-          echo "$td_runners"
-
-          # Taostest runners
-          taostest_runners=$(jq -s '[.[][]]' <(echo "$filtered_taostest_runners"))
-          echo "✅ Selected taostest-runners with formatted labels:"
-          echo "$taostest_runners"
-
-          # make sure filtered_runners is a valid JSON array
-          if [ -z "$filtered_runners" ]; then
-            echo "No runners found. Setting empty matrix."
-            echo "matrix=[]" >> $GITHUB_OUTPUT
-            echo "names=[]" >> $GITHUB_OUTPUT
-          else
-            echo "matrix="$filtered_runners"" >> $GITHUB_OUTPUT
-            names=$(echo "$filtered_runners" | jq -r '.[].name' | tr '\n' ',')
-            names=${names%,}
-            echo "names=${names}" >> $GITHUB_OUTPUT
-
-            echo "td_matrix="$td_runners"" >> $GITHUB_OUTPUT
-            td_runner_names=$(echo "$td_runners" | jq -r '.[].name' | tr '\n' ',')
-            td_runner_names=${td_runner_names%,}
-            echo "td_runner_names=${td_runner_names}" >> $GITHUB_OUTPUT
-
-            echo "taostest_matrix="$taostest_runners"" >> $GITHUB_OUTPUT
-            taostest_runner_names=$(echo "$taostest_runners" | jq -r '.[].name' | tr '\n' ',')
-            taostest_runner_names=${taostest_runner_names%,}
-            echo "taostest_runner_names=${taostest_runner_names}" >> $GITHUB_OUTPUT
-          fi
-
-  upload-hosts-info:
-    needs: filter-runners
-
-    strategy:
-      matrix:
-        runner: ${{ fromJson(needs.filter-runners.outputs.runners || '[]') }}
-    runs-on:
-      group: ${{ matrix.runner.group }}
-      labels: ${{ matrix.runner.labels }}
-    steps:
-      - name: Print Runner Info
-        run: |
-          echo "🔄 Running on group: ${{ matrix.runner.group }}"
-          echo "🔄 Name: ${{ matrix.runner.name }}"
-
-      - name: Get IP and Hostname
-        id: get-ip-hostname
-        run: |
-          echo "🔄 Getting IP and hostname for the runner..."
-
-          # Get IP and hostname
-          ip=$(hostname -I | awk '{print $1}')
-          hostname=$(hostname)
-
-          echo "IP: $ip"
-          echo "Hostname: $hostname"
-
-          # Save IP and hostname to a file
-          echo "$ip $hostname" > ip_hostname_${{ matrix.runner.name }}.txt
-
-      - name: Upload IP and Hostname Info
-        uses: actions/upload-artifact@v4
+        uses: taosdata/.github/.github/actions/get-runners@test/fractal
         with:
-          name: ip_hostname_${{ matrix.runner.name }}
-          path: ip_hostname_${{ matrix.runner.name }}.txt
-
-  combine-and-update-hosts:
-    needs:
-      - upload-hosts-info
-      - filter-runners
-    strategy:
-      matrix:
-        runner: ${{ fromJson(needs.filter-runners.outputs.runners || '[]') }}
-    runs-on:
-      group: ${{ matrix.runner.group }}
-      labels: ${{ matrix.runner.labels }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install GitHub CLI
-        shell: bash
-        run: |
-          echo "🔄 Installing GitHub CLI..."
-          sudo apt-get update
-          sudo apt-get install gh -y
-
-      - name: Authenticate GitHub CLI
-        run: |
-          echo "🔄 Authenticating GitHub CLI..."
-          echo "${{ secrets.RUNNER_PAT }}" | gh auth login --with-token
-
-      - name: Download IP and Hostname Info
-        run: |
-          echo "🔄 Downloading IP and hostname info for each runner..."
-          runner_name=${{ needs.filter-runners.outputs.runner_names }}
-          echo "Runner Name: $runner_name"
-          IFS=',' read -r -a names_array <<< "$runner_name"
-          echo "Extracted names: $names_array"
-          for name in "${names_array[@]}"; do
-            echo "Downloading artifact for runner: $name"
-            gh run download $GITHUB_RUN_ID --name "ip_hostname_$name" --dir ip_hostname
-          done
-
-      - name: Combine IP and Hostname Info In Each Runner
-        run: |
-          echo "🔄 Combining IP and hostname info..."
-
-          # Read all files in the ip_hostname directory and combine them
-          ip_hostname_info=$(cat ip_hostname/*.txt | sort | uniq)
-
-          # Save the combined IP and hostname info to an environment variable
-          echo "ip_hostname_info<<EOF" >> $GITHUB_ENV
-          echo -e "$ip_hostname_info" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
-      - name: Update /etc/hosts In Each Runner
-        run: |
-          echo "🔄 Updating /etc/hosts..."
-
-          while IFS= read -r line; do
-            # Check if the line already exists in /etc/hosts
-            if ! grep -Fxq "$line" /etc/hosts; then
-              # Append the line to /etc/hosts if it doesn't exist
-              echo "$line" | sudo tee -a /etc/hosts
-            else
-              echo "✅ Skipping (already exists): $line"
-            fi
-          done <<< "$ip_hostname_info"
-
-          echo "✅ Updated /etc/hosts with runner IPs and hostnames:"
-          cat /etc/hosts
-
-  install-tdengine-nodes:
-    needs:
-     - combine-and-update-hosts
-     - filter-runners
-    strategy:
-      matrix:
-        runner: ${{ fromJson(needs.filter-runners.outputs.td_runners || '[]') }}
-    runs-on:
-      group: ${{ matrix.runner.group }}
-      labels: ${{ matrix.runner.labels }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Print Runner Info
-        run: |
-          echo "🔄 Running on group: ${{ matrix.runner.group }}"
-          echo "🔄 Name: ${{ matrix.runner.name }}"
-
-      # - name: Install TDengine Enterprise
-      #   uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
-      #   with:
-      #     version: ${{ github.event.inputs.td-version }}
-      #     download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
-
-      - name: Install Node Exporter In TDengine Nodes
-        uses: taosdata/.github/.github/actions/install-node-exporter@test/fractal
-
-      - name: Install Process Exporter In TDengine Nodes
-        uses: taosdata/.github/.github/actions/install-process-exporter@test/fractal
-
-      - name: Config Process Exporter YAML In TDengine Nodes
-        uses: taosdata/.github/.github/actions/config-process-exporter-yml@test/fractal
-        with:
-          yml_file_path: "/etc/process_exporter.yml"
-          process_names: "taosd,taosadapter"
-
-  deploy-taostest-node:
-    needs:
-     - combine-and-update-hosts
-     - filter-runners
-    strategy:
-      matrix:
-        runner: ${{ fromJson(needs.filter-runners.outputs.taostest_runners || '[]') }}
-    runs-on:
-      group: ${{ matrix.runner.group }}
-      labels: ${{ matrix.runner.labels }}
-    steps:
-      - name: Print Runner Info
-        run: |
-          echo "🔄 Running on group: ${{ matrix.runner.group }}"
-          echo "🔄 Name: ${{ matrix.runner.name }}"
-
-      - name: Deploy Taostest And TestNG
-        id: deploy-taostest-testng
-        uses: taosdata/.github/.github/actions/deploy-taostest-testng@test/fractal
-        with:
-          res_app_id: ${{ vars.TAOSDATA_BOT_ID }}
-          res_app_key: ${{ secrets.TAOSDATA_BOT_KEY }}
-          taostest-branch: "feat/TD-33672"
-          testng-branch: "test/TD-33672"
-
-      - name: Install TDengine Enterprise
-        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
-        with:
-            version: ${{ github.event.inputs.td-version }}
-            download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
-
-      - name: Install Grafana In Taostest Node
-        uses: taosdata/.github/.github/actions/install-grafana@test/fractal
-
-      - name: Install Prometheus In Taostest Node
-        uses: taosdata/.github/.github/actions/install-prometheus@test/fractal
-
-      - name: Install Node Exporter In Taostest Node
-        uses: taosdata/.github/.github/actions/install-node-exporter@test/fractal
-
-      - name: Install Process Exporter In Taostest Node
-        uses: taosdata/.github/.github/actions/install-process-exporter@test/fractal
-
-      - name: Config Process Exporter YAML In Taostest Node
-        uses: taosdata/.github/.github/actions/config-process-exporter-yml@test/fractal
-        with:
-          yml_file_path: "/etc/process_exporter.yml"
-          process_names: "taosBenchmark,taos,taostest"
-
-      - name: Authenticate GitHub CLI
-        run: |
-          echo "🔄 Authenticating GitHub CLI..."
-          echo "${{ secrets.RUNNER_PAT }}" | gh auth login --with-token
-
-      - name: Download IP and Hostname Info
-        run: |
-          echo "🔄 Downloading IP and hostname info for each runner..."
-          runner_name=${{ needs.filter-runners.outputs.runner_names }}
-          echo "Runner Name: $runner_name"
-          IFS=',' read -r -a names_array <<< "$runner_name"
-          echo "Extracted names: $names_array"
-          for name in "${names_array[@]}"; do
-            echo "Downloading artifact for runner: $name"
-            gh run download $GITHUB_RUN_ID --name "ip_hostname_$name" --dir ip_hostname
-          done
-
-      - name: Gen Taostest Hosts
-        id: gen_taostest_env
-        uses: taosdata/.github/.github/actions/gen-taostest-env@test/fractal
-
-      - name: Print Taostest Hosts
-        run: |
-          echo "Test In Workflow 1"
-          echo "MQTT Hosts: $MQTT_HOSTS"
-          echo "Single Dnode Hosts: $SINGLE_DNODE_HOSTS"
-          echo "Taos Benchmark Hosts: $TAOS_BENCHMARK_HOSTS"
-          echo "Cluster Hosts: $CLUSTER_HOSTS"
-
-      - name: Get Hosts
-        run: |
-          echo "🔄 Get Hosts..."
-
-          # Read all files in the ip_hostname directory and combine them
-          hostname_info=$(cat ip_hostname/*.txt | awk '{print $2}' | sort | uniq | tr '\n' ',')
-          hostname_info=${hostname_info%,}
-          echo "hostname_info=$hostname_info" >> $GITHUB_ENV
-          # TODO CONFIRM
-          echo "TEST_ROOT: ${{ steps.deploy-taostest-testng.outputs.test_root }}"
-
-      - name: Create combined JSON file From Inputs
-        run: |
-          # Get Inputs
-          DB_CONFIG="${{ github.event.inputs.db-config }}"
-          QUERY_CONFIG="${{ github.event.inputs.query-config }}"
-          EXEC_TIME="${{ github.event.inputs.exec-time }}"
-          SOURCE_INTERVAL="${{ github.event.inputs.source-interval }}"
-          ENABLE_COMPRESSION="${{ github.event.inputs.enable-compression }}"
-          MQTT_HOSTS=$MQTT_HOSTS
-          EDGE_DNODE_HOSTS=$SINGLE_DNODE_HOSTS
-          TAOS_BENCHMARK_HOSTS=$TAOS_BENCHMARK_HOSTS
-          CENTER_DNODE_HOSTS=$CLUSTER_HOSTS
-          FORMATTED_DB_CONFIG=$(echo "$DB_CONFIG" | sed -E 's/([a-zA-Z_][a-zA-Z0-9_]*)/"\1"/g; s/:/:/g')
-          FORMATTED_QUERY_CONFIG=$(echo "$QUERY_CONFIG" | sed -E 's/([a-zA-Z_][a-zA-Z0-9_]*)/"\1"/g; s/:/:/g')
-
-          # Combine Inputs into a single JSON object
-          COMBINED_JSON=$(jq -n \
-            --argjson dbConfig "$FORMATTED_DB_CONFIG" \
-            --argjson queryConfig "$FORMATTED_QUERY_CONFIG" \
-            --arg execTime "$EXEC_TIME" \
-            --arg sourceInterval "$SOURCE_INTERVAL" \
-            --arg enableCompression "$ENABLE_COMPRESSION" \
-            --argjson mqttHosts "$MQTT_HOSTS" \
-            --argjson edgeDnodeHosts "$EDGE_DNODE_HOSTS" \
-            --argjson taosBenchmarkHosts "$TAOS_BENCHMARK_HOSTS" \
-            --argjson centerDnodeHosts "$CENTER_DNODE_HOSTS" \
-            '{
-              db_config: $dbConfig,
-              query_config: $queryConfig,
-              exec_time: $execTime,
-              source_interval: $sourceInterval,
-              enable_compression: $enableCompression,
-              mqtt_hosts: $mqttHosts,
-              edge_dnode_hosts: $edgeDnodeHosts,
-              taos_benchmark_hosts: $taosBenchmarkHosts,
-              center_dnode_hosts: $centerDnodeHosts
-            }')
-
-          # COMBINED_JSON=$(jq -n --argjson dbConfig "$FORMATTED_DB_CONFIG" --arg execTime "$EXEC_TIME" '{db_config: $dbConfig, exec_time: $execTime}')
-          # COMBINED_JSON=$(jq -n --argjson dbConfig "$FORMATTED_DB_CONFIG" '{db_config: $dbConfig}')
-
-          # Write to File
-          echo "$COMBINED_JSON" > workflow_config.json
-
-          # Print File
-          cat workflow_config.json
-
-      - name: Copy Json To TestNG Env
-        run: |
-          echo "🔄 Copy Json To TestNG Env..."
-          cp *.json ~/TestNG/env
-
-      - name: Configure SSH-Keyless Login
-        uses: taosdata/.github/.github/actions/ssh-keyless-login@test/fractal
-        with:
-          target_hosts: ${{ env.hostname_info }}
-          password: ${{ secrets.VM_PASSWD }}
-
-      - name: Config Prometheus YAML
-        uses: taosdata/.github/.github/actions/config-prometheus-yml@test/fractal
-        with:
-          yml_file_path: "/etc/prometheus/prometheus.yml"
-          node_exporter_hosts: ${{ env.hostname_info }}
-          process_exporter_hosts: ${{ env.hostname_info }}
-
-  set-runners:
+          include_labels: "20C16G"
+          required_count: 3
+          gh_token: ${{ secrets.RUNNER_PAT }}
+  deploy-services:
+    name: Deploy to Selected Runners
+    needs: select-runners
     runs-on: ubuntu-latest
-    outputs:
-      runner_combinations: ${{ steps.set-runner-combinations.outputs.runner_combinations }}
-    steps:
-      - name: Set Runner Combinations
-        id: set-runner-combinations
-        run: |
-            echo "Setting Runner Combinations"
-            # 生成 mqtt-client 和 fractal-edge 的标签数组
-            mqtt_client=$(seq 1 ${{github.event.inputs.edge-dnode-count}} | sed 's/^/mqtt-client/')
-            fractal_edge=$(seq 1 ${{github.event.inputs.edge-dnode-count}} | sed 's/^/fractal-edge-/')
-
-            mqtt_json=$(echo "$mqtt_client" | jq -R -s -c 'split("\n")[:-1]')  # 去除末尾空元素
-            fractal_json=$(echo "$fractal_edge" | jq -R -s -c 'split("\n")[:-1]')
-
-            combinations=$(jq -n --argjson a "$mqtt_json" --argjson b "$fractal_json" '$a | to_entries | map({ mqtt_client: .value, fractal_edge: $b[.key] })'| jq -c .)
-            echo "Generated combinations: $combinations"
-            echo "::set-output name=runner_combinations::$combinations"
-  deploy-fractal-edge:
-    needs:
-      - set-runners
-      - deploy-taostest-node
     strategy:
       matrix:
-        combination: ${{ fromJSON(needs.set-runners.outputs.runner_combinations) }}
-
-    runs-on:
-      group: customers
-      labels:
-        - self-hosted
-        - Linux
-        - X64
-        - edge_td
-        - fractal
-        - ${{ matrix.combination.fractal_edge }}
-    outputs:
-      fractal_ip: ${{ steps.get-ip.outputs.local_ip }}
+        runner: ${{ fromJSON(needs.select-runners.outputs.runner_list) }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install Flashmq
-        uses: taosdata/.github/.github/actions/install-flashmq@main
-
-      - name: Get IP Addresses
-        id: get-ip
+      - name: Deploy to ${{ matrix.runner }}
+        env:
+          TARGET_RUNNER: ${{ matrix.runner }}
         run: |
-          local_ip=$(hostname -I | awk '{print $1}')
-          echo "Local IP Address: $local_ip"
-          echo "$local_ip" > ${{ matrix.combination.fractal_edge }}.txt
+          echo "Deploying to $TARGET_RUNNER"
+          echo "pwd is : $PWD"
+  # filter-runners:
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     runners: ${{ steps.get-runners.outputs.matrix}}
+  #     td_runners: ${{ steps.get-runners.outputs.td_matrix}}
+  #     taostest_runners: ${{ steps.get-runners.outputs.taostest_matrix}}
+  #     runner_names: ${{ steps.get-runners.outputs.names}}
+  #     td_runner_names: ${{ steps.get-runners.outputs.td_names}}
+  #     taostest_runner_names: ${{ steps.get-runners.outputs.taostest_names}}
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
 
-      - name: Upload IP Address as Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.combination.fractal_edge }}-ip
-          path: ${{ matrix.combination.fractal_edge }}.txt
+  #     - name: Get Available Runners
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.RUNNER_PAT }}
+  #       id: get-runners
+  #       run: |
+  #         set -euo pipefail
+  #         echo "Fetching available runners..."
+  #         response_file=$(mktemp)
+  #         gh api /orgs/${{ github.repository_owner }}/actions/runners \
+  #           --paginate \
+  #           --jq '.runners' > "$response_file"
 
-  deploy-mqtt-client:
-    needs: [set-runners,deploy-fractal-edge]
-    strategy:
-      matrix:
-        combination: ${{ fromJSON(needs.set-runners.outputs.runner_combinations) }}
-    runs-on:
-      group: customers
-      labels:
-        - self-hosted
-        - Linux
-        - X64
-        - fractal
-        - ${{ matrix.combination.mqtt_client }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  #         # set dnode_count
+  #         edge_dnode_count=${{ github.event.inputs.edge-dnode-count }}
+  #         center_dnode_count=${{ github.event.inputs.center-dnode-count }}
 
-      - name: Install MQTT CLI
-        uses: taosdata/.github/.github/actions/install-mqtt-simulator@main
-        with:
-          nas_public_url: ${{ secrets.nas_download_url }}
+  #         filter_and_format() {
+  #           local count=$1
+  #           local label1=$2
+  #           local label2=$3
 
-      - name: Find mqtt_pub binary and fractal toml
-        run: |
-            mqtt_pub_path=$(find /root /opt -name mqtt_pub 2>/dev/null | head -n 1)
-              if [ -n "$mqtt_pub_path" ]; then
-                echo "mqtt_pub found at $mqtt_pub_path"
-              else
-                echo "mqtt_pub not found"
-              fi
-              echo "MQTT_PUB_PATH=$mqtt_pub_path" >> $GITHUB_ENV
-            rm -f /usr/bin/mqtt_pub && cp $mqtt_pub_path /usr/bin/mqtt_pub
-            chmod +x /usr/bin/mqtt_pub
-            fractal_toml=$(find /root /opt -name fractal.toml 2>/dev/null | head -n 1)
-              if [ -n "$fractal_toml" ]; then
-                echo "fractal.toml found at $fractal_toml"
-              else
-                echo "fractal.toml not found"
-              fi
-              echo "FRACTAL_TOML=$fractal_toml" >> $GITHUB_ENV
-            rm -f /etc/taos/test.toml && mkdir -p /etc/taos && cp $fractal_toml /etc/taos/test.toml
-        shell: bash
-      - name: Download IP Address Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ matrix.combination.fractal_edge }}-ip
-          path: ./ip_artifacts
-  run-test:
-    # needs: [filter-runners, deploy-taostest-node, deploy-fractal-edge, deploy-mqtt-client, install-tdengine-nodes]
-    needs: [filter-runners, deploy-taostest-node, deploy-fractal-edge, install-tdengine-nodes,deploy-mqtt-client]
-    strategy:
-      matrix:
-        runner: ${{ fromJson(needs.filter-runners.outputs.taostest_runners || '[]') }}
-    runs-on:
-      group: ${{ matrix.runner.group }}
-      labels: ${{ matrix.runner.labels }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  #           jq -c --argjson count "$count" --arg label1 "$label1" --arg label2 "$label2" '
+  #             map(
+  #               select(
+  #                 .labels |
+  #                 (map(.name) | index($label1)) != null and
+  #                 (map(.name) | index($label2)) != null
+  #               )
+  #               | {
+  #                   name,
+  #                   group: (
+  #                     if .labels | map(.name) | index("fractal") != null then "customers"
+  #                     else "default"
+  #                     end
+  #                   ),
+  #                   labels: (
+  #                     .labels | map(.name) | join(", ") |
+  #                     split(", ") |
+  #                     map(select(. != "")) |
+  #                     ["self-hosted", "Linux", "X64"] + .
+  #                   )
+  #                 }
+  #             )[:$count]
+  #           ' "$response_file"
+  #         }
+  #         # filter_and_format "$edge_dnode_count" "fractal" "mqtt"
+  #         filtered_taostest_runners=$(filter_and_format "1" "fractal" "taostest")
+  #         filtered_mqtt_runners=$(filter_and_format "$edge_dnode_count" "fractal" "mqtt")
+  #         filtered_edge_runners=$(filter_and_format "$edge_dnode_count" "fractal" "edge_td")
+  #         filtered_center_runners=$(filter_and_format "$center_dnode_count" "fractal" "center_td")
 
-      - name: Run Test
-        run: |
-          echo "🔄 Running test..."
-          echo "🔄 Test version: ${{ github.event.inputs.td-version }}"
-          echo "🔄 Edge dnode count: ${{ github.event.inputs.edge-dnode-count }}"
-          echo "🔄 Center dnode count: ${{ github.event.inputs.center-dnode-count }}"
-          echo "🔄 DB config: ${{ github.event.inputs.db-config }}"
-          echo "🔄 Query config: ${{ github.event.inputs.query-config }}"
-          echo "🔄 Exec time: ${{ github.event.inputs.exec-time }}"
-          echo "🔄 Source interval: ${{ github.event.inputs.source-interval }}"
-          echo "🔄 Enable compression: ${{ github.event.inputs.enable-compression }}"
-          echo "🔄 Test started at $(date)"
-          echo "%PWD%: $PWD"
-          test_start_time=$(date +"%Y%m%d_%H%M%S")
-          jq --arg test_start_time "$test_start_time" '. + {test_start_time: $test_start_time}' /root/TestNG/env/workflow_config.json > tmp.json && mv tmp.json /root/TestNG/env/workflow_config.json
-          taostest --convert-json=fractal-center.json
-          taostest --convert-json=fractal-edge-1.json
-          taostest --convert-json=fractal-edge-2.json
-          taostest --setup=fractal-center.yaml --case=customer_scenarios/fractal/start.py --keep
-          taostest --setup=fractal-edge-1.yaml --case=customer_scenarios/fractal/start.py --keep
-          taostest --setup=fractal-edge-2.yaml --case=customer_scenarios/fractal/start.py --keep
-          taostest --use=fractal-edge-1.yaml --case=customer_scenarios/fractal/fractal_edge.py --keep
-          taostest --use=fractal-edge-2.yaml --case=customer_scenarios/fractal/fractal_edge.py --keep
-          sleep 60
-          taostest --use=fractal-center.yaml --case=customer_scenarios/fractal/fractal_center.py --keep
-          taostest --use=fractal-query.yaml --case=customer_scenarios/fractal/fractal_query.py --keep
-          sleep ${{ github.event.inputs.exec-time }}
-          taostest --use=fractal-edge-1.yaml --case=customer_scenarios/fractal/stop.py --keep
-          taostest --use=fractal-edge-2.yaml --case=customer_scenarios/fractal/stop.py --keep
-          taostest --use=fractal-center.yaml --case=customer_scenarios/fractal/stop.py --keep
-          taostest --use=fractal-query.yaml --case=customer_scenarios/fractal/fractal_summary.py --keep
-          echo "🔄 Test finished at $(date)"
+  #         echo "✅ Selected runners with formatted labels:"
+  #         echo "$filtered_taostest_runners"
+  #         echo "$filtered_mqtt_runners"
+  #         echo "$filtered_edge_runners"
+  #         echo "$filtered_center_runners"
+
+  #         # All runners
+  #         filtered_runners=$(jq -s '[.[][]]' <(echo "$filtered_taostest_runners") <(echo "$filtered_mqtt_runners") <(echo "$filtered_edge_runners") <(echo "$filtered_center_runners"))
+  #         echo "✅ Selected runners with formatted labels:"
+  #         echo "$filtered_runners"
+
+  #         # TDengine runners
+  #         td_runners=$(jq -s '[.[][]]' <(echo "$filtered_taostest_runners") <(echo "$filtered_edge_runners") <(echo "$filtered_center_runners"))
+  #         echo "✅ Selected td-runners with formatted labels:"
+  #         echo "$td_runners"
+
+  #         # Taostest runners
+  #         taostest_runners=$(jq -s '[.[][]]' <(echo "$filtered_taostest_runners"))
+  #         echo "✅ Selected taostest-runners with formatted labels:"
+  #         echo "$taostest_runners"
+
+  #         # make sure filtered_runners is a valid JSON array
+  #         if [ -z "$filtered_runners" ]; then
+  #           echo "No runners found. Setting empty matrix."
+  #           echo "matrix=[]" >> $GITHUB_OUTPUT
+  #           echo "names=[]" >> $GITHUB_OUTPUT
+  #         else
+  #           echo "matrix="$filtered_runners"" >> $GITHUB_OUTPUT
+  #           names=$(echo "$filtered_runners" | jq -r '.[].name' | tr '\n' ',')
+  #           names=${names%,}
+  #           echo "names=${names}" >> $GITHUB_OUTPUT
+
+  #           echo "td_matrix="$td_runners"" >> $GITHUB_OUTPUT
+  #           td_runner_names=$(echo "$td_runners" | jq -r '.[].name' | tr '\n' ',')
+  #           td_runner_names=${td_runner_names%,}
+  #           echo "td_runner_names=${td_runner_names}" >> $GITHUB_OUTPUT
+
+  #           echo "taostest_matrix="$taostest_runners"" >> $GITHUB_OUTPUT
+  #           taostest_runner_names=$(echo "$taostest_runners" | jq -r '.[].name' | tr '\n' ',')
+  #           taostest_runner_names=${taostest_runner_names%,}
+  #           echo "taostest_runner_names=${taostest_runner_names}" >> $GITHUB_OUTPUT
+  #         fi
+
+  # upload-hosts-info:
+  #   needs: filter-runners
+
+  #   strategy:
+  #     matrix:
+  #       runner: ${{ fromJson(needs.filter-runners.outputs.runners || '[]') }}
+  #   runs-on:
+  #     group: ${{ matrix.runner.group }}
+  #     labels: ${{ matrix.runner.labels }}
+  #   steps:
+  #     - name: Print Runner Info
+  #       run: |
+  #         echo "🔄 Running on group: ${{ matrix.runner.group }}"
+  #         echo "🔄 Name: ${{ matrix.runner.name }}"
+
+  #     - name: Get IP and Hostname
+  #       id: get-ip-hostname
+  #       run: |
+  #         echo "🔄 Getting IP and hostname for the runner..."
+
+  #         # Get IP and hostname
+  #         ip=$(hostname -I | awk '{print $1}')
+  #         hostname=$(hostname)
+
+  #         echo "IP: $ip"
+  #         echo "Hostname: $hostname"
+
+  #         # Save IP and hostname to a file
+  #         echo "$ip $hostname" > ip_hostname_${{ matrix.runner.name }}.txt
+
+  #     - name: Upload IP and Hostname Info
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: ip_hostname_${{ matrix.runner.name }}
+  #         path: ip_hostname_${{ matrix.runner.name }}.txt
+
+  # combine-and-update-hosts:
+  #   needs:
+  #     - upload-hosts-info
+  #     - filter-runners
+  #   strategy:
+  #     matrix:
+  #       runner: ${{ fromJson(needs.filter-runners.outputs.runners || '[]') }}
+  #   runs-on:
+  #     group: ${{ matrix.runner.group }}
+  #     labels: ${{ matrix.runner.labels }}
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Install GitHub CLI
+  #       shell: bash
+  #       run: |
+  #         echo "🔄 Installing GitHub CLI..."
+  #         sudo apt-get update
+  #         sudo apt-get install gh -y
+
+  #     - name: Authenticate GitHub CLI
+  #       run: |
+  #         echo "🔄 Authenticating GitHub CLI..."
+  #         echo "${{ secrets.RUNNER_PAT }}" | gh auth login --with-token
+
+  #     - name: Download IP and Hostname Info
+  #       run: |
+  #         echo "🔄 Downloading IP and hostname info for each runner..."
+  #         runner_name=${{ needs.filter-runners.outputs.runner_names }}
+  #         echo "Runner Name: $runner_name"
+  #         IFS=',' read -r -a names_array <<< "$runner_name"
+  #         echo "Extracted names: $names_array"
+  #         for name in "${names_array[@]}"; do
+  #           echo "Downloading artifact for runner: $name"
+  #           gh run download $GITHUB_RUN_ID --name "ip_hostname_$name" --dir ip_hostname
+  #         done
+
+  #     - name: Combine IP and Hostname Info In Each Runner
+  #       run: |
+  #         echo "🔄 Combining IP and hostname info..."
+
+  #         # Read all files in the ip_hostname directory and combine them
+  #         ip_hostname_info=$(cat ip_hostname/*.txt | sort | uniq)
+
+  #         # Save the combined IP and hostname info to an environment variable
+  #         echo "ip_hostname_info<<EOF" >> $GITHUB_ENV
+  #         echo -e "$ip_hostname_info" >> $GITHUB_ENV
+  #         echo "EOF" >> $GITHUB_ENV
+
+  #     - name: Update /etc/hosts In Each Runner
+  #       run: |
+  #         echo "🔄 Updating /etc/hosts..."
+
+  #         while IFS= read -r line; do
+  #           # Check if the line already exists in /etc/hosts
+  #           if ! grep -Fxq "$line" /etc/hosts; then
+  #             # Append the line to /etc/hosts if it doesn't exist
+  #             echo "$line" | sudo tee -a /etc/hosts
+  #           else
+  #             echo "✅ Skipping (already exists): $line"
+  #           fi
+  #         done <<< "$ip_hostname_info"
+
+  #         echo "✅ Updated /etc/hosts with runner IPs and hostnames:"
+  #         cat /etc/hosts
+
+  # install-tdengine-nodes:
+  #   needs:
+  #    - combine-and-update-hosts
+  #    - filter-runners
+  #   strategy:
+  #     matrix:
+  #       runner: ${{ fromJson(needs.filter-runners.outputs.td_runners || '[]') }}
+  #   runs-on:
+  #     group: ${{ matrix.runner.group }}
+  #     labels: ${{ matrix.runner.labels }}
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Print Runner Info
+  #       run: |
+  #         echo "🔄 Running on group: ${{ matrix.runner.group }}"
+  #         echo "🔄 Name: ${{ matrix.runner.name }}"
+
+  #     # - name: Install TDengine Enterprise
+  #     #   uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
+  #     #   with:
+  #     #     version: ${{ github.event.inputs.td-version }}
+  #     #     download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
+
+  #     - name: Install Node Exporter In TDengine Nodes
+  #       uses: taosdata/.github/.github/actions/install-node-exporter@test/fractal
+
+  #     - name: Install Process Exporter In TDengine Nodes
+  #       uses: taosdata/.github/.github/actions/install-process-exporter@test/fractal
+
+  #     - name: Config Process Exporter YAML In TDengine Nodes
+  #       uses: taosdata/.github/.github/actions/config-process-exporter-yml@test/fractal
+  #       with:
+  #         yml_file_path: "/etc/process_exporter.yml"
+  #         process_names: "taosd,taosadapter"
+
+  # deploy-taostest-node:
+  #   needs:
+  #    - combine-and-update-hosts
+  #    - filter-runners
+  #   strategy:
+  #     matrix:
+  #       runner: ${{ fromJson(needs.filter-runners.outputs.taostest_runners || '[]') }}
+  #   runs-on:
+  #     group: ${{ matrix.runner.group }}
+  #     labels: ${{ matrix.runner.labels }}
+  #   steps:
+  #     - name: Print Runner Info
+  #       run: |
+  #         echo "🔄 Running on group: ${{ matrix.runner.group }}"
+  #         echo "🔄 Name: ${{ matrix.runner.name }}"
+
+  #     - name: Deploy Taostest And TestNG
+  #       id: deploy-taostest-testng
+  #       uses: taosdata/.github/.github/actions/deploy-taostest-testng@test/fractal
+  #       with:
+  #         res_app_id: ${{ vars.TAOSDATA_BOT_ID }}
+  #         res_app_key: ${{ secrets.TAOSDATA_BOT_KEY }}
+  #         taostest-branch: "feat/TD-33672"
+  #         testng-branch: "test/TD-33672"
+
+  #     - name: Install TDengine Enterprise
+  #       uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
+  #       with:
+  #           version: ${{ github.event.inputs.td-version }}
+  #           download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
+
+  #     - name: Install Grafana In Taostest Node
+  #       uses: taosdata/.github/.github/actions/install-grafana@test/fractal
+
+  #     - name: Install Prometheus In Taostest Node
+  #       uses: taosdata/.github/.github/actions/install-prometheus@test/fractal
+
+  #     - name: Install Node Exporter In Taostest Node
+  #       uses: taosdata/.github/.github/actions/install-node-exporter@test/fractal
+
+  #     - name: Install Process Exporter In Taostest Node
+  #       uses: taosdata/.github/.github/actions/install-process-exporter@test/fractal
+
+  #     - name: Config Process Exporter YAML In Taostest Node
+  #       uses: taosdata/.github/.github/actions/config-process-exporter-yml@test/fractal
+  #       with:
+  #         yml_file_path: "/etc/process_exporter.yml"
+  #         process_names: "taosBenchmark,taos,taostest"
+
+  #     - name: Authenticate GitHub CLI
+  #       run: |
+  #         echo "🔄 Authenticating GitHub CLI..."
+  #         echo "${{ secrets.RUNNER_PAT }}" | gh auth login --with-token
+
+  #     - name: Download IP and Hostname Info
+  #       run: |
+  #         echo "🔄 Downloading IP and hostname info for each runner..."
+  #         runner_name=${{ needs.filter-runners.outputs.runner_names }}
+  #         echo "Runner Name: $runner_name"
+  #         IFS=',' read -r -a names_array <<< "$runner_name"
+  #         echo "Extracted names: $names_array"
+  #         for name in "${names_array[@]}"; do
+  #           echo "Downloading artifact for runner: $name"
+  #           gh run download $GITHUB_RUN_ID --name "ip_hostname_$name" --dir ip_hostname
+  #         done
+
+  #     - name: Gen Taostest Hosts
+  #       id: gen_taostest_env
+  #       uses: taosdata/.github/.github/actions/gen-taostest-env@test/fractal
+
+  #     - name: Print Taostest Hosts
+  #       run: |
+  #         echo "Test In Workflow 1"
+  #         echo "MQTT Hosts: $MQTT_HOSTS"
+  #         echo "Single Dnode Hosts: $SINGLE_DNODE_HOSTS"
+  #         echo "Taos Benchmark Hosts: $TAOS_BENCHMARK_HOSTS"
+  #         echo "Cluster Hosts: $CLUSTER_HOSTS"
+
+  #     - name: Get Hosts
+  #       run: |
+  #         echo "🔄 Get Hosts..."
+
+  #         # Read all files in the ip_hostname directory and combine them
+  #         hostname_info=$(cat ip_hostname/*.txt | awk '{print $2}' | sort | uniq | tr '\n' ',')
+  #         hostname_info=${hostname_info%,}
+  #         echo "hostname_info=$hostname_info" >> $GITHUB_ENV
+  #         # TODO CONFIRM
+  #         echo "TEST_ROOT: ${{ steps.deploy-taostest-testng.outputs.test_root }}"
+
+  #     - name: Create combined JSON file From Inputs
+  #       run: |
+  #         # Get Inputs
+  #         DB_CONFIG="${{ github.event.inputs.db-config }}"
+  #         QUERY_CONFIG="${{ github.event.inputs.query-config }}"
+  #         EXEC_TIME="${{ github.event.inputs.exec-time }}"
+  #         SOURCE_INTERVAL="${{ github.event.inputs.source-interval }}"
+  #         ENABLE_COMPRESSION="${{ github.event.inputs.enable-compression }}"
+  #         MQTT_HOSTS=$MQTT_HOSTS
+  #         EDGE_DNODE_HOSTS=$SINGLE_DNODE_HOSTS
+  #         TAOS_BENCHMARK_HOSTS=$TAOS_BENCHMARK_HOSTS
+  #         CENTER_DNODE_HOSTS=$CLUSTER_HOSTS
+  #         FORMATTED_DB_CONFIG=$(echo "$DB_CONFIG" | sed -E 's/([a-zA-Z_][a-zA-Z0-9_]*)/"\1"/g; s/:/:/g')
+  #         FORMATTED_QUERY_CONFIG=$(echo "$QUERY_CONFIG" | sed -E 's/([a-zA-Z_][a-zA-Z0-9_]*)/"\1"/g; s/:/:/g')
+
+  #         # Combine Inputs into a single JSON object
+  #         COMBINED_JSON=$(jq -n \
+  #           --argjson dbConfig "$FORMATTED_DB_CONFIG" \
+  #           --argjson queryConfig "$FORMATTED_QUERY_CONFIG" \
+  #           --arg execTime "$EXEC_TIME" \
+  #           --arg sourceInterval "$SOURCE_INTERVAL" \
+  #           --arg enableCompression "$ENABLE_COMPRESSION" \
+  #           --argjson mqttHosts "$MQTT_HOSTS" \
+  #           --argjson edgeDnodeHosts "$EDGE_DNODE_HOSTS" \
+  #           --argjson taosBenchmarkHosts "$TAOS_BENCHMARK_HOSTS" \
+  #           --argjson centerDnodeHosts "$CENTER_DNODE_HOSTS" \
+  #           '{
+  #             db_config: $dbConfig,
+  #             query_config: $queryConfig,
+  #             exec_time: $execTime,
+  #             source_interval: $sourceInterval,
+  #             enable_compression: $enableCompression,
+  #             mqtt_hosts: $mqttHosts,
+  #             edge_dnode_hosts: $edgeDnodeHosts,
+  #             taos_benchmark_hosts: $taosBenchmarkHosts,
+  #             center_dnode_hosts: $centerDnodeHosts
+  #           }')
+
+  #         # COMBINED_JSON=$(jq -n --argjson dbConfig "$FORMATTED_DB_CONFIG" --arg execTime "$EXEC_TIME" '{db_config: $dbConfig, exec_time: $execTime}')
+  #         # COMBINED_JSON=$(jq -n --argjson dbConfig "$FORMATTED_DB_CONFIG" '{db_config: $dbConfig}')
+
+  #         # Write to File
+  #         echo "$COMBINED_JSON" > workflow_config.json
+
+  #         # Print File
+  #         cat workflow_config.json
+
+  #     - name: Copy Json To TestNG Env
+  #       run: |
+  #         echo "🔄 Copy Json To TestNG Env..."
+  #         cp *.json ~/TestNG/env
+
+  #     - name: Configure SSH-Keyless Login
+  #       uses: taosdata/.github/.github/actions/ssh-keyless-login@test/fractal
+  #       with:
+  #         target_hosts: ${{ env.hostname_info }}
+  #         password: ${{ secrets.VM_PASSWD }}
+
+  #     - name: Config Prometheus YAML
+  #       uses: taosdata/.github/.github/actions/config-prometheus-yml@test/fractal
+  #       with:
+  #         yml_file_path: "/etc/prometheus/prometheus.yml"
+  #         node_exporter_hosts: ${{ env.hostname_info }}
+  #         process_exporter_hosts: ${{ env.hostname_info }}
+
+  # set-runners:
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     runner_combinations: ${{ steps.set-runner-combinations.outputs.runner_combinations }}
+  #   steps:
+  #     - name: Set Runner Combinations
+  #       id: set-runner-combinations
+  #       run: |
+  #           echo "Setting Runner Combinations"
+  #           # 生成 mqtt-client 和 fractal-edge 的标签数组
+  #           mqtt_client=$(seq 1 ${{github.event.inputs.edge-dnode-count}} | sed 's/^/mqtt-client/')
+  #           fractal_edge=$(seq 1 ${{github.event.inputs.edge-dnode-count}} | sed 's/^/fractal-edge-/')
+
+  #           mqtt_json=$(echo "$mqtt_client" | jq -R -s -c 'split("\n")[:-1]')  # 去除末尾空元素
+  #           fractal_json=$(echo "$fractal_edge" | jq -R -s -c 'split("\n")[:-1]')
+
+  #           combinations=$(jq -n --argjson a "$mqtt_json" --argjson b "$fractal_json" '$a | to_entries | map({ mqtt_client: .value, fractal_edge: $b[.key] })'| jq -c .)
+  #           echo "Generated combinations: $combinations"
+  #           echo "::set-output name=runner_combinations::$combinations"
+  # deploy-fractal-edge:
+  #   needs:
+  #     - set-runners
+  #     - deploy-taostest-node
+  #   strategy:
+  #     matrix:
+  #       combination: ${{ fromJSON(needs.set-runners.outputs.runner_combinations) }}
+
+  #   runs-on:
+  #     group: customers
+  #     labels:
+  #       - self-hosted
+  #       - Linux
+  #       - X64
+  #       - edge_td
+  #       - fractal
+  #       - ${{ matrix.combination.fractal_edge }}
+  #   outputs:
+  #     fractal_ip: ${{ steps.get-ip.outputs.local_ip }}
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Install Flashmq
+  #       uses: taosdata/.github/.github/actions/install-flashmq@main
+
+  #     - name: Get IP Addresses
+  #       id: get-ip
+  #       run: |
+  #         local_ip=$(hostname -I | awk '{print $1}')
+  #         echo "Local IP Address: $local_ip"
+  #         echo "$local_ip" > ${{ matrix.combination.fractal_edge }}.txt
+
+  #     - name: Upload IP Address as Artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: ${{ matrix.combination.fractal_edge }}-ip
+  #         path: ${{ matrix.combination.fractal_edge }}.txt
+
+  # deploy-mqtt-client:
+  #   needs: [set-runners,deploy-fractal-edge]
+  #   strategy:
+  #     matrix:
+  #       combination: ${{ fromJSON(needs.set-runners.outputs.runner_combinations) }}
+  #   runs-on:
+  #     group: customers
+  #     labels:
+  #       - self-hosted
+  #       - Linux
+  #       - X64
+  #       - fractal
+  #       - ${{ matrix.combination.mqtt_client }}
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Install MQTT CLI
+  #       uses: taosdata/.github/.github/actions/install-mqtt-simulator@main
+  #       with:
+  #         nas_public_url: ${{ secrets.nas_download_url }}
+
+  #     - name: Find mqtt_pub binary and fractal toml
+  #       run: |
+  #           mqtt_pub_path=$(find /root /opt -name mqtt_pub 2>/dev/null | head -n 1)
+  #             if [ -n "$mqtt_pub_path" ]; then
+  #               echo "mqtt_pub found at $mqtt_pub_path"
+  #             else
+  #               echo "mqtt_pub not found"
+  #             fi
+  #             echo "MQTT_PUB_PATH=$mqtt_pub_path" >> $GITHUB_ENV
+  #           rm -f /usr/bin/mqtt_pub && cp $mqtt_pub_path /usr/bin/mqtt_pub
+  #           chmod +x /usr/bin/mqtt_pub
+  #           fractal_toml=$(find /root /opt -name fractal.toml 2>/dev/null | head -n 1)
+  #             if [ -n "$fractal_toml" ]; then
+  #               echo "fractal.toml found at $fractal_toml"
+  #             else
+  #               echo "fractal.toml not found"
+  #             fi
+  #             echo "FRACTAL_TOML=$fractal_toml" >> $GITHUB_ENV
+  #           rm -f /etc/taos/test.toml && mkdir -p /etc/taos && cp $fractal_toml /etc/taos/test.toml
+  #       shell: bash
+  #     - name: Download IP Address Artifact
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: ${{ matrix.combination.fractal_edge }}-ip
+  #         path: ./ip_artifacts
+  # run-test:
+  #   # needs: [filter-runners, deploy-taostest-node, deploy-fractal-edge, deploy-mqtt-client, install-tdengine-nodes]
+  #   needs: [filter-runners, deploy-taostest-node, deploy-fractal-edge, install-tdengine-nodes,deploy-mqtt-client]
+  #   strategy:
+  #     matrix:
+  #       runner: ${{ fromJson(needs.filter-runners.outputs.taostest_runners || '[]') }}
+  #   runs-on:
+  #     group: ${{ matrix.runner.group }}
+  #     labels: ${{ matrix.runner.labels }}
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Run Test
+  #       run: |
+  #         echo "🔄 Running test..."
+  #         echo "🔄 Test version: ${{ github.event.inputs.td-version }}"
+  #         echo "🔄 Edge dnode count: ${{ github.event.inputs.edge-dnode-count }}"
+  #         echo "🔄 Center dnode count: ${{ github.event.inputs.center-dnode-count }}"
+  #         echo "🔄 DB config: ${{ github.event.inputs.db-config }}"
+  #         echo "🔄 Query config: ${{ github.event.inputs.query-config }}"
+  #         echo "🔄 Exec time: ${{ github.event.inputs.exec-time }}"
+  #         echo "🔄 Source interval: ${{ github.event.inputs.source-interval }}"
+  #         echo "🔄 Enable compression: ${{ github.event.inputs.enable-compression }}"
+  #         echo "🔄 Test started at $(date)"
+  #         echo "%PWD%: $PWD"
+  #         test_start_time=$(date +"%Y%m%d_%H%M%S")
+  #         jq --arg test_start_time "$test_start_time" '. + {test_start_time: $test_start_time}' /root/TestNG/env/workflow_config.json > tmp.json && mv tmp.json /root/TestNG/env/workflow_config.json
+  #         taostest --convert-json=fractal-center.json
+  #         taostest --convert-json=fractal-edge-1.json
+  #         taostest --convert-json=fractal-edge-2.json
+  #         taostest --setup=fractal-center.yaml --case=customer_scenarios/fractal/start.py --keep
+  #         taostest --setup=fractal-edge-1.yaml --case=customer_scenarios/fractal/start.py --keep
+  #         taostest --setup=fractal-edge-2.yaml --case=customer_scenarios/fractal/start.py --keep
+  #         taostest --use=fractal-edge-1.yaml --case=customer_scenarios/fractal/fractal_edge.py --keep
+  #         taostest --use=fractal-edge-2.yaml --case=customer_scenarios/fractal/fractal_edge.py --keep
+  #         sleep 60
+  #         taostest --use=fractal-center.yaml --case=customer_scenarios/fractal/fractal_center.py --keep
+  #         taostest --use=fractal-query.yaml --case=customer_scenarios/fractal/fractal_query.py --keep
+  #         sleep ${{ github.event.inputs.exec-time }}
+  #         taostest --use=fractal-edge-1.yaml --case=customer_scenarios/fractal/stop.py --keep
+  #         taostest --use=fractal-edge-2.yaml --case=customer_scenarios/fractal/stop.py --keep
+  #         taostest --use=fractal-center.yaml --case=customer_scenarios/fractal/stop.py --keep
+  #         taostest --use=fractal-query.yaml --case=customer_scenarios/fractal/fractal_summary.py --keep
+  #         echo "🔄 Test finished at $(date)"
 
