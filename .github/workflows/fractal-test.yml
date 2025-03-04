@@ -65,8 +65,17 @@ jobs:
     outputs:
       runner_list: ${{ steps.get-runners.outputs.SELECTED_RUNNERS }}
     steps:
-      - name: Checkout Repo
+      - name: Checkout customer-scenarios
         uses: actions/checkout@v4
+        with :
+          path : 'customer-scenarios'
+
+      - name: Checkout Shared Scripts
+        uses: actions/checkout@v4
+        with:
+          repository: taosdata/.github
+          token: ${{ secrets.RUNNER_PAT }}
+          path: '.github/scripts'
 
       - name: Get Runners from Repo B
         id: get-runners
@@ -75,6 +84,7 @@ jobs:
           include_labels: "20C16G"
           required_count: 3
           gh_token: ${{ secrets.RUNNER_PAT }}
+
   deploy-services:
     name: Deploy to Selected Runners
     needs: select-runners
