@@ -102,6 +102,7 @@ jobs:
     steps:
       - name: Print Runner List
         run: |
+          echo "SELECTED_RUNNERS: $SELECTED_RUNNERS"
           echo "🔄 Selected runners: ${{ needs.select-runners.outputs.runner_list }}"
 
       # - name: Deploy to ${{ matrix.runner }}
