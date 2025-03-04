@@ -92,7 +92,9 @@ jobs:
   deploy-services:
     name: Deploy to Selected Runners
     needs: select-runners
-    runs-on: ${{ matrix.runner }}
+    runs-on:
+      group: customers
+      labels: ${{ matrix.runner }}
     if: ${{ needs.select-runners.outputs.runner_list != '' }}
     strategy:
       matrix:
