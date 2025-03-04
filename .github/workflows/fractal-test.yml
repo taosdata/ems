@@ -85,6 +85,10 @@ jobs:
           required_count: 3
           gh_token: ${{ secrets.RUNNER_PAT }}
 
+      - name: test
+        run: |
+          echo "$GITHUB_ENV"
+
   deploy-services:
     name: Deploy to Selected Runners
     needs: select-runners
