@@ -58,6 +58,12 @@ permissions:
   actions: read
   contents: read
 
+env :
+  MQTT_LABEL : "8C16G"
+  EDGE_LABEL : "20C16G"
+  CENTER_LABEL : "20C16G"
+  CLIENT_LABEL : "24C64G"
+
 jobs:
   select-runners:
     name: Select Target Runners
@@ -65,17 +71,17 @@ jobs:
     outputs:
       runner_list: ${{ steps.get-runners.outputs.runners }}
     steps:
-      - name: Checkout customer-scenarios
-        uses: actions/checkout@v4
-        with :
-          path : 'customer-scenarios'
+      # - name: Checkout customer-scenarios
+      #   uses: actions/checkout@v4
+      #   with :
+      #     path : 'customer-scenarios'
 
-      - name: Checkout Shared Scripts
-        uses: actions/checkout@v4
-        with:
-          repository: taosdata/.github
-          token: ${{ secrets.RUNNER_PAT }}
-          path: '.github/scripts'
+      # - name: Checkout Shared Scripts
+      #   uses: actions/checkout@v4
+      #   with:
+      #     repository: taosdata/.github
+      #     token: ${{ secrets.RUNNER_PAT }}
+      #     # path: '.github/scripts'
 
       - name: Get Runners from Repo B
         id: get-runners
@@ -92,9 +98,10 @@ jobs:
   deploy-services:
     name: Deploy to Selected Runners
     needs: select-runners
-    runs-on:
-      group: customers
-      labels: ${{ matrix.runner }}
+    runs-on: ubuntu-latest
+    # runs-on:
+    #   group: customers
+    #   labels: ${{ matrix.runner }}
     if: ${{ needs.select-runners.outputs.runner_list != '' }}
     strategy:
       matrix:
@@ -106,6 +113,10 @@ jobs:
           echo "🔄 Selected runners: ${{ needs.select-runners.outputs.runner_list }}"
 
       - name: Deploy to ${{ matrix.runner }}
+        # with:
+        #   platform-params: ${{ fromJSON(steps.setup-runners.outputs.runner_list)[0] }}
+        env:
+          RUNNER_LABELS: ${{ fromJSON(needs.select-runners.outputs.runner_list) }}
         run: |
           echo "pwd is : $PWD"
           echo "$(ls /root)"
