@@ -98,10 +98,10 @@ jobs:
   deploy-services:
     name: Deploy to Selected Runners
     needs: select-runners
-    runs-on: ubuntu-latest
-    # runs-on:
-    #   group: customers
-    #   labels: ${{ matrix.runner }}
+    # runs-on: ubuntu-latest
+    runs-on:
+      group: customers
+      labels: ${{ matrix.runner }}
     if: ${{ needs.select-runners.outputs.runner_list != '' }}
     strategy:
       matrix:
@@ -115,8 +115,8 @@ jobs:
       - name: Deploy to ${{ matrix.runner }}
         # with:
         #   platform-params: ${{ fromJSON(steps.setup-runners.outputs.runner_list)[0] }}
-        env:
-          RUNNER_LABELS: ${{ fromJSON(needs.select-runners.outputs.runner_list) }}
+        # env:
+        #   RUNNER_LABELS: ${{ fromJSON(needs.select-runners.outputs.runner_list) }}
         run: |
           echo "pwd is : $PWD"
           echo "$(ls /root)"
