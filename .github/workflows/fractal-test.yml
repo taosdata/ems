@@ -89,6 +89,7 @@ jobs:
         run: |
           echo "----env::::::$GITHUB_ENV"
           echo "----selected runners::::::$SELECTED_RUNNERS"
+          echo "outputs.SELECTED_RUNNERS::::::::${{ steps.get-runners.outputs.SELECTED_RUNNERS }}"
 
   deploy-services:
     name: Deploy to Selected Runners
