@@ -89,9 +89,10 @@ jobs:
     name: Deploy to Selected Runners
     needs: select-runners
     runs-on: ubuntu-latest
+    if: ${{ needs.select-runners.outputs.runner_list != '' }}
     strategy:
       matrix:
-        runner: ${{ fromJSON(needs.select-runners.outputs.runner_list) }}
+        runner: ${{ fromJSON(needs.select-runners.outputs.runner_list || '[]') }}
     steps:
       - name: Deploy to ${{ matrix.runner }}
         env:
