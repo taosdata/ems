@@ -94,17 +94,21 @@ jobs:
     name: Deploy to Selected Runners
     needs: select-runners
     runs-on: ubuntu-latest
-    if: ${{ needs.select-runners.outputs.runner_list != '' }}
-    strategy:
-      matrix:
-        runner: ${{ fromJSON(needs.select-runners.outputs.runner_list || '[]') }}
+    # if: ${{ needs.select-runners.outputs.runner_list != '' }}
+    # strategy:
+    #   matrix:
+    #     runner: ${{ fromJSON(needs.select-runners.outputs.runner_list || '[]') }}
     steps:
-      - name: Deploy to ${{ matrix.runner }}
-        env:
-          TARGET_RUNNER: ${{ matrix.runner }}
+      - name: Print Runner List
         run: |
-          echo "Deploying to $TARGET_RUNNER"
-          echo "pwd is : $PWD"
+          echo "🔄 Selected runners: ${{ needs.select-runners.outputs.runner_list }}"
+
+      # - name: Deploy to ${{ matrix.runner }}
+      #   env:
+      #     TARGET_RUNNER: ${{ matrix.runner }}
+      #   run: |
+      #     echo "Deploying to $TARGET_RUNNER"
+      #     echo "pwd is : $PWD"
   # filter-runners:
   #   runs-on: ubuntu-latest
   #   outputs:
