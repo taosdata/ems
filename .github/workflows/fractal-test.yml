@@ -25,16 +25,16 @@ on:
           - 1
           - 2
           - 3
-      db-config:
-        description: 'config-json to create database'
-        required: true
-        default: '{"vgroups": 10, "stt_trigger": 2, "buffer": 4096, "minrows": 100}'
-        type: string
-      query-config:
-        description: 'custom query config for taosBenchmark'
-        required: true
-        default: '{"query_times": 100, "concurrent": 10, "query_interval": 10}'
-        type: string
+      # db-config:
+      #   description: 'config-json to create database'
+      #   required: true
+      #   default: '{"vgroups": 10, "stt_trigger": 2, "buffer": 4096, "minrows": 100}'
+      #   type: string
+      # query-config:
+      #   description: 'custom query config for taosBenchmark'
+      #   required: true
+      #   default: '{"query_times": 100, "concurrent": 10, "query_interval": 10}'
+      #   type: string
       exec-time:
         description: 'exec-time (unit: s)'
         required: true
@@ -87,9 +87,9 @@ jobs:
 
       - name: test
         run: |
-          echo "----env::::::$GITHUB_ENV"
-          echo "----selected runners::::::$SELECTED_RUNNERS"
+          echo "----selected runners--- $SELECTED_RUNNERS"
           echo "outputs.SELECTED_RUNNERS::::::::${{ steps.get-runners.outputs.SELECTED_RUNNERS }}"
+
 
   deploy-services:
     name: Deploy to Selected Runners
