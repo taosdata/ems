@@ -87,7 +87,8 @@ jobs:
 
       - name: test
         run: |
-          echo "$GITHUB_ENV"
+          echo "----env::::::$GITHUB_ENV"
+          echo "----selected runners::::::$SELECTED_RUNNERS"
 
   deploy-services:
     name: Deploy to Selected Runners
