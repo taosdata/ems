@@ -267,9 +267,8 @@ jobs:
       - name: Upload Host Info
         uses: actions/upload-artifact@v4
         with:
-          name: host-infos
-          path: ip_hostname_*.txt
-          overwrite : true
+          name: ip_hostname_${{ steps.collect-host-info.outputs.hostname }}
+          path: ip_hostname_${{ steps.collect-host-info.outputs.hostname }}.txt
   download-hosts-info:
     needs: [upload-hosts-info,filter-runners]
     strategy:
@@ -291,11 +290,7 @@ jobs:
 
       - name: List Downloaded Files
         run: ls -l downloaded-host-infos
-      # - name: Upload Host Info
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: ip_hostname_${{ steps.collect-host-info.outputs.hostname }}
-      #     path: ip_hostname_${{ steps.collect-host-info.outputs.hostname }}.txt
+
 
   # combine-and-update-hosts:
   #   needs:
@@ -315,29 +310,33 @@ jobs:
   #     - name: Checkout code
   #       uses: actions/checkout@v4
 
-  #     - name: Install GitHub CLI
-  #       shell: bash
-  #       run: |
-  #         echo "🔄 Installing GitHub CLI..."
-  #         sudo apt-get update
-  #         sudo apt-get install gh -y
+      - name: Install GitHub CLI
+        shell: bash
+        run: |
+          echo "🔄 Installing GitHub CLI..."
+          sudo apt-get update
+          sudo apt-get install gh -y
 
-  #     - name: Authenticate GitHub CLI
-  #       run: |
-  #         echo "🔄 Authenticating GitHub CLI..."
-  #         echo "${{ secrets.RUNNER_PAT }}" | gh auth login --with-token
+      - name: Authenticate GitHub CLI
+        run: |
+          echo "🔄 Authenticating GitHub CLI..."
+          echo "${{ secrets.RUNNER_PAT }}" | gh auth login --with-token
 
-  #     - name: Download IP and Hostname Info
-  #       run: |
-  #         echo "🔄 Downloading IP and hostname info for each runner..."
-  #         runner_name=${{ needs.filter-runners.outputs.runner_names }}
-  #         echo "Runner Name: $runner_name"
-  #         IFS=',' read -r -a names_array <<< "$runner_name"
-  #         echo "Extracted names: $names_array"
-  #         for name in "${names_array[@]}"; do
-  #           echo "Downloading artifact for runner: $name"
-  #           gh run download $GITHUB_RUN_ID --name "ip_hostname_$name" --dir ip_hostname
-  #         done
+      - name: Download All Artifacts
+        run: |
+          echo "🔄 Downloading ALL artifacts..."
+          gh run download $GITHUB_RUN_ID --dir ip_hostname
+      # - name: Download IP and Hostname Info
+      #   run: |
+      #     echo "🔄 Downloading IP and hostname info for each runner..."
+      #     runner_name=${{ needs.filter-runners.outputs.runner_names }}
+      #     echo "Runner Name: $runner_name"
+      #     IFS=',' read -r -a names_array <<< "$runner_name"
+      #     echo "Extracted names: $names_array"
+      #     for name in "${names_array[@]}"; do
+      #       echo "Downloading artifact for runner: $name"
+      #       gh run download $GITHUB_RUN_ID --name "ip_hostname_$name" --dir ip_hostname
+      #     done
 
   #     - name: Combine IP and Hostname Info In Each Runner
   #       run: |
