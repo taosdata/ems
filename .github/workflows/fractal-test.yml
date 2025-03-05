@@ -279,28 +279,6 @@ jobs:
         with:
           name:  "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}"
           path: "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}.txt"
-  # download-hosts-info:
-  #   needs: [upload-hosts-info,filter-runners]
-  #   strategy:
-  #     matrix:
-  #       runner:
-  #         - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
-  #         - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
-  #         - ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
-  #         - ${{ fromJson(needs.filter-runners.outputs.taostest_runner_list || '[]') }}
-  #   runs-on:
-  #     group: customers
-  #     labels: ${{ matrix.runner }}
-  #   steps:
-  #     - name: Download All Host Info
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: host-infos
-  #         path: downloaded-host-infos
-
-  #     - name: List Downloaded Files
-  #       run: ls -l downloaded-host-infos
-
 
   combine-and-update-hosts:
     needs:
@@ -317,34 +295,22 @@ jobs:
       group: customers
       labels: ${{ matrix.runner }}
     steps:
-      # - name: Checkout code
-      #   uses: actions/checkout@v4
-      - name: Print Runner Info
-        run: |
-          echo "🔄 RUNNER_WORKSPACE: $RUNNER_WORKSPACE"
-          echo "🔄 HOSTS_DIRNAME: ${{ env.HOSTS_DIRNAME }}"
       - name: Download Host Info
         uses: taosdata/.github/.github/actions/download-artifacts@test/fractal
         with:
           gh_token: ${{ secrets.RUNNER_PAT }}
           download_dir: "$RUNNER_WORKSPACE/${{ env.HOSTS_DIRNAME }}"
 
-      # - name: Install GitHub CLI
-      #   shell: bash
-      #   run: |
-      #     echo "🔄 Installing GitHub CLI..."
-      #     sudo apt-get update
-      #     sudo apt-get install gh -y
+      - name: Combine IP and Hostname Info In Each Runner
+        id: combine-ip-hostname
+        uses: taosdata/.github/.github/actions/combine-ip-hostname@test/fractal
+        with:
+          input-dir: "$RUNNER_WORKSPACE/${{ env.HOSTS_DIRNAME }}"
 
-      # - name: Authenticate GitHub CLI
-      #   run: |
-      #     echo "🔄 Authenticating GitHub CLI..."
-      #     echo "${{ secrets.RUNNER_PAT }}" | gh auth login --with-token
-
-      # - name: Download All Artifacts
-      #   run: |
-      #     echo "🔄 Downloading ALL artifacts..."
-      #     gh run download $GITHUB_RUN_ID --dir ip_hostname --overwrite
+      - name: Update /etc/hosts In Each Runner
+        uses: taosdata/.github/.github/actions/update-etc-hosts@test/fractal
+        with:
+          entries: ${{ steps.combine-ip-hostname.outputs.combined_info }}
 
       # - name: Combine IP and Hostname Info In Each Runner
       #   run: |
