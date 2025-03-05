@@ -265,33 +265,41 @@ jobs:
         run: |
           echo "🔄 Running on group: ${{ matrix.runner }}"
 
-      - name: Get IP and Hostname
-        id: get-ip-hostname
-        run: |
-          echo "🔄 Getting IP and hostname for the runner..."
+      # - name: Get IP and Hostname
+      #   id: get-ip-hostname
+      #   run: |
+      #     echo "🔄 Getting IP and hostname for the runner..."
 
-          # Get IP and hostname
-          ip=$(hostname -I | awk '{print $1}')
-          hostname=$(hostname)
+      #     # Get IP and hostname
+      #     ip=$(hostname -I | awk '{print $1}')
+      #     hostname=$(hostname)
 
-          echo "IP: $ip"
-          echo "Hostname: $hostname"
-          echo "hostname=$hostname" >> $GITHUB_OUTPUT
+      #     echo "IP: $ip"
+      #     echo "Hostname: $hostname"
+      #     echo "hostname=$hostname" >> $GITHUB_OUTPUT
 
-          # Save IP and hostname to a file
-          echo "$ip $hostname" > ip_hostname_$hostname.txt
+      #     # Save IP and hostname to a file
+      #     echo "$ip $hostname" > ip_hostname_$hostname.txt
+      - name: Run Host Info Collection
+        id: collect-host-info
+        uses: taosdata/.github/.github/actions/upload-host-info@test/fractal
 
-      - name: Print IP and Hostname
-        run: |
-          echo "🔄 Printing IP and hostname for the runner..."
-          # cat "ip_hostname_${{ steps.get-ip-hostname.outputs.hostname }}.txt"
-          echo "ip_hostname_${{ steps.get-ip-hostname.outputs.hostname }}"
-
-      - name: Upload IP and Hostname Info
+      - name: Upload Host Info
         uses: actions/upload-artifact@v4
         with:
-          name: ip_hostname_${{ steps.get-ip-hostname.outputs.hostname }}
-          path: ip_hostname_${{ steps.get-ip-hostname.outputs.hostname }}.txt
+          name: ip_hostname_${{ steps.collect-host-info.outputs.hostname }}
+          path: ip_hostname_${{ steps.collect-host-info.outputs.hostname }}.txt
+      # - name: Print IP and Hostname
+      #   run: |
+      #     echo "🔄 Printing IP and hostname for the runner..."
+      #     # cat "ip_hostname_${{ steps.get-ip-hostname.outputs.hostname }}.txt"
+      #     echo "ip_hostname_${{ steps.get-ip-hostname.outputs.hostname }}"
+
+      # - name: Upload IP and Hostname Info
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: ip_hostname_${{ steps.get-ip-hostname.outputs.hostname }}
+      #     path: ip_hostname_${{ steps.get-ip-hostname.outputs.hostname }}.txt
 
   # combine-and-update-hosts:
   #   needs:
