@@ -63,60 +63,79 @@ env :
   EDGE_LABEL : "20C16G"
   CENTER_LABEL : "20C16G"
   CLIENT_LABEL : "24C64G"
+  CLIENT_COUNT : 1
+  EDGE_DNODE_COUNT : 2
+  CENTER_DNODE_COUNT : 3
+  # EDGE_DNODE_COUNT : ${{ github.event.inputs.edge-dnode-count }}
+  # CENTER_DNODE_COUNT : ${{ github.event.inputs.center-dnode-count }}
 
 jobs:
-  select-runners:
+  filter-runners:
     name: Select Target Runners
     runs-on: ubuntu-latest
     outputs:
-      runner_list: ${{ steps.get-runners.outputs.runners }}
+      edge_runner_list: ${{ steps.get-edge-runners.outputs.runners }}
+      center_runner_list: ${{ steps.center-edge-runners.outputs.runners }}
+      mqtt_runner_list: ${{ steps.get-mqtt-runners.outputs.runners }}
+      taostest_runner_list: ${{ steps.get-taostest-runners.outputs.runners }}
     steps:
-      # - name: Checkout customer-scenarios
-      #   uses: actions/checkout@v4
-      #   with :
-      #     path : 'customer-scenarios'
+      - name: Get Taostest Runners
+        id: get-taostest-runners
+        uses: taosdata/.github/.github/actions/get-runners@test/fractal
+        with:
+          include_labels: ${{ env.CLIENT_LABEL }}
+          required_count: 1
+          gh_token: ${{ secrets.RUNNER_PAT }}
 
-      # - name: Checkout Shared Scripts
-      #   uses: actions/checkout@v4
-      #   with:
-      #     repository: taosdata/.github
-      #     token: ${{ secrets.RUNNER_PAT }}
-      #     # path: '.github/scripts'
+      - name: Get MQTT Runners
+        id: get-mqtt-runners
+        uses: taosdata/.github/.github/actions/get-runners@test/fractal
+        with:
+          include_labels: ${{ env.MQTT_LABEL }}
+          required_count: ${{ env.EDGE_DNODE_COUNT }}
+          gh_token: ${{ secrets.RUNNER_PAT }}
 
-      - name: Get Runners from Repo B
-        id: get-runners
+      - name: Get Edge Runners
+        id: get-edge-runners
         uses: taosdata/.github/.github/actions/get-runners@test/fractal
         with:
           include_labels: "20C16G"
-          required_count: 3
+          required_count: ${{ env.EDGE_DNODE_COUNT }}
+          exclude_labels: "exclusive"
           gh_token: ${{ secrets.RUNNER_PAT }}
 
-      # - name: Output Selected Runners
-      #   run: |
-      #     echo "SELECTED_RUNNERS="$SELECTED_RUNNERS"" >> $GITHUB_OUTPUT
+      - name: Get Center Runners
+        id: center-edge-runners
+        uses: taosdata/.github/.github/actions/get-runners@test/fractal
+        with:
+          include_labels: "20C16G,exclusive"
+          required_count: ${{ env.CENTER_DNODE_COUNT }}
+          gh_token: ${{ secrets.RUNNER_PAT }}
 
   deploy-services:
     name: Deploy to Selected Runners
-    needs: select-runners
+    needs: filter-runners
     # runs-on: ubuntu-latest
     runs-on:
       group: customers
       labels: ${{ matrix.runner }}
-    if: ${{ needs.select-runners.outputs.runner_list != '' }}
+    if: ${{ needs.filter-runners.outputs.edge_runner_list != '' }}
     strategy:
       matrix:
-        runner: ${{ fromJSON(needs.select-runners.outputs.runner_list || '[]') }}
+        runner: ${{ fromJSON(needs.filter-runners.outputs.edge_runner_list || '[]') }}
     steps:
       - name: Print Runner List
         run: |
-          echo "SELECTED_RUNNERS: $SELECTED_RUNNERS"
-          echo "🔄 Selected runners: ${{ needs.select-runners.outputs.runner_list }}"
+          echo "🔄 Selected edge_runner_list: ${{ needs.filter-runners.outputs.edge_runner_list }}"
+          echo "🔄 Selected center_runner_list: ${{ needs.filter-runners.outputs.center_runner_list }}"
+          echo "🔄 Selected mqtt_runner_list: ${{ needs.filter-runners.outputs.mqtt_runner_list }}"
+          echo "🔄 Selected taostest_runner_list: ${{ needs.filter-runners.outputs.taostest_runner_list }}"
 
       - name: Deploy to ${{ matrix.runner }}
         # with:
-        #   platform-params: ${{ fromJSON(steps.setup-runners.outputs.runner_list)[0] }}
+        #   platform-params: ${{ fromJSON(steps.setup-runners.outputs.edge_runner_list)[0] }}
         # env:
-        #   RUNNER_LABELS: ${{ fromJSON(needs.select-runners.outputs.runner_list) }}
+        #   RUNNER_LABELS: ${{ fromJSON(needs.select-runners.outputs.edge_runner_list) }}
         run: |
           echo "pwd is : $PWD"
           echo "$(ls /root)"
@@ -227,41 +246,52 @@ jobs:
   #           echo "taostest_runner_names=${taostest_runner_names}" >> $GITHUB_OUTPUT
   #         fi
 
-  # upload-hosts-info:
-  #   needs: filter-runners
+  upload-hosts-info:
+    needs: filter-runners
 
-  #   strategy:
-  #     matrix:
-  #       runner: ${{ fromJson(needs.filter-runners.outputs.runners || '[]') }}
-  #   runs-on:
-  #     group: ${{ matrix.runner.group }}
-  #     labels: ${{ matrix.runner.labels }}
-  #   steps:
-  #     - name: Print Runner Info
-  #       run: |
-  #         echo "🔄 Running on group: ${{ matrix.runner.group }}"
-  #         echo "🔄 Name: ${{ matrix.runner.name }}"
+    strategy:
+      matrix:
+        runner:
+          - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
+          - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
+          - ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
+          - ${{ fromJson(needs.filter-runners.outputs.taostest_runner_list || '[]') }}
+    # runs-on: ubuntu-latest
+    runs-on:
+      group: ${{ matrix.runner.group }}
+      labels: ${{ matrix.runner.labels }}
+    steps:
+      - name: Print Runner Info
+        run: |
+          echo "🔄 Running on group: ${{ matrix.runner }}"
 
-  #     - name: Get IP and Hostname
-  #       id: get-ip-hostname
-  #       run: |
-  #         echo "🔄 Getting IP and hostname for the runner..."
+      - name: Get IP and Hostname
+        id: get-ip-hostname
+        run: |
+          echo "🔄 Getting IP and hostname for the runner..."
 
-  #         # Get IP and hostname
-  #         ip=$(hostname -I | awk '{print $1}')
-  #         hostname=$(hostname)
+          # Get IP and hostname
+          ip=$(hostname -I | awk '{print $1}')
+          hostname=$(hostname)
 
-  #         echo "IP: $ip"
-  #         echo "Hostname: $hostname"
+          echo "IP: $ip"
+          echo "Hostname: $hostname"
+          echo "hostname=$hostname" >> $GITHUB_OUTPUT
 
-  #         # Save IP and hostname to a file
-  #         echo "$ip $hostname" > ip_hostname_${{ matrix.runner.name }}.txt
+          # Save IP and hostname to a file
+          echo "$ip $hostname" > ip_hostname_$hostname.txt
 
-  #     - name: Upload IP and Hostname Info
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: ip_hostname_${{ matrix.runner.name }}
-  #         path: ip_hostname_${{ matrix.runner.name }}.txt
+      - name: Print IP and Hostname
+        run: |
+          echo "🔄 Printing IP and hostname for the runner..."
+          # cat "ip_hostname_${{ steps.get-ip-hostname.outputs.hostname }}.txt"
+          echo "ip_hostname_${{ steps.get-ip-hostname.outputs.hostname }}"
+
+      - name: Upload IP and Hostname Info
+        uses: actions/upload-artifact@v4
+        with:
+          name: ip_hostname_${{ steps.get-ip-hostname.outputs.hostname }}
+          path: ip_hostname_${{ steps.get-ip-hostname.outputs.hostname }}.txt
 
   # combine-and-update-hosts:
   #   needs:
