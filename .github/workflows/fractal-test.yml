@@ -258,8 +258,8 @@ jobs:
           - ${{ fromJson(needs.filter-runners.outputs.taostest_runner_list || '[]') }}
     # runs-on: ubuntu-latest
     runs-on:
-      group: ${{ matrix.runner.group }}
-      labels: ${{ matrix.runner.labels }}
+      group: customers
+      labels: ${{ matrix.runner }}
     steps:
       - name: Print Runner Info
         run: |
