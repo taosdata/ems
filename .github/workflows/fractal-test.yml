@@ -67,7 +67,7 @@ env :
   EDGE_DNODE_COUNT : 2
   CENTER_DNODE_COUNT : 3
   RUNNER_WORKSPACE: $RUNNER_WORKSPACE
-  HOST_FILE_PREFIX: "ip-hostname-"
+  HOSTS_DIRNAME: "ip-hostname"
   # EDGE_DNODE_COUNT : ${{ github.event.inputs.edge-dnode-count }}
   # CENTER_DNODE_COUNT : ${{ github.event.inputs.center-dnode-count }}
 
@@ -272,13 +272,13 @@ jobs:
         id: collect-host-info
         uses: taosdata/.github/.github/actions/upload-host-info@test/fractal
         with:
-          host_file_prefix: ${{ env.HOST_FILE_PREFIX }}
+          HOSTS_DIRNAME: ${{ env.HOSTS_DIRNAME }}
 
       - name: Upload Host Info
         uses: actions/upload-artifact@v4
         with:
-          name:  ${{ env.HOST_FILE_PREFIX }}${{ steps.collect-host-info.outputs.hostname }}
-          path: ${{ env.HOST_FILE_PREFIX }}${{ steps.collect-host-info.outputs.hostname }}.txt
+          name:  "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}"
+          path: "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}.txt"
   # download-hosts-info:
   #   needs: [upload-hosts-info,filter-runners]
   #   strategy:
@@ -319,11 +319,15 @@ jobs:
     steps:
       # - name: Checkout code
       #   uses: actions/checkout@v4
+      - name: Print Runner Info
+        run: |
+          echo "🔄 RUNNER_WORKSPACE: $RUNNER_WORKSPACE"
+          echo "🔄 HOSTS_DIRNAME: ${{ env.HOSTS_DIRNAME }}"
       - name: Download Host Info
         uses: taosdata/.github/.github/actions/download-artifacts@test/fractal
         with:
           gh_token: ${{ secrets.RUNNER_PAT }}
-          download_dir: $RUNNER_WORKSPACE/${{ env.HOST_FILE_PREFIX }}
+          download_dir: "$RUNNER_WORKSPACE/${{ env.HOSTS_DIRNAME }}"
 
       # - name: Install GitHub CLI
       #   shell: bash
