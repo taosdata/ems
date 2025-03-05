@@ -68,6 +68,9 @@ env :
   CENTER_DNODE_COUNT : 3
   RUNNER_WORKSPACE: $RUNNER_WORKSPACE
   HOSTS_DIRNAME: "ip-hostname"
+  PROMETHEUS_YML_PATH: "/etc/prometheus.yml"
+  PROCESS_EXPORTER_YML_PATH: "/etc/process_exporter.yml"
+  MONITORING_PROCESS_NAMES: "taosd,taosadapter"
   # EDGE_DNODE_COUNT : ${{ github.event.inputs.edge-dnode-count }}
   # CENTER_DNODE_COUNT : ${{ github.event.inputs.center-dnode-count }}
 
@@ -312,72 +315,37 @@ jobs:
         with:
           entries: ${{ steps.combine-ip-hostname.outputs.combined_info }}
 
-      # - name: Combine IP and Hostname Info In Each Runner
-      #   run: |
-      #     echo "🔄 Combining IP and hostname info..."
+  install-tdengine-nodes:
+    needs:
+     - combine-and-update-hosts
+     - filter-runners
+    strategy:
+      matrix:
+        runner:
+          - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
+          - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
+          - ${{ fromJson(needs.filter-runners.outputs.taostest_runner_list || '[]') }}
+    runs-on:
+      group: customers
+      labels: ${{ matrix.runner }}
+    steps:
+      - name: Install TDengine Enterprise
+        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
+        with:
+          version: ${{ github.event.inputs.td-version }}
+          download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
 
-      #     # Read all files in the ip_hostname directory and combine them
-      #     ip_hostname_info=$(cat ip_hostname/*.txt | sort | uniq)
+      - name: Install Node Exporter In TDengine Nodes
+        uses: taosdata/.github/.github/actions/install-node-exporter@test/fractal
 
-      #     # Save the combined IP and hostname info to an environment variable
-      #     echo "ip_hostname_info<<EOF" >> $GITHUB_ENV
-      #     echo -e "$ip_hostname_info" >> $GITHUB_ENV
-      #     echo "EOF" >> $GITHUB_ENV
+      - name: Install Process Exporter In TDengine Nodes
+        uses: taosdata/.github/.github/actions/install-process-exporter@test/fractal
 
-      # - name: Update /etc/hosts In Each Runner
-      #   run: |
-      #     echo "🔄 Updating /etc/hosts..."
-
-      #     while IFS= read -r line; do
-      #       # Check if the line already exists in /etc/hosts
-      #       if ! grep -Fxq "$line" /etc/hosts; then
-      #         # Append the line to /etc/hosts if it doesn't exist
-      #         echo "$line" | sudo tee -a /etc/hosts
-      #       else
-      #         echo "✅ Skipping (already exists): $line"
-      #       fi
-      #     done <<< "$ip_hostname_info"
-
-      #     echo "✅ Updated /etc/hosts with runner IPs and hostnames:"
-      #     cat /etc/hosts
-
-  # install-tdengine-nodes:
-  #   needs:
-  #    - combine-and-update-hosts
-  #    - filter-runners
-  #   strategy:
-  #     matrix:
-  #       runner: ${{ fromJson(needs.filter-runners.outputs.td_runners || '[]') }}
-  #   runs-on:
-  #     group: ${{ matrix.runner.group }}
-  #     labels: ${{ matrix.runner.labels }}
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
-
-  #     - name: Print Runner Info
-  #       run: |
-  #         echo "🔄 Running on group: ${{ matrix.runner.group }}"
-  #         echo "🔄 Name: ${{ matrix.runner.name }}"
-
-  #     # - name: Install TDengine Enterprise
-  #     #   uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
-  #     #   with:
-  #     #     version: ${{ github.event.inputs.td-version }}
-  #     #     download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
-
-  #     - name: Install Node Exporter In TDengine Nodes
-  #       uses: taosdata/.github/.github/actions/install-node-exporter@test/fractal
-
-  #     - name: Install Process Exporter In TDengine Nodes
-  #       uses: taosdata/.github/.github/actions/install-process-exporter@test/fractal
-
-  #     - name: Config Process Exporter YAML In TDengine Nodes
-  #       uses: taosdata/.github/.github/actions/config-process-exporter-yml@test/fractal
-  #       with:
-  #         yml_file_path: "/etc/process_exporter.yml"
-  #         process_names: "taosd,taosadapter"
-
+      - name: Config Process Exporter YAML In TDengine Nodes
+        uses: taosdata/.github/.github/actions/config-process-exporter-yml@test/fractal
+        with:
+          yml_file_path: "${{ env.PROCESS_EXPORTER_YML_PATH }}"
+          process_names: "${{ env.MONITORING_PROCESS_NAMES }}"
   # deploy-taostest-node:
   #   needs:
   #    - combine-and-update-hosts
