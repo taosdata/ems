@@ -139,6 +139,12 @@ jobs:
         run: |
           echo "pwd is : $PWD"
           echo "$(ls /root)"
+      - name: Print Work Directories
+        run: |
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          echo "GITHUB_HOME: $GITHUB_HOME"
+          echo "RUNNER_WORKSPACE: $RUNNER_WORKSPACE"
+          echo "当前工作目录: $(pwd)"
   # filter-runners:
   #   runs-on: ubuntu-latest
   #   outputs:
@@ -326,46 +332,35 @@ jobs:
         run: |
           echo "🔄 Downloading ALL artifacts..."
           gh run download $GITHUB_RUN_ID --dir ip_hostname
-      # - name: Download IP and Hostname Info
-      #   run: |
-      #     echo "🔄 Downloading IP and hostname info for each runner..."
-      #     runner_name=${{ needs.filter-runners.outputs.runner_names }}
-      #     echo "Runner Name: $runner_name"
-      #     IFS=',' read -r -a names_array <<< "$runner_name"
-      #     echo "Extracted names: $names_array"
-      #     for name in "${names_array[@]}"; do
-      #       echo "Downloading artifact for runner: $name"
-      #       gh run download $GITHUB_RUN_ID --name "ip_hostname_$name" --dir ip_hostname
-      #     done
 
-  #     - name: Combine IP and Hostname Info In Each Runner
-  #       run: |
-  #         echo "🔄 Combining IP and hostname info..."
+      - name: Combine IP and Hostname Info In Each Runner
+        run: |
+          echo "🔄 Combining IP and hostname info..."
 
-  #         # Read all files in the ip_hostname directory and combine them
-  #         ip_hostname_info=$(cat ip_hostname/*.txt | sort | uniq)
+          # Read all files in the ip_hostname directory and combine them
+          ip_hostname_info=$(cat ip_hostname/*.txt | sort | uniq)
 
-  #         # Save the combined IP and hostname info to an environment variable
-  #         echo "ip_hostname_info<<EOF" >> $GITHUB_ENV
-  #         echo -e "$ip_hostname_info" >> $GITHUB_ENV
-  #         echo "EOF" >> $GITHUB_ENV
+          # Save the combined IP and hostname info to an environment variable
+          echo "ip_hostname_info<<EOF" >> $GITHUB_ENV
+          echo -e "$ip_hostname_info" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
-  #     - name: Update /etc/hosts In Each Runner
-  #       run: |
-  #         echo "🔄 Updating /etc/hosts..."
+      - name: Update /etc/hosts In Each Runner
+        run: |
+          echo "🔄 Updating /etc/hosts..."
 
-  #         while IFS= read -r line; do
-  #           # Check if the line already exists in /etc/hosts
-  #           if ! grep -Fxq "$line" /etc/hosts; then
-  #             # Append the line to /etc/hosts if it doesn't exist
-  #             echo "$line" | sudo tee -a /etc/hosts
-  #           else
-  #             echo "✅ Skipping (already exists): $line"
-  #           fi
-  #         done <<< "$ip_hostname_info"
+          while IFS= read -r line; do
+            # Check if the line already exists in /etc/hosts
+            if ! grep -Fxq "$line" /etc/hosts; then
+              # Append the line to /etc/hosts if it doesn't exist
+              echo "$line" | sudo tee -a /etc/hosts
+            else
+              echo "✅ Skipping (already exists): $line"
+            fi
+          done <<< "$ip_hostname_info"
 
-  #         echo "✅ Updated /etc/hosts with runner IPs and hostnames:"
-  #         cat /etc/hosts
+          echo "✅ Updated /etc/hosts with runner IPs and hostnames:"
+          cat /etc/hosts
 
   # install-tdengine-nodes:
   #   needs:
