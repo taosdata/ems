@@ -269,33 +269,8 @@ jobs:
         with:
           name: ip_hostname_${{ steps.collect-host-info.outputs.hostname }}
           path: ip_hostname_${{ steps.collect-host-info.outputs.hostname }}.txt
-  download-hosts-info:
-    needs: [upload-hosts-info,filter-runners]
-    strategy:
-      matrix:
-        runner:
-          - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
-          - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
-          - ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
-          - ${{ fromJson(needs.filter-runners.outputs.taostest_runner_list || '[]') }}
-    runs-on:
-      group: customers
-      labels: ${{ matrix.runner }}
-    steps:
-      - name: Download All Host Info
-        uses: actions/download-artifact@v4
-        with:
-          name: host-infos
-          path: downloaded-host-infos
-
-      - name: List Downloaded Files
-        run: ls -l downloaded-host-infos
-
-
-  # combine-and-update-hosts:
-  #   needs:
-  #     - upload-hosts-info
-  #     - filter-runners
+  # download-hosts-info:
+  #   needs: [upload-hosts-info,filter-runners]
   #   strategy:
   #     matrix:
   #       runner:
@@ -307,8 +282,33 @@ jobs:
   #     group: customers
   #     labels: ${{ matrix.runner }}
   #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
+  #     - name: Download All Host Info
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: host-infos
+  #         path: downloaded-host-infos
+
+  #     - name: List Downloaded Files
+  #       run: ls -l downloaded-host-infos
+
+
+  combine-and-update-hosts:
+    needs:
+      - upload-hosts-info
+      - filter-runners
+    strategy:
+      matrix:
+        runner:
+          - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
+          - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
+          - ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
+          - ${{ fromJson(needs.filter-runners.outputs.taostest_runner_list || '[]') }}
+    runs-on:
+      group: customers
+      labels: ${{ matrix.runner }}
+    steps:
+      # - name: Checkout code
+      #   uses: actions/checkout@v4
 
       - name: Install GitHub CLI
         shell: bash
