@@ -67,6 +67,7 @@ env :
   EDGE_DNODE_COUNT : 2
   CENTER_DNODE_COUNT : 3
   RUNNER_WORKSPACE: $RUNNER_WORKSPACE
+  HOST_FILE_PREFIX: "ip-hostname-"
   # EDGE_DNODE_COUNT : ${{ github.event.inputs.edge-dnode-count }}
   # CENTER_DNODE_COUNT : ${{ github.event.inputs.center-dnode-count }}
 
@@ -270,12 +271,14 @@ jobs:
       - name: Run Host Info Collection
         id: collect-host-info
         uses: taosdata/.github/.github/actions/upload-host-info@test/fractal
+        with:
+          host_file_prefix: ${{ env.HOST_FILE_PREFIX }}
 
       - name: Upload Host Info
         uses: actions/upload-artifact@v4
         with:
-          name: ip_hostname_${{ steps.collect-host-info.outputs.hostname }}
-          path: ip_hostname_${{ steps.collect-host-info.outputs.hostname }}.txt
+          name:  ${{ env.HOST_FILE_PREFIX }}${{ steps.collect-host-info.outputs.hostname }}
+          path: ${{ env.HOST_FILE_PREFIX }}${{ steps.collect-host-info.outputs.hostname }}.txt
   # download-hosts-info:
   #   needs: [upload-hosts-info,filter-runners]
   #   strategy:
@@ -320,9 +323,7 @@ jobs:
         uses: taosdata/.github/.github/actions/download-artifacts@test/fractal
         with:
           gh_token: ${{ secrets.RUNNER_PAT }}
-          download-dir:
-          artifact_name: ip_hostname_${{ matrix.runner }}
-          download_dir: $RUNNER_WORKSPACE/ip_hostname
+          download_dir: $RUNNER_WORKSPACE/${{ env.HOST_FILE_PREFIX }}
 
       # - name: Install GitHub CLI
       #   shell: bash
