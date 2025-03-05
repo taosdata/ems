@@ -316,52 +316,59 @@ jobs:
     steps:
       # - name: Checkout code
       #   uses: actions/checkout@v4
+      - name: Download Host Info
+        uses: taosdata/.github/.github/actions/download-artifacts@test/fractal
+        with:
+          gh_token: ${{ secrets.RUNNER_PAT }}
+          download-dir:
+          artifact_name: ip_hostname_${{ matrix.runner }}
+          download_dir: $RUNNER_WORKSPACE/ip_hostname
 
-      - name: Install GitHub CLI
-        shell: bash
-        run: |
-          echo "🔄 Installing GitHub CLI..."
-          sudo apt-get update
-          sudo apt-get install gh -y
+      # - name: Install GitHub CLI
+      #   shell: bash
+      #   run: |
+      #     echo "🔄 Installing GitHub CLI..."
+      #     sudo apt-get update
+      #     sudo apt-get install gh -y
 
-      - name: Authenticate GitHub CLI
-        run: |
-          echo "🔄 Authenticating GitHub CLI..."
-          echo "${{ secrets.RUNNER_PAT }}" | gh auth login --with-token
+      # - name: Authenticate GitHub CLI
+      #   run: |
+      #     echo "🔄 Authenticating GitHub CLI..."
+      #     echo "${{ secrets.RUNNER_PAT }}" | gh auth login --with-token
 
-      - name: Download All Artifacts
-        run: |
-          echo "🔄 Downloading ALL artifacts..."
-          gh run download $GITHUB_RUN_ID --dir ip_hostname --overwrite
+      # - name: Download All Artifacts
+      #   run: |
+      #     echo "🔄 Downloading ALL artifacts..."
+      #     gh run download $GITHUB_RUN_ID --dir ip_hostname --overwrite
 
-      - name: Combine IP and Hostname Info In Each Runner
-        run: |
-          echo "🔄 Combining IP and hostname info..."
+      # - name: Combine IP and Hostname Info In Each Runner
+      #   run: |
+      #     echo "🔄 Combining IP and hostname info..."
 
-          # Read all files in the ip_hostname directory and combine them
-          ip_hostname_info=$(cat ip_hostname/*.txt | sort | uniq)
+      #     # Read all files in the ip_hostname directory and combine them
+      #     ip_hostname_info=$(cat ip_hostname/*.txt | sort | uniq)
 
-          # Save the combined IP and hostname info to an environment variable
-          echo "ip_hostname_info<<EOF" >> $GITHUB_ENV
-          echo -e "$ip_hostname_info" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+      #     # Save the combined IP and hostname info to an environment variable
+      #     echo "ip_hostname_info<<EOF" >> $GITHUB_ENV
+      #     echo -e "$ip_hostname_info" >> $GITHUB_ENV
+      #     echo "EOF" >> $GITHUB_ENV
 
-      - name: Update /etc/hosts In Each Runner
-        run: |
-          echo "🔄 Updating /etc/hosts..."
+      # - name: Update /etc/hosts In Each Runner
+      #   run: |
+      #     echo "🔄 Updating /etc/hosts..."
 
-          while IFS= read -r line; do
-            # Check if the line already exists in /etc/hosts
-            if ! grep -Fxq "$line" /etc/hosts; then
-              # Append the line to /etc/hosts if it doesn't exist
-              echo "$line" | sudo tee -a /etc/hosts
-            else
-              echo "✅ Skipping (already exists): $line"
-            fi
-          done <<< "$ip_hostname_info"
+      #     while IFS= read -r line; do
+      #       # Check if the line already exists in /etc/hosts
+      #       if ! grep -Fxq "$line" /etc/hosts; then
+      #         # Append the line to /etc/hosts if it doesn't exist
+      #         echo "$line" | sudo tee -a /etc/hosts
+      #       else
+      #         echo "✅ Skipping (already exists): $line"
+      #       fi
+      #     done <<< "$ip_hostname_info"
 
-          echo "✅ Updated /etc/hosts with runner IPs and hostnames:"
-          cat /etc/hosts
+      #     echo "✅ Updated /etc/hosts with runner IPs and hostnames:"
+      #     cat /etc/hosts
 
   # install-tdengine-nodes:
   #   needs:
