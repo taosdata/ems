@@ -267,10 +267,29 @@ jobs:
       - name: Upload Host Info
         uses: actions/upload-artifact@v4
         with:
-          name: ip_hostname
+          name: host-infos
           path: ip_hostname_*.txt
-          merge: true
+  download-hosts-info:
+    needs: [upload-hosts-info,filter-runners]
+    strategy:
+      matrix:
+        runner:
+          - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
+          - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
+          - ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
+          - ${{ fromJson(needs.filter-runners.outputs.taostest_runner_list || '[]') }}
+    runs-on:
+      group: customers
+      labels: ${{ matrix.runner }}
+    steps:
+      - name: Download All Host Info
+        uses: actions/download-artifact@v4
+        with:
+          name: host-infos
+          path: downloaded-host-infos
 
+      - name: List Downloaded Files
+        run: ls -l downloaded-host-infos
       # - name: Upload Host Info
       #   uses: actions/upload-artifact@v4
       #   with:
