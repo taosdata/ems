@@ -66,6 +66,7 @@ env :
   CLIENT_COUNT : 1
   EDGE_DNODE_COUNT : 2
   CENTER_DNODE_COUNT : 3
+  RUNNER_WORKSPACE: $RUNNER_WORKSPACE
   # EDGE_DNODE_COUNT : ${{ github.event.inputs.edge-dnode-count }}
   # CENTER_DNODE_COUNT : ${{ github.event.inputs.center-dnode-count }}
 
@@ -331,7 +332,7 @@ jobs:
       - name: Download All Artifacts
         run: |
           echo "🔄 Downloading ALL artifacts..."
-          gh run download $GITHUB_RUN_ID --dir ip_hostname
+          gh run download $GITHUB_RUN_ID --dir ip_hostname --overwrite
 
       - name: Combine IP and Hostname Info In Each Runner
         run: |
