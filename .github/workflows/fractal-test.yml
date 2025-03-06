@@ -261,19 +261,19 @@ jobs:
     needs: filter-runners
     strategy:
       matrix:
-        roll:
+        role:
           - edge-dnode
           - center-dnode
           - mqtt
           - client
         include:
-          - roll: edge-dnode
+          - role: edge-dnode
             labels: ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
-          - roll: center-dnode
+          - role: center-dnode
             labels: ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
-          - roll: mqtt
+          - role: mqtt
             labels: ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
-          - roll: client
+          - role: client
             labels: ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
     # runs-on: ubuntu-latest
     runs-on:
@@ -285,7 +285,7 @@ jobs:
         uses: taosdata/.github/.github/actions/upload-host-info@test/fractal
         with:
           HOSTS_DIRNAME: ${{ env.HOSTS_DIRNAME }}
-          roll: ${{ matrix.roll }}
+          role: ${{ matrix.role }}
 
       - name: Upload Host Info
         uses: actions/upload-artifact@v4
