@@ -345,9 +345,7 @@ jobs:
             runner_list: ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '["mqtt-default"]') }}
 
     # ✅ 动态选择 Runner
-    runs-on:
-      group: customers
-      labels: ${{ matrix.config.runner_list }}
+    runs-on: ${{ matrix.config.runner_list }}
 
     # ✅ 统一步骤模板
     steps:
