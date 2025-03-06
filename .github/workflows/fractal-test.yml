@@ -455,20 +455,37 @@ jobs:
       group: customers
       labels: ${{ matrix.runner }}
     steps:
-      - name: Deploy Taostest And TestNG
-        id: deploy-taostest-testng
-        uses: taosdata/.github/.github/actions/deploy-taostest-testng@test/fractal
+      - name: Sync Repo - taos-test-framework
+        uses: taosdata/.github/.github/actions/sync-repo@test/fractal
         with:
+          parent-dir: "$RUNNER_WORKSPACE/../taos-test-framework"
+          repo-url: "https://github.com/taosdata/taos-test-framework.git"
+          branch: "feat/TD-33672"
           res_app_id: ${{ vars.TAOSDATA_BOT_ID }}
           res_app_key: ${{ secrets.TAOSDATA_BOT_KEY }}
-          taostest-branch: "feat/TD-33672"
-          testng-branch: "test/TD-33672"
 
-      - name: Install TDengine Enterprise
-        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
+      - name: Sync Repo - TestNG
+        uses: taosdata/.github/.github/actions/sync-repo@test/fractal
         with:
-            version: ${{ github.event.inputs.td-version }}
-            download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
+          parent-dir: "$RUNNER_WORKSPACE/../TestNG"
+          repo-url: "https://github.com/taosdata/taos-test-framework.git"
+          branch: "test/TD-33672"
+          res_app_id: ${{ vars.TAOSDATA_BOT_ID }}
+          res_app_key: ${{ secrets.TAOSDATA_BOT_KEY }}
+      # - name: Deploy Taostest And TestNG
+      #   id: deploy-taostest-testng
+      #   uses: taosdata/.github/.github/actions/deploy-taostest-testng@test/fractal
+      #   with:
+      #     res_app_id: ${{ vars.TAOSDATA_BOT_ID }}
+      #     res_app_key: ${{ secrets.TAOSDATA_BOT_KEY }}
+      #     taostest-branch: "feat/TD-33672"
+      #     testng-branch: "test/TD-33672"
+
+      # - name: Install TDengine Enterprise
+      #   uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
+      #   with:
+      #       version: ${{ github.event.inputs.td-version }}
+      #       download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
 
   #     - name: Install Grafana In Taostest Node
   #       uses: taosdata/.github/.github/actions/install-grafana@test/fractal
