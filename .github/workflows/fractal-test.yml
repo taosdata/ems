@@ -348,7 +348,7 @@ jobs:
     # ✅ 动态选择 Runner
     runs-on:
       group: customers
-      labels: ${{ matrix.config.labels }}
+      labels: ${{ matrix.config.role.labels }}
 
     # ✅ 统一步骤模板
     steps:
