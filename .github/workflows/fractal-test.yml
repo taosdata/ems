@@ -339,9 +339,11 @@ jobs:
         config:
           - role: client
             # ✅ 转换为合法的 labels 格式
-            labels: ${{ join(fromJson(needs.filter-runners.outputs.client_runner_list || '["client-default"]'), ',') }}
+            labels:
+              - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
           - role: edge
-            labels: ${{ join(fromJson(needs.filter-runners.outputs.edge_runner_list || '["edge-default"]'), ',') }}
+            labels:
+              - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
 
     # ✅ 动态选择 Runner
     runs-on:
