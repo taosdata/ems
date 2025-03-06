@@ -509,11 +509,11 @@ jobs:
         uses: taosdata/.github/.github/actions/gen-taostest-env@test/fractal
         with:
           json_file: "$RUNNER_WORKSPACE/${{ env.HOSTS_DIRNAME }}/role_info.json"
-          test_root: ${{ steps.deploy-taostest-testng.outputs.test_root }}
+          test_root: "${{ env.TEST_ROOT }}"
 
       - name: Print Taostest Hosts
         run: |
-          echo "TEST_ROOT: ${{ steps.deploy-taostest-testng.outputs.test_root }}"
+          echo "TEST_ROOT: ${{ env.TEST_ROOT }}"
           echo "MQTT Hosts: $MQTT_HOSTS"
           echo "Single Dnode Hosts: $SINGLE_DNODE_HOSTS"
           echo "Taos Benchmark Hosts: $TAOS_BENCHMARK_HOSTS"
