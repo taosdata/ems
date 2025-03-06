@@ -546,8 +546,6 @@ jobs:
             --argjson taosBenchmarkHosts "$TAOS_BENCHMARK_HOSTS" \
             --argjson centerDnodeHosts "$CENTER_DNODE_HOSTS" \
             '{
-              db_config: $dbConfig,
-              query_config: $queryConfig,
               exec_time: $execTime,
               source_interval: $sourceInterval,
               enable_compression: $enableCompression,
@@ -598,92 +596,60 @@ jobs:
   #           combinations=$(jq -n --argjson a "$mqtt_json" --argjson b "$fractal_json" '$a | to_entries | map({ mqtt_client: .value, fractal_edge: $b[.key] })'| jq -c .)
   #           echo "Generated combinations: $combinations"
   #           echo "::set-output name=runner_combinations::$combinations"
-  # deploy-fractal-edge:
-  #   needs:
-  #     - set-runners
-  #     - deploy-taostest-node
-  #   strategy:
-  #     matrix:
-  #       combination: ${{ fromJSON(needs.set-runners.outputs.runner_combinations) }}
+  deploy-fractal-edge:
+    needs:
+      - filter-runners
+      - install-tdengine-nodes
+    strategy:
+      matrix:
+        runner:
+          - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
+    runs-on:
+      group: customers
+      labels: ${{ matrix.runner }}
+    steps:
+      - name: Install Flashmq
+        uses: taosdata/.github/.github/actions/install-flashmq@main
 
-  #   runs-on:
-  #     group: customers
-  #     labels:
-  #       - self-hosted
-  #       - Linux
-  #       - X64
-  #       - edge_td
-  #       - fractal
-  #       - ${{ matrix.combination.fractal_edge }}
-  #   outputs:
-  #     fractal_ip: ${{ steps.get-ip.outputs.local_ip }}
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
+  deploy-mqtt-client:
+    needs:
+      - filter-runners
+      - install-tdengine-nodes
+    strategy:
+      matrix:
+        runner:
+          - ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
+    runs-on:
+      group: customers
+      labels: ${{ matrix.runner }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  #     - name: Install Flashmq
-  #       uses: taosdata/.github/.github/actions/install-flashmq@main
+      - name: Install MQTT CLI
+        uses: taosdata/.github/.github/actions/install-mqtt-simulator@main
+        with:
+          nas_public_url: ${{ secrets.nas_download_url }}
 
-  #     - name: Get IP Addresses
-  #       id: get-ip
-  #       run: |
-  #         local_ip=$(hostname -I | awk '{print $1}')
-  #         echo "Local IP Address: $local_ip"
-  #         echo "$local_ip" > ${{ matrix.combination.fractal_edge }}.txt
-
-  #     - name: Upload IP Address as Artifact
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: ${{ matrix.combination.fractal_edge }}-ip
-  #         path: ${{ matrix.combination.fractal_edge }}.txt
-
-  # deploy-mqtt-client:
-  #   needs: [set-runners,deploy-fractal-edge]
-  #   strategy:
-  #     matrix:
-  #       combination: ${{ fromJSON(needs.set-runners.outputs.runner_combinations) }}
-  #   runs-on:
-  #     group: customers
-  #     labels:
-  #       - self-hosted
-  #       - Linux
-  #       - X64
-  #       - fractal
-  #       - ${{ matrix.combination.mqtt_client }}
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
-
-  #     - name: Install MQTT CLI
-  #       uses: taosdata/.github/.github/actions/install-mqtt-simulator@main
-  #       with:
-  #         nas_public_url: ${{ secrets.nas_download_url }}
-
-  #     - name: Find mqtt_pub binary and fractal toml
-  #       run: |
-  #           mqtt_pub_path=$(find /root /opt -name mqtt_pub 2>/dev/null | head -n 1)
-  #             if [ -n "$mqtt_pub_path" ]; then
-  #               echo "mqtt_pub found at $mqtt_pub_path"
-  #             else
-  #               echo "mqtt_pub not found"
-  #             fi
-  #             echo "MQTT_PUB_PATH=$mqtt_pub_path" >> $GITHUB_ENV
-  #           rm -f /usr/bin/mqtt_pub && cp $mqtt_pub_path /usr/bin/mqtt_pub
-  #           chmod +x /usr/bin/mqtt_pub
-  #           fractal_toml=$(find /root /opt -name fractal.toml 2>/dev/null | head -n 1)
-  #             if [ -n "$fractal_toml" ]; then
-  #               echo "fractal.toml found at $fractal_toml"
-  #             else
-  #               echo "fractal.toml not found"
-  #             fi
-  #             echo "FRACTAL_TOML=$fractal_toml" >> $GITHUB_ENV
-  #           rm -f /etc/taos/test.toml && mkdir -p /etc/taos && cp $fractal_toml /etc/taos/test.toml
-  #       shell: bash
-  #     - name: Download IP Address Artifact
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: ${{ matrix.combination.fractal_edge }}-ip
-  #         path: ./ip_artifacts
+      - name: Find mqtt_pub binary and fractal toml
+        run: |
+            mqtt_pub_path=$(find /root /opt -name mqtt_pub 2>/dev/null | head -n 1)
+              if [ -n "$mqtt_pub_path" ]; then
+                echo "mqtt_pub found at $mqtt_pub_path"
+              else
+                echo "mqtt_pub not found"
+              fi
+              echo "MQTT_PUB_PATH=$mqtt_pub_path" >> $GITHUB_ENV
+            rm -f /usr/bin/mqtt_pub && cp $mqtt_pub_path /usr/bin/mqtt_pub
+            chmod +x /usr/bin/mqtt_pub
+            fractal_toml=$(find /root /opt -name fractal.toml 2>/dev/null | head -n 1)
+              if [ -n "$fractal_toml" ]; then
+                echo "fractal.toml found at $fractal_toml"
+              else
+                echo "fractal.toml not found"
+              fi
+              echo "FRACTAL_TOML=$fractal_toml" >> $GITHUB_ENV
+            rm -f /etc/taos/test.toml && mkdir -p /etc/taos && cp $fractal_toml /etc/taos/test.toml
   # run-test:
   #   # needs: [filter-runners, deploy-taostest-node, deploy-fractal-edge, deploy-mqtt-client, install-tdengine-nodes]
   #   needs: [filter-runners, deploy-taostest-node, deploy-fractal-edge, install-tdengine-nodes,deploy-mqtt-client]
