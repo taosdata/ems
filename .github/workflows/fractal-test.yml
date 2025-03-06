@@ -337,18 +337,13 @@ jobs:
       matrix:
         # ✅ 统一管理角色配置
         config:
-          - role: client
-            # ✅ 转换为合法的 labels 格式
-            labels:
-              - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
-          - role: edge
-            labels:
-              - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
+          - runner:
+            - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
 
     # ✅ 动态选择 Runner
     runs-on:
       group: customers
-      labels: ${{ matrix.config.role.labels }}
+      labels: ${{ matrix.config.runner }}
 
     # ✅ 统一步骤模板
     steps:
