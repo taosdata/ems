@@ -337,15 +337,16 @@ jobs:
       matrix:
         # ✅ 统一管理角色配置
         config:
-          - name: client
-            runner_list: ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '["client-default"]') }}
-          - name: edge
-            runner_list: ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '["edge-default"]') }}
-          - name: mqtt  # ✅ 扩展新角色示例
-            runner_list: ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '["mqtt-default"]') }}
+          - role: client
+            # ✅ 转换为合法的 labels 格式
+            labels: ${{ join(fromJson(needs.filter-runners.outputs.client_runner_list || '["client-default"]'), ',') }}
+          - role: edge
+            labels: ${{ join(fromJson(needs.filter-runners.outputs.edge_runner_list || '["edge-default"]'), ',') }}
 
     # ✅ 动态选择 Runner
-    runs-on: ${{ matrix.config.runner_list }}
+    runs-on:
+      group: customers
+      labels: "[${{ matrix.config.labels }}]"
 
     # ✅ 统一步骤模板
     steps:
