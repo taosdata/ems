@@ -284,14 +284,14 @@ jobs:
         id: collect-host-info
         uses: taosdata/.github/.github/actions/upload-host-info@test/fractal
         with:
-          HOSTS_DIRNAME: ${{ env.HOSTS_DIRNAME }}
+          hosts_dirname: ${{ env.HOSTS_DIRNAME }}
           role: ${{ matrix.role }}
 
       - name: Upload Host Info
         uses: actions/upload-artifact@v4
         with:
           name:  "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}"
-          path: "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}.txt"
+          path: "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}.*"
 
   combine-and-update-hosts:
     needs:
