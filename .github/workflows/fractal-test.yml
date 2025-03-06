@@ -261,32 +261,33 @@ jobs:
     needs: filter-runners
     strategy:
       matrix:
-        include:
-          - role: edge-dnode
-            labels: ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '["edge-default"]') }}
-          - role: center-dnode
-            labels: ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '["center-default"]') }}
-          - role: mqtt
-            labels: ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '["mqtt-default"]') }}
-          - role: client
-            labels: ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '["client-default"]') }}
+        group: [edge, center, mqtt, client]
+        # 动态加载对应组的 Runner 列表
+        runners: ${{ fromJson(needs.filter-runners.outputs.${{ matrix.group }}_runner_list || '[]') }}
+
+    # strategy:
+    #   matrix:
+    #     runner:
+    #       - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
+    #       - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
+    #       - ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
+    #       - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
     # runs-on: ubuntu-latest
     runs-on:
       group: customers
-      labels: ${{ matrix.labels }}
+      labels: ${{ matrix.runners }}
     steps:
       - name: Run Host Info Collection
         id: collect-host-info
         uses: taosdata/.github/.github/actions/upload-host-info@test/fractal
         with:
           hosts_dirname: ${{ env.HOSTS_DIRNAME }}
-          role: ${{ matrix.role }}
 
       - name: Upload Host Info
         uses: actions/upload-artifact@v4
         with:
           name:  "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}"
-          path: "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}.*"
+          path: "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}.txt"
 
   combine-and-update-hosts:
     needs:
