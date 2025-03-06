@@ -445,8 +445,8 @@ jobs:
 
   deploy-taostest-node:
     needs:
-     - combine-and-update-hosts
      - filter-runners
+     - install-tdengine-nodes
     strategy:
       matrix:
         runner:
@@ -474,42 +474,50 @@ jobs:
           res_app_key: ${{ secrets.TAOSDATA_BOT_KEY }}
 
       - name: Deploy Taostest And TestNG
+        id: deploy-taostest-testng
         uses: taosdata/.github/.github/actions/deploy-taostest-testng@test/fractal
         with:
           taostest-dir: "$RUNNER_WORKSPACE/../taos-test-framework"
           testng-dir: "$RUNNER_WORKSPACE/../TestNG"
-      # - name: Deploy Taostest And TestNG
-      #   id: deploy-taostest-testng
-      #   uses: taosdata/.github/.github/actions/deploy-taostest-testng@test/fractal
-      #   with:
-      #     res_app_id: ${{ vars.TAOSDATA_BOT_ID }}
-      #     res_app_key: ${{ secrets.TAOSDATA_BOT_KEY }}
-      #     taostest-branch: "feat/TD-33672"
-      #     testng-branch: "test/TD-33672"
 
-      # - name: Install TDengine Enterprise
-      #   uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
-      #   with:
-      #       version: ${{ github.event.inputs.td-version }}
-      #       download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
+      - name: Install TDengine Enterprise
+        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
+        with:
+            version: ${{ github.event.inputs.td-version }}
+            download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
 
-  #     - name: Install Grafana In Taostest Node
-  #       uses: taosdata/.github/.github/actions/install-grafana@test/fractal
+      - name: Install Grafana In Taostest Node
+        uses: taosdata/.github/.github/actions/install-grafana@test/fractal
 
-  #     - name: Install Prometheus In Taostest Node
-  #       uses: taosdata/.github/.github/actions/install-prometheus@test/fractal
+      - name: Install Prometheus In Taostest Node
+        uses: taosdata/.github/.github/actions/install-prometheus@test/fractal
 
-  #     - name: Install Node Exporter In Taostest Node
-  #       uses: taosdata/.github/.github/actions/install-node-exporter@test/fractal
+      - name: Install Node Exporter In Taostest Node
+        uses: taosdata/.github/.github/actions/install-node-exporter@test/fractal
 
-  #     - name: Install Process Exporter In Taostest Node
-  #       uses: taosdata/.github/.github/actions/install-process-exporter@test/fractal
+      - name: Install Process Exporter In Taostest Node
+        uses: taosdata/.github/.github/actions/install-process-exporter@test/fractal
 
-  #     - name: Config Process Exporter YAML In Taostest Node
-  #       uses: taosdata/.github/.github/actions/config-process-exporter-yml@test/fractal
-  #       with:
-  #         yml_file_path: "/etc/process_exporter.yml"
-  #         process_names: "taosBenchmark,taos,taostest"
+      - name: Config Process Exporter YAML In Taostest Node
+        uses: taosdata/.github/.github/actions/config-process-exporter-yml@test/fractal
+        with:
+          yml_file_path: "/etc/process_exporter.yml"
+          process_names: "taosBenchmark,taos,taostest"
+
+      - name: Gen Taostest Hosts
+        id: gen_taostest_env
+        uses: taosdata/.github/.github/actions/gen-taostest-env@test/fractal
+        with:
+          json_file: "$RUNNER_WORKSPACE/${{ env.HOSTS_DIRNAME }}/role_info.json"
+          test_root: ${{ steps.deploy-taostest-testng.outputs.test_root }}
+
+      - name: Print Taostest Hosts
+        run: |
+          echo "TEST_ROOT: ${{ steps.deploy-taostest-testng.outputs.test_root }}"
+          echo "MQTT Hosts: $MQTT_HOSTS"
+          echo "Single Dnode Hosts: $SINGLE_DNODE_HOSTS"
+          echo "Taos Benchmark Hosts: $TAOS_BENCHMARK_HOSTS"
+          echo "Cluster Hosts: $CLUSTER_HOSTS"
 
   #     - name: Authenticate GitHub CLI
   #       run: |
