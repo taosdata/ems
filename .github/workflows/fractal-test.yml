@@ -261,20 +261,15 @@ jobs:
     needs: filter-runners
     strategy:
       matrix:
-        role:
-          - edge-dnode
-          - center-dnode
-          - mqtt
-          - client
         include:
           - role: edge-dnode
-            labels: ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
+            labels: ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '["edge-default"]') }}
           - role: center-dnode
-            labels: ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
+            labels: ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '["center-default"]') }}
           - role: mqtt
-            labels: ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
+            labels: ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '["mqtt-default"]') }}
           - role: client
-            labels: ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
+            labels: ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '["client-default"]') }}
     # runs-on: ubuntu-latest
     runs-on:
       group: customers
