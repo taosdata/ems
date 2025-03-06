@@ -283,92 +283,105 @@ jobs:
   #         name:  "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}"
   #         path: "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}.txt"
 
-  # upload-client-hosts-info:
-  #   needs: filter-runners
-  #   strategy:
-  #     matrix:
-  #       runner:
-  #         - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
-  #   # runs-on: ubuntu-latest
-  #   runs-on:
-  #     group: customers
-  #     labels: ${{ matrix.runner }}
-  #   steps:
-  #     - name: Run Host Info Collection
-  #       id: collect-host-info
-  #       uses: taosdata/.github/.github/actions/upload-host-info@test/fractal
-  #       with:
-  #         hosts_dirname: ${{ env.HOSTS_DIRNAME }}
-  #         role: "client"
-
-  #     - name: Upload Host Info
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name:  "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}"
-  #         path: "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}.txt"
-
-  # upload-edge-hosts-info:
-  #   needs: filter-runners
-  #   strategy:
-  #     matrix:
-  #       runner:
-  #         - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
-  #   # runs-on: ubuntu-latest
-  #   runs-on:
-  #     group: customers
-  #     labels: ${{ matrix.runner }}
-  #   steps:
-  #     - name: Run Host Info Collection
-  #       id: collect-host-info
-  #       uses: taosdata/.github/.github/actions/upload-host-info@test/fractal
-  #       with:
-  #         hosts_dirname: ${{ env.HOSTS_DIRNAME }}
-  #         role: "edge"
-
-  #     - name: Upload Host Info
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name:  "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}"
-  #         path: "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}.txt"
-
-  upload-hosts-info:
+  upload-client-hosts-info:
     needs: filter-runners
     strategy:
       matrix:
-        role: ["client", "edge", "mqtt"]  # 定义角色列表
-        include:
-          # ✅ 显式映射角色与 runner 列表
-          - role: client
-            runners: ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '["client-default"]') }}
-          - role: edge
-            runners: ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '["edge-default"]') }}
-          - role: mqtt
-            runners: ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '["mqtt-default"]') }}
-
-
-    # ✅ 动态选择 Runner
+        runner:
+          - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
+    # runs-on: ubuntu-latest
     runs-on:
       group: customers
-      labels: ${{ matrix.runners }}
-
-    # ✅ 统一步骤模板
+      labels: ${{ matrix.runner }}
     steps:
-      - name: Collect ${{ matrix.role }} Host Info
+      - name: Run Host Info Collection
         id: collect-host-info
         uses: taosdata/.github/.github/actions/upload-host-info@test/fractal
         with:
           hosts_dirname: ${{ env.HOSTS_DIRNAME }}
-          role: ${{ matrix.role }}  # ✅ 动态传递角色参数
+          role: "client"
 
-      - name: Upload ${{ matrix.role }} Artifacts
+      - name: Upload Host Info
         uses: actions/upload-artifact@v4
         with:
-          name:  "${{ env.HOSTS_DIRNAME }}-${{ matrix.role }}-${{ steps.collect-host-info.outputs.hostname }}"
-          path: "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}.*"  # ✅ 通配符上传所有相关文件
+          name:  "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}"
+          path: "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}.*"
+
+  upload-edge-hosts-info:
+    needs: filter-runners
+    strategy:
+      matrix:
+        runner:
+          - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
+    # runs-on: ubuntu-latest
+    runs-on:
+      group: customers
+      labels: ${{ matrix.runner }}
+    steps:
+      - name: Run Host Info Collection
+        id: collect-host-info
+        uses: taosdata/.github/.github/actions/upload-host-info@test/fractal
+        with:
+          hosts_dirname: ${{ env.HOSTS_DIRNAME }}
+          role: "edge"
+
+      - name: Upload Host Info
+        uses: actions/upload-artifact@v4
+        with:
+          name:  "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}"
+          path: "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}.*"
+
+  upload-center-hosts-info:
+    needs: filter-runners
+    strategy:
+      matrix:
+        runner:
+          - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
+    # runs-on: ubuntu-latest
+    runs-on:
+      group: customers
+      labels: ${{ matrix.runner }}
+    steps:
+      - name: Run Host Info Collection
+        id: collect-host-info
+        uses: taosdata/.github/.github/actions/upload-host-info@test/fractal
+        with:
+          hosts_dirname: ${{ env.HOSTS_DIRNAME }}
+          role: "center"
+
+      - name: Upload Host Info
+        uses: actions/upload-artifact@v4
+        with:
+          name:  "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}"
+          path: "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}.*"
+
+  upload-mqtt-hosts-info:
+    needs: filter-runners
+    strategy:
+      matrix:
+        runner:
+          - ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
+    # runs-on: ubuntu-latest
+    runs-on:
+      group: customers
+      labels: ${{ matrix.runner }}
+    steps:
+      - name: Run Host Info Collection
+        id: collect-host-info
+        uses: taosdata/.github/.github/actions/upload-host-info@test/fractal
+        with:
+          hosts_dirname: ${{ env.HOSTS_DIRNAME }}
+          role: "mqtt"
+
+      - name: Upload Host Info
+        uses: actions/upload-artifact@v4
+        with:
+          name:  "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}"
+          path: "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}.*"
 
   combine-and-update-hosts:
     needs:
-      - upload-hosts-info
+      - upload-mqtt-hosts-info
       - filter-runners
     strategy:
       matrix:
