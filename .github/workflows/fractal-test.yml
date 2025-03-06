@@ -335,29 +335,35 @@ jobs:
     needs: filter-runners
     strategy:
       matrix:
-        # ✅ 统一管理角色配置
-        config:
-          - runner:
-            - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
+        role: ["client", "edge", "mqtt"]  # 定义角色列表
+        include:
+          # ✅ 显式映射角色与 runner 列表
+          - role: client
+            runners: ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '["client-default"]') }}
+          - role: edge
+            runners: ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '["edge-default"]') }}
+          - role: mqtt
+            runners: ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '["mqtt-default"]') }}
+
 
     # ✅ 动态选择 Runner
     runs-on:
       group: customers
-      labels: ${{ matrix.config.runner }}
+      labels: ${{ matrix.runners }}
 
     # ✅ 统一步骤模板
     steps:
-      - name: Collect ${{ matrix.config.name }} Host Info
+      - name: Collect ${{ matrix.role }} Host Info
         id: collect-host-info
         uses: taosdata/.github/.github/actions/upload-host-info@test/fractal
         with:
           hosts_dirname: ${{ env.HOSTS_DIRNAME }}
-          role: ${{ matrix.config.name }}  # ✅ 动态传递角色参数
+          role: ${{ matrix.role }}  # ✅ 动态传递角色参数
 
-      - name: Upload ${{ matrix.config.name }} Artifacts
+      - name: Upload ${{ matrix.role }} Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name:  "${{ env.HOSTS_DIRNAME }}-${{ matrix.config.name }}-${{ steps.collect-host-info.outputs.hostname }}"
+          name:  "${{ env.HOSTS_DIRNAME }}-${{ matrix.role }}-${{ steps.collect-host-info.outputs.hostname }}"
           path: "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}.*"  # ✅ 通配符上传所有相关文件
 
   combine-and-update-hosts:
