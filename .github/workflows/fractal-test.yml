@@ -544,7 +544,8 @@ jobs:
           echo "test_root: $TEST_ROOT"
           workflow_config_path="$RUNNER_WORKSPACE/../TestNG/env"
           echo "🔄 WORKFLOW_CONFIG_PATH: $workflow_config_path"
-          jq --arg test_start_time "$test_start_time" '. + {test_start_time: $test_start_time}' "$workflow_config_path/${{ env.WORKFLOW_CONFIG_FILE }}" > tmp.json mv tmp.json $workflow_config_path/${{ env.WORKFLOW_CONFIG_FILE }}
+          jq --arg test_start_time "$test_start_time" '. + {test_start_time: $test_start_time}' "$workflow_config_path/${{ env.WORKFLOW_CONFIG_FILE }}" > tmp.json
+          mv tmp.json $workflow_config_path/${{ env.WORKFLOW_CONFIG_FILE }}
           query_json=$(find $GITHUB_WORKSPACE -name query.json 2>/dev/null | head -n 1)
           db_config_json=$(find $GITHUB_WORKSPACE -name db_config.json 2>/dev/null | head -n 1)
           mv db_config_json query_json $workflow_config_path
