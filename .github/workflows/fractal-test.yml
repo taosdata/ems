@@ -71,6 +71,7 @@ env :
   PROMETHEUS_YML_PATH: /etc/prometheus/prometheus.yml
   PROCESS_EXPORTER_YML_PATH: "/etc/process_exporter.yml"
   MONITORING_PROCESS_NAMES: "taosd,taosadapter"
+  RUNNER_GROUP: "customers"
   # EDGE_DNODE_COUNT : ${{ github.event.inputs.edge-dnode-count }}
   # CENTER_DNODE_COUNT : ${{ github.event.inputs.center-dnode-count }}
 
@@ -104,7 +105,7 @@ jobs:
         id: get-edge-runners
         uses: taosdata/.github/.github/actions/get-runners@test/fractal
         with:
-          include_labels: "20C16G"
+          include_labels: ${{ env.EDGE_LABEL }}
           required_count: ${{ env.EDGE_DNODE_COUNT }}
           exclude_labels: "exclusive"
           gh_token: ${{ secrets.RUNNER_PAT }}
@@ -113,7 +114,7 @@ jobs:
         id: center-edge-runners
         uses: taosdata/.github/.github/actions/get-runners@test/fractal
         with:
-          include_labels: "20C16G,exclusive"
+          include_labels: "${{ env.CENTER_LABEL }},exclusive"
           required_count: ${{ env.CENTER_DNODE_COUNT }}
           gh_token: ${{ secrets.RUNNER_PAT }}
 
@@ -122,7 +123,7 @@ jobs:
     needs: filter-runners
     # runs-on: ubuntu-latest
     runs-on:
-      group: customers
+      group: ${{ env.RUNNER_GROUP }}
       labels: ${{ matrix.runner }}
     if: ${{ needs.filter-runners.outputs.edge_runner_list != '' }}
     strategy:
@@ -268,7 +269,7 @@ jobs:
   #         - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
   #   # runs-on: ubuntu-latest
   #   runs-on:
-  #     group: customers
+  #     group: ${{ env.RUNNER_GROUP }}
   #     labels: ${{ matrix.runner }}
   #   steps:
   #     - name: Run Host Info Collection
@@ -291,7 +292,7 @@ jobs:
           - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
     # runs-on: ubuntu-latest
     runs-on:
-      group: customers
+      group: ${{ env.RUNNER_GROUP }}
       labels: ${{ matrix.runner }}
     steps:
       - name: Run Host Info Collection
@@ -315,7 +316,7 @@ jobs:
           - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
     # runs-on: ubuntu-latest
     runs-on:
-      group: customers
+      group: ${{ env.RUNNER_GROUP }}
       labels: ${{ matrix.runner }}
     steps:
       - name: Run Host Info Collection
@@ -339,7 +340,7 @@ jobs:
           - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
     # runs-on: ubuntu-latest
     runs-on:
-      group: customers
+      group: ${{ env.RUNNER_GROUP }}
       labels: ${{ matrix.runner }}
     steps:
       - name: Run Host Info Collection
@@ -363,7 +364,7 @@ jobs:
           - ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
     # runs-on: ubuntu-latest
     runs-on:
-      group: customers
+      group: ${{ env.RUNNER_GROUP }}
       labels: ${{ matrix.runner }}
     steps:
       - name: Run Host Info Collection
@@ -391,7 +392,7 @@ jobs:
           - ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
           - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
     runs-on:
-      group: customers
+      group: ${{ env.RUNNER_GROUP }}
       labels: ${{ matrix.runner }}
     steps:
       - name: Checkout code
@@ -425,7 +426,7 @@ jobs:
           - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
           - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
     runs-on:
-      group: customers
+      group: ${{ env.RUNNER_GROUP }}
       labels: ${{ matrix.runner }}
     steps:
       # - name: Install TDengine Enterprise
@@ -455,7 +456,7 @@ jobs:
         runner:
           - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
     runs-on:
-      group: customers
+      group: ${{ env.RUNNER_GROUP }}
       labels: ${{ matrix.runner }}
     steps:
       - name: Sync Repo - taos-test-framework
@@ -608,7 +609,7 @@ jobs:
         runner:
           - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
     runs-on:
-      group: customers
+      group: ${{ env.RUNNER_GROUP }}
       labels: ${{ matrix.runner }}
     steps:
       - name: Install Flashmq
@@ -623,7 +624,7 @@ jobs:
         runner:
           - ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
     runs-on:
-      group: customers
+      group: ${{ env.RUNNER_GROUP }}
       labels: ${{ matrix.runner }}
     steps:
       - name: Checkout code
@@ -637,21 +638,11 @@ jobs:
       - name: Find mqtt_pub binary and fractal toml
         run: |
             mqtt_pub_path=$(find /root /opt -name mqtt_pub 2>/dev/null | head -n 1)
-              if [ -n "$mqtt_pub_path" ]; then
-                echo "mqtt_pub found at $mqtt_pub_path"
-              else
-                echo "mqtt_pub not found"
-              fi
-              echo "MQTT_PUB_PATH=$mqtt_pub_path" >> $GITHUB_ENV
+            echo "MQTT_PUB_PATH=$mqtt_pub_path" >> $GITHUB_ENV
             rm -f /usr/bin/mqtt_pub && cp $mqtt_pub_path /usr/bin/mqtt_pub
             chmod +x /usr/bin/mqtt_pub
             fractal_toml=$(find /root /opt -name fractal.toml 2>/dev/null | head -n 1)
-              if [ -n "$fractal_toml" ]; then
-                echo "fractal.toml found at $fractal_toml"
-              else
-                echo "fractal.toml not found"
-              fi
-              echo "FRACTAL_TOML=$fractal_toml" >> $GITHUB_ENV
+            echo "FRACTAL_TOML=$fractal_toml" >> $GITHUB_ENV
             rm -f /etc/taos/test.toml && mkdir -p /etc/taos && cp $fractal_toml /etc/taos/test.toml
   # run-test:
   #   # needs: [filter-runners, deploy-taostest-node, deploy-fractal-edge, deploy-mqtt-client, install-tdengine-nodes]
