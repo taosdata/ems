@@ -548,7 +548,9 @@ jobs:
           mv tmp.json $workflow_config_path/${{ env.WORKFLOW_CONFIG_FILE }}
           query_json=$(find $GITHUB_WORKSPACE -name query.json 2>/dev/null | head -n 1)
           db_config_json=$(find $GITHUB_WORKSPACE -name db_config.json 2>/dev/null | head -n 1)
-          mv db_config_json query_json $workflow_config_path
+          mv $db_config_json $query_json $workflow_config_path
+
+          echo "FRACTAL_TOML=$fractal_toml"
           echo "FRACTAL_TOML=$fractal_toml" >> $GITHUB_ENV
           taostest --convert-json=fractal-center.json
           taostest --convert-json=fractal-edge-1.json
