@@ -394,6 +394,9 @@ jobs:
       group: customers
       labels: ${{ matrix.runner }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Download Host Info
         uses: taosdata/.github/.github/actions/download-artifacts@test/fractal
         with:
