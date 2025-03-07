@@ -333,11 +333,11 @@ jobs:
 
       - name: Find mqtt_pub binary and fractal toml
         run: |
-            mqtt_pub_path=$(find $RUNNER_WORKSPACE/../ -name mqtt_pub 2>/dev/null | head -n 1)
+            mqtt_pub_path=$(find $GITHUB_WORKSPACE -name mqtt_pub 2>/dev/null | head -n 1)
             echo "MQTT_PUB_PATH=$mqtt_pub_path" >> $GITHUB_ENV
             rm -f /usr/bin/mqtt_pub && cp $mqtt_pub_path /usr/bin/mqtt_pub
             chmod +x /usr/bin/mqtt_pub
-            fractal_toml=$(find $RUNNER_WORKSPACE/../ -name fractal.toml 2>/dev/null | head -n 1)
+            fractal_toml=$(find $GITHUB_WORKSPACE -name fractal.toml 2>/dev/null | head -n 1)
             echo "FRACTAL_TOML=$fractal_toml" >> $GITHUB_ENV
             rm -f /etc/taos/test.toml && mkdir -p /etc/taos && cp $fractal_toml /etc/taos/test.toml
   # install-tdengine-nodes:
@@ -539,17 +539,15 @@ jobs:
           echo "🔄 Source interval: ${{ github.event.inputs.source-interval }}"
           echo "🔄 Enable compression: ${{ github.event.inputs.enable-compression }}"
           echo "🔄 Test started at $(date)"
-          echo "🔄 WORKFLOW_CONFIG_PATH: "$RUNNER_WORKSPACE/../TestNG/env/${{ env.WORKFLOW_CONFIG_FILE }}""
           echo "%PWD%: $PWD"
           test_start_time=$(date +"%Y%m%d_%H%M%S")
-          workflow_config_file="$RUNNER_WORKSPACE/../TestNG/env/${{ env.WORKFLOW_CONFIG_FILE }}"
-          echo "🔄 WORKFLOW_CONFIG_PATH: $workflow_config_file"
-          jq --arg test_start_time "$test_start_time" '. + {test_start_time: $test_start_time}' "$workflow_config_file" > tmp.json
-          echo "🔄 WORKFLOW_CONFIG_PATH: $workflow_config_file"
-          mv tmp.json $workflow_config_file
-          query_json=$(find $RUNNER_WORKSPACE/../ -name query.json 2>/dev/null | head -n 1)
-          db_config_json=$(find $RUNNER_WORKSPACE/../ -name db_config.json 2>/dev/null | head -n 1)
-          mv db_config_json query_json $TEST_ROOT/env/
+          echo "test_root: $TEST_ROOT"
+          workflow_config_path="$RUNNER_WORKSPACE/../TestNG/env"
+          echo "🔄 WORKFLOW_CONFIG_PATH: $workflow_config_path"
+          jq --arg test_start_time "$test_start_time" '. + {test_start_time: $test_start_time}' "$workflow_config_path/${{ env.WORKFLOW_CONFIG_FILE }}" > tmp.json mv tmp.json $workflow_config_path/${{ env.WORKFLOW_CONFIG_FILE }}
+          query_json=$(find $GITHUB_WORKSPACE -name query.json 2>/dev/null | head -n 1)
+          db_config_json=$(find $GITHUB_WORKSPACE -name db_config.json 2>/dev/null | head -n 1)
+          mv db_config_json query_json $workflow_config_path
           echo "FRACTAL_TOML=$fractal_toml" >> $GITHUB_ENV
           taostest --convert-json=fractal-center.json
           taostest --convert-json=fractal-edge-1.json
