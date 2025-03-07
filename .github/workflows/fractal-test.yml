@@ -449,8 +449,7 @@ jobs:
             chmod +x /usr/bin/mqtt_pub
             fractal_toml=$(find /root /opt -name fractal.toml 2>/dev/null | head -n 1)
             echo "FRACTAL_TOML=$fractal_toml" >> $GITHUB_ENV
-            rm -f /etc/taos/test.toml && mkdir -p /etc/taos && cp $fractal_toml /etc
-            /taos/test.toml
+            rm -f /etc/taos/test.toml && mkdir -p /etc/taos && cp $fractal_toml /etc/taos/test.toml
   delete-artifacts:
     runs-on: ubuntu-latest
     needs: deploy-client-node
