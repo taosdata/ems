@@ -277,7 +277,7 @@ jobs:
           yml_file_path: "${{ env.PROCESS_EXPORTER_YML_PATH }}"
           process_names: "${{ env.MONITORING_PROCESS_NAMES }}"
 
-  deploy-taostest-node:
+  deploy-client-node:
     needs:
      - filter-runners
      - install-tdengine-nodes
@@ -449,10 +449,22 @@ jobs:
             chmod +x /usr/bin/mqtt_pub
             fractal_toml=$(find /root /opt -name fractal.toml 2>/dev/null | head -n 1)
             echo "FRACTAL_TOML=$fractal_toml" >> $GITHUB_ENV
-            rm -f /etc/taos/test.toml && mkdir -p /etc/taos && cp $fractal_toml /etc/taos/test.toml
+            rm -f /etc/taos/test.toml && mkdir -p /etc/taos && cp $fractal_toml /etc
+            /taos/test.toml
+  delete-artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Delete Artifacts
+        uses: taosdata/.github/.github/actions/delete-artifacts@test/fractal
+        with:
+          gh_token: ${{ secrets.RUNNER_PAT }}
+
   # run-test:
-  #   # needs: [filter-runners, deploy-taostest-node, deploy-fractal-edge, deploy-mqtt-client, install-tdengine-nodes]
-  #   needs: [filter-runners, deploy-taostest-node, deploy-fractal-edge, install-tdengine-nodes,deploy-mqtt-client]
+  #   # needs: [filter-runners, deploy-client-node, deploy-fractal-edge, deploy-mqtt-client, install-tdengine-nodes]
+  #   needs: [filter-runners, deploy-client-node, deploy-fractal-edge, install-tdengine-nodes,deploy-mqtt-client]
   #   strategy:
   #     matrix:
   #       runner: ${{ fromJson(needs.filter-runners.outputs.taostest_runners || '[]') }}
