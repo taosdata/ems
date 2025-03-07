@@ -55,11 +55,11 @@ env :
   CLIENT_LABEL : "24C64G"
   EDGE_DNODE_COUNT : ${{ github.event.inputs.edge-dnode-count }}
   CENTER_DNODE_COUNT : ${{ github.event.inputs.center-dnode-count }}
-  RUNNER_WORKSPACE: $RUNNER_WORKSPACE
   HOSTS_DIRNAME: "ip-hostname"
   PROMETHEUS_YML_PATH: /etc/prometheus/prometheus.yml
   PROCESS_EXPORTER_YML_PATH: "/etc/process_exporter.yml"
-  MONITORING_PROCESS_NAMES: "taosd,taosadapter"
+  MONITORING_PROCESS_NAMES: "taosd,taosadapter,taostest,taosBenchmark"
+  ROLE_FILE: "role_info.json"
 
 jobs:
   filter-runners:
@@ -169,7 +169,6 @@ jobs:
       matrix:
         runner:
           - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
-    # runs-on: ubuntu-latest
     runs-on:
       group: customers
       labels: ${{ matrix.runner }}
@@ -212,8 +211,11 @@ jobs:
 
   combine-and-update-hosts:
     needs:
-      - upload-mqtt-hosts-info
       - filter-runners
+      - upload-mqtt-hosts-info
+      - upload-edge-hosts-info
+      - upload-center-hosts-info
+      - upload-client-hosts-info
     strategy:
       matrix:
         runner:
@@ -245,25 +247,23 @@ jobs:
         with:
           entries: ${{ steps.combine-ip-hostname.outputs.combined_info }}
 
-  install-tdengine-nodes:
+  deploy-center-nodes:
     needs:
      - combine-and-update-hosts
      - filter-runners
     strategy:
       matrix:
         runner:
-          - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
           - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
-          - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
     runs-on:
       group: customers
       labels: ${{ matrix.runner }}
     steps:
-      # - name: Install TDengine Enterprise
-      #   uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
-      #   with:
-      #     version: ${{ github.event.inputs.td-version }}
-      #     download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
+      - name: Install TDengine Enterprise
+        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
+        with:
+          version: ${{ github.event.inputs.td-version }}
+          download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
 
       - name: Install Node Exporter In TDengine Nodes
         uses: taosdata/.github/.github/actions/install-node-exporter@test/fractal
@@ -277,10 +277,104 @@ jobs:
           yml_file_path: "${{ env.PROCESS_EXPORTER_YML_PATH }}"
           process_names: "${{ env.MONITORING_PROCESS_NAMES }}"
 
-  deploy-client-node:
+  deploy-edge-nodes:
     needs:
+      - filter-runners
+      - combine-and-update-hosts
+    strategy:
+      matrix:
+        runner:
+          - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
+    runs-on:
+      group: customers
+      labels: ${{ matrix.runner }}
+    steps:
+      - name: Install Flashmq
+        uses: taosdata/.github/.github/actions/install-flashmq@main
+
+      - name: Install TDengine Enterprise
+        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
+        with:
+          version: ${{ github.event.inputs.td-version }}
+          download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
+
+      - name: Install Node Exporter In TDengine Nodes
+        uses: taosdata/.github/.github/actions/install-node-exporter@test/fractal
+
+      - name: Install Process Exporter In TDengine Nodes
+        uses: taosdata/.github/.github/actions/install-process-exporter@test/fractal
+
+      - name: Config Process Exporter YAML In TDengine Nodes
+        uses: taosdata/.github/.github/actions/config-process-exporter-yml@test/fractal
+        with:
+          yml_file_path: "${{ env.PROCESS_EXPORTER_YML_PATH }}"
+          process_names: "${{ env.MONITORING_PROCESS_NAMES }}"
+
+  deploy-mqtt-simulator:
+    needs:
+      - filter-runners
+      - combine-and-update-hosts
+    strategy:
+      matrix:
+        runner:
+          - ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
+    runs-on:
+      group: customers
+      labels: ${{ matrix.runner }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install MQTT CLI
+        uses: taosdata/.github/.github/actions/install-mqtt-simulator@test/fractal
+        with:
+          nas_public_url: ${{ secrets.nas_download_url }}
+
+      - name: Find mqtt_pub binary and fractal toml
+        run: |
+            mqtt_pub_path=$(find /root /opt -name mqtt_pub 2>/dev/null | head -n 1)
+            echo "MQTT_PUB_PATH=$mqtt_pub_path" >> $GITHUB_ENV
+            rm -f /usr/bin/mqtt_pub && cp $mqtt_pub_path /usr/bin/mqtt_pub
+            chmod +x /usr/bin/mqtt_pub
+            fractal_toml=$(find /root /opt -name fractal.toml 2>/dev/null | head -n 1)
+            echo "FRACTAL_TOML=$fractal_toml" >> $GITHUB_ENV
+            rm -f /etc/taos/test.toml && mkdir -p /etc/taos && cp $fractal_toml /etc/taos/test.toml
+  # install-tdengine-nodes:
+  #   needs:
+  #    - combine-and-update-hosts
+  #    - filter-runners
+  #   strategy:
+  #     matrix:
+  #       runner:
+  #         - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
+  #         - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
+  #         - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
+  #   runs-on:
+  #     group: customers
+  #     labels: ${{ matrix.runner }}
+  #   steps:
+  #     # - name: Install TDengine Enterprise
+  #     #   uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
+  #     #   with:
+  #     #     version: ${{ github.event.inputs.td-version }}
+  #     #     download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
+
+  #     - name: Install Node Exporter In TDengine Nodes
+  #       uses: taosdata/.github/.github/actions/install-node-exporter@test/fractal
+
+  #     - name: Install Process Exporter In TDengine Nodes
+  #       uses: taosdata/.github/.github/actions/install-process-exporter@test/fractal
+
+  #     - name: Config Process Exporter YAML In TDengine Nodes
+  #       uses: taosdata/.github/.github/actions/config-process-exporter-yml@test/fractal
+  #       with:
+  #         yml_file_path: "${{ env.PROCESS_EXPORTER_YML_PATH }}"
+  #         process_names: "${{ env.MONITORING_PROCESS_NAMES }}"
+
+  deploy-client-nodes:
+    needs:
+     - combine-and-update-hosts
      - filter-runners
-     - install-tdengine-nodes
     strategy:
       matrix:
         runner:
@@ -314,11 +408,11 @@ jobs:
           taostest-dir: "$RUNNER_WORKSPACE/../taos-test-framework"
           testng-dir: "$RUNNER_WORKSPACE/../TestNG"
 
-      # - name: Install TDengine Enterprise
-      #   uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
-      #   with:
-      #       version: ${{ github.event.inputs.td-version }}
-      #       download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
+      - name: Install TDengine Enterprise
+        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
+        with:
+            version: ${{ github.event.inputs.td-version }}
+            download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
 
       - name: Install Grafana In Taostest Node
         uses: taosdata/.github/.github/actions/install-grafana@test/fractal
@@ -335,17 +429,29 @@ jobs:
       - name: Config Process Exporter YAML In Taostest Node
         uses: taosdata/.github/.github/actions/config-process-exporter-yml@test/fractal
         with:
-          yml_file_path: "/etc/process_exporter.yml"
-          process_names: "taosBenchmark,taos,taostest"
+          yml_file_path: "${{ env.PROCESS_EXPORTER_YML_PATH }}"
+          process_names: "${{ env.MONITORING_PROCESS_NAMES }}"
 
       - name: Gen Taostest Hosts
-        id: gen_taostest_env
         uses: taosdata/.github/.github/actions/gen-taostest-env@test/fractal
         with:
-          json_file: "$RUNNER_WORKSPACE/${{ env.HOSTS_DIRNAME }}/role_info.json"
+          json_file: "$RUNNER_WORKSPACE/${{ env.HOSTS_DIRNAME }}/${{ env.ROLE_FILE }}"
           test_root: "${{ env.TEST_ROOT }}"
 
-      - name: Print Taostest Hosts
+      - name: Configure SSH-Keyless Login
+        uses: taosdata/.github/.github/actions/ssh-keyless-login@test/fractal
+        with:
+          target_hosts: $HOSTNAME_INFO
+          password: ${{ secrets.VM_PASSWD }}
+
+      - name: Config Prometheus YAML
+        uses: taosdata/.github/.github/actions/config-prometheus-yml@test/fractal
+        with:
+          yml_file_path: ${{ env.PROMETHEUS_YML_PATH }}
+          node_exporter_hosts: $HOSTNAME_INFO
+          process_exporter_hosts: $HOSTNAME_INFO
+
+      - name: Print Hosts
         run: |
           echo "TEST_ROOT: $TEST_ROOT"
           echo "MQTT Hosts: $MQTT_HOSTS"
@@ -393,67 +499,13 @@ jobs:
           # Print File
           cat $RUNNER_WORKSPACE/workflow_config.json
 
-      - name: Configure SSH-Keyless Login
-        uses: taosdata/.github/.github/actions/ssh-keyless-login@test/fractal
-        with:
-          target_hosts: $HOSTNAME_INFO
-          password: ${{ secrets.VM_PASSWD }}
-
-      - name: Config Prometheus YAML
-        uses: taosdata/.github/.github/actions/config-prometheus-yml@test/fractal
-        with:
-          yml_file_path: ${{ env.PROMETHEUS_YML_PATH }}
-          node_exporter_hosts: $HOSTNAME_INFO
-          process_exporter_hosts: $HOSTNAME_INFO
-
-  deploy-fractal-edge:
-    needs:
-      - filter-runners
-      - install-tdengine-nodes
-    strategy:
-      matrix:
-        runner:
-          - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
-    runs-on:
-      group: customers
-      labels: ${{ matrix.runner }}
-    steps:
-      - name: Install Flashmq
-        uses: taosdata/.github/.github/actions/install-flashmq@main
-
-  deploy-mqtt-client:
-    needs:
-      - filter-runners
-      - install-tdengine-nodes
-    strategy:
-      matrix:
-        runner:
-          - ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
-    runs-on:
-      group: customers
-      labels: ${{ matrix.runner }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install MQTT CLI
-        uses: taosdata/.github/.github/actions/install-mqtt-simulator@test/fractal
-        with:
-          nas_public_url: ${{ secrets.nas_download_url }}
-
-      - name: Find mqtt_pub binary and fractal toml
-        run: |
-            mqtt_pub_path=$(find /root /opt -name mqtt_pub 2>/dev/null | head -n 1)
-            echo "MQTT_PUB_PATH=$mqtt_pub_path" >> $GITHUB_ENV
-            rm -f /usr/bin/mqtt_pub && cp $mqtt_pub_path /usr/bin/mqtt_pub
-            chmod +x /usr/bin/mqtt_pub
-            fractal_toml=$(find /root /opt -name fractal.toml 2>/dev/null | head -n 1)
-            echo "FRACTAL_TOML=$fractal_toml" >> $GITHUB_ENV
-            rm -f /etc/taos/test.toml && mkdir -p /etc/taos && cp $fractal_toml /etc/taos/test.toml
-
   clean-env:
     runs-on: ubuntu-latest
-    needs: deploy-client-node
+    needs:
+      - deploy-mqtt-simulator
+      - deploy-edge-nodes
+      - deploy-center-nodes
+      - deploy-client-nodes
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -464,8 +516,8 @@ jobs:
           gh_token: ${{ secrets.RUNNER_PAT }}
 
   # run-test:
-  #   # needs: [filter-runners, deploy-client-node, deploy-fractal-edge, deploy-mqtt-client, install-tdengine-nodes]
-  #   needs: [filter-runners, deploy-client-node, deploy-fractal-edge, install-tdengine-nodes,deploy-mqtt-client]
+  #   # needs: [filter-runners, deploy-client-node, deploy-fractal-edge, deploy-mqtt-simulator, install-tdengine-nodes]
+  #   needs: [filter-runners, deploy-client-node, deploy-fractal-edge, install-tdengine-nodes,deploy-mqtt-simulator]
   #   strategy:
   #     matrix:
   #       runner: ${{ fromJson(needs.filter-runners.outputs.taostest_runners || '[]') }}
