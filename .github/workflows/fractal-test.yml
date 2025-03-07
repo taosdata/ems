@@ -540,9 +540,10 @@ jobs:
           echo "🔄 Source interval: ${{ github.event.inputs.source-interval }}"
           echo "🔄 Enable compression: ${{ github.event.inputs.enable-compression }}"
           echo "🔄 Test started at $(date)"
+          echo "🔄 WORKFLOW_CONFIG_PATH: $WORKFLOW_CONFIG_PATH"
           echo "%PWD%: $PWD"
           test_start_time=$(date +"%Y%m%d_%H%M%S")
-          jq --arg test_start_time "$test_start_time" '. + {test_start_time: $test_start_time}' $WORKFLOW_CONFIG_PATH > tmp.json && mv tmp.json $WORKFLOW_CONFIG_PATH
+          jq --arg test_start_time "$test_start_time" '. + {test_start_time: $test_start_time}' $WORKFLOW_CONFIG_PATH > tmp.json && mv tmp.json $WORKFLOW_CONFIG_PATH/
           query_json=$(find $RUNNER_WORKSPACE/../ -name query.json 2>/dev/null | head -n 1)
           db_config_json=$(find $RUNNER_WORKSPACE/../ -name db_config.json 2>/dev/null | head -n 1)
           mv db_config_json query_json $TEST_ROOT/env/
