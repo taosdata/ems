@@ -25,16 +25,6 @@ on:
           - 1
           - 2
           - 3
-      # db-config:
-      #   description: 'config-json to create database'
-      #   required: true
-      #   default: '{"vgroups": 10, "stt_trigger": 2, "buffer": 4096, "minrows": 100}'
-      #   type: string
-      # query-config:
-      #   description: 'custom query config for taosBenchmark'
-      #   required: true
-      #   default: '{"query_times": 100, "concurrent": 10, "query_interval": 10}'
-      #   type: string
       exec-time:
         description: 'exec-time (unit: s)'
         required: true
@@ -63,18 +53,13 @@ env :
   EDGE_LABEL : "20C16G"
   CENTER_LABEL : "20C16G"
   CLIENT_LABEL : "24C64G"
-  CLIENT_COUNT : 1
-  EDGE_DNODE_COUNT : 2
-  CENTER_DNODE_COUNT : 3
-  RUNNER_GROUP: "customers"
+  EDGE_DNODE_COUNT : ${{ github.event.inputs.edge-dnode-count }}
+  CENTER_DNODE_COUNT : ${{ github.event.inputs.center-dnode-count }}
   RUNNER_WORKSPACE: $RUNNER_WORKSPACE
   HOSTS_DIRNAME: "ip-hostname"
   PROMETHEUS_YML_PATH: /etc/prometheus/prometheus.yml
   PROCESS_EXPORTER_YML_PATH: "/etc/process_exporter.yml"
   MONITORING_PROCESS_NAMES: "taosd,taosadapter"
-
-  # EDGE_DNODE_COUNT : ${{ github.event.inputs.edge-dnode-count }}
-  # CENTER_DNODE_COUNT : ${{ github.event.inputs.center-dnode-count }}
 
 jobs:
   filter-runners:
@@ -119,171 +104,17 @@ jobs:
           required_count: ${{ env.CENTER_DNODE_COUNT }}
           gh_token: ${{ secrets.RUNNER_PAT }}
 
-  deploy-services:
-    name: Deploy to Selected Runners
-    needs: filter-runners
-    # runs-on: ubuntu-latest
-    runs-on:
-      group: $RUNNER_GROUP
-      labels: ${{ matrix.runner }}
-    if: ${{ needs.filter-runners.outputs.edge_runner_list != '' }}
-    strategy:
-      matrix:
-        runner: ${{ fromJSON(needs.filter-runners.outputs.edge_runner_list || '[]') }}
-    steps:
-      - name: Print Runner List
+      - name: Print Key Infos
         run: |
-          echo "🔄 Selected edge_runner_list: ${{ needs.filter-runners.outputs.edge_runner_list }}"
-          echo "🔄 Selected center_runner_list: ${{ needs.filter-runners.outputs.center_runner_list }}"
-          echo "🔄 Selected mqtt_runner_list: ${{ needs.filter-runners.outputs.mqtt_runner_list }}"
-          echo "🔄 Selected client_runner_list: ${{ needs.filter-runners.outputs.client_runner_list }}"
+          echo "🔄 Selected edge_runner_list: ${{ steps.get-edge-runners.outputs.runners }}"
+          echo "🔄 Selected center_runner_list: ${{ steps.center-edge-runners.outputs.runners }}"
+          echo "🔄 Selected mqtt_runner_list: ${{ steps.get-mqtt-runners.outputs.runners }}"
+          echo "🔄 Selected client_runner_list: ${{ steps.get-client-runners.outputs.runners }}"
+          echo "🔄 Github workspace: $GITHUB_WORKSPACE"
+          echo "🔄 Github home: $GITHUB_HOME"
+          echo "🔄 Runner workspace: $RUNNER_WORKSPACE"
+          echo "🔄 Current workspace: $(pwd)"
 
-      - name: Deploy to ${{ matrix.runner }}
-        # with:
-        #   platform-params: ${{ fromJSON(steps.setup-runners.outputs.edge_runner_list)[0] }}
-        # env:
-        #   RUNNER_LABELS: ${{ fromJSON(needs.select-runners.outputs.edge_runner_list) }}
-        run: |
-          echo "pwd is : $PWD"
-          echo "$(ls /root)"
-      - name: Print Work Directories
-        run: |
-          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
-          echo "GITHUB_HOME: $GITHUB_HOME"
-          echo "RUNNER_WORKSPACE: $RUNNER_WORKSPACE"
-          echo "当前工作目录: $(pwd)"
-  # filter-runners:
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     runners: ${{ steps.get-runners.outputs.matrix}}
-  #     td_runners: ${{ steps.get-runners.outputs.td_matrix}}
-  #     taostest_runners: ${{ steps.get-runners.outputs.taostest_matrix}}
-  #     runner_names: ${{ steps.get-runners.outputs.names}}
-  #     td_runner_names: ${{ steps.get-runners.outputs.td_names}}
-  #     taostest_runner_names: ${{ steps.get-runners.outputs.taostest_names}}
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
-
-  #     - name: Get Available Runners
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.RUNNER_PAT }}
-  #       id: get-runners
-  #       run: |
-  #         set -euo pipefail
-  #         echo "Fetching available runners..."
-  #         response_file=$(mktemp)
-  #         gh api /orgs/${{ github.repository_owner }}/actions/runners \
-  #           --paginate \
-  #           --jq '.runners' > "$response_file"
-
-  #         # set dnode_count
-  #         edge_dnode_count=${{ github.event.inputs.edge-dnode-count }}
-  #         center_dnode_count=${{ github.event.inputs.center-dnode-count }}
-
-  #         filter_and_format() {
-  #           local count=$1
-  #           local label1=$2
-  #           local label2=$3
-
-  #           jq -c --argjson count "$count" --arg label1 "$label1" --arg label2 "$label2" '
-  #             map(
-  #               select(
-  #                 .labels |
-  #                 (map(.name) | index($label1)) != null and
-  #                 (map(.name) | index($label2)) != null
-  #               )
-  #               | {
-  #                   name,
-  #                   group: (
-  #                     if .labels | map(.name) | index("fractal") != null then "customers"
-  #                     else "default"
-  #                     end
-  #                   ),
-  #                   labels: (
-  #                     .labels | map(.name) | join(", ") |
-  #                     split(", ") |
-  #                     map(select(. != "")) |
-  #                     ["self-hosted", "Linux", "X64"] + .
-  #                   )
-  #                 }
-  #             )[:$count]
-  #           ' "$response_file"
-  #         }
-  #         # filter_and_format "$edge_dnode_count" "fractal" "mqtt"
-  #         filtered_taostest_runners=$(filter_and_format "1" "fractal" "taostest")
-  #         filtered_mqtt_runners=$(filter_and_format "$edge_dnode_count" "fractal" "mqtt")
-  #         filtered_edge_runners=$(filter_and_format "$edge_dnode_count" "fractal" "edge_td")
-  #         filtered_center_runners=$(filter_and_format "$center_dnode_count" "fractal" "center_td")
-
-  #         echo "✅ Selected runners with formatted labels:"
-  #         echo "$filtered_taostest_runners"
-  #         echo "$filtered_mqtt_runners"
-  #         echo "$filtered_edge_runners"
-  #         echo "$filtered_center_runners"
-
-  #         # All runners
-  #         filtered_runners=$(jq -s '[.[][]]' <(echo "$filtered_taostest_runners") <(echo "$filtered_mqtt_runners") <(echo "$filtered_edge_runners") <(echo "$filtered_center_runners"))
-  #         echo "✅ Selected runners with formatted labels:"
-  #         echo "$filtered_runners"
-
-  #         # TDengine runners
-  #         td_runners=$(jq -s '[.[][]]' <(echo "$filtered_taostest_runners") <(echo "$filtered_edge_runners") <(echo "$filtered_center_runners"))
-  #         echo "✅ Selected td-runners with formatted labels:"
-  #         echo "$td_runners"
-
-  #         # Taostest runners
-  #         taostest_runners=$(jq -s '[.[][]]' <(echo "$filtered_taostest_runners"))
-  #         echo "✅ Selected taostest-runners with formatted labels:"
-  #         echo "$taostest_runners"
-
-  #         # make sure filtered_runners is a valid JSON array
-  #         if [ -z "$filtered_runners" ]; then
-  #           echo "No runners found. Setting empty matrix."
-  #           echo "matrix=[]" >> $GITHUB_OUTPUT
-  #           echo "names=[]" >> $GITHUB_OUTPUT
-  #         else
-  #           echo "matrix="$filtered_runners"" >> $GITHUB_OUTPUT
-  #           names=$(echo "$filtered_runners" | jq -r '.[].name' | tr '\n' ',')
-  #           names=${names%,}
-  #           echo "names=${names}" >> $GITHUB_OUTPUT
-
-  #           echo "td_matrix="$td_runners"" >> $GITHUB_OUTPUT
-  #           td_runner_names=$(echo "$td_runners" | jq -r '.[].name' | tr '\n' ',')
-  #           td_runner_names=${td_runner_names%,}
-  #           echo "td_runner_names=${td_runner_names}" >> $GITHUB_OUTPUT
-
-  #           echo "taostest_matrix="$taostest_runners"" >> $GITHUB_OUTPUT
-  #           taostest_runner_names=$(echo "$taostest_runners" | jq -r '.[].name' | tr '\n' ',')
-  #           taostest_runner_names=${taostest_runner_names%,}
-  #           echo "taostest_runner_names=${taostest_runner_names}" >> $GITHUB_OUTPUT
-  #         fi
-
-  # upload-hosts-info:
-  #   needs: filter-runners
-  #   strategy:
-  #     matrix:
-  #       runner:
-  #         - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
-  #         - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
-  #         - ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
-  #         - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
-  #   # runs-on: ubuntu-latest
-  #   runs-on:
-  #     group: $RUNNER_GROUP
-  #     labels: ${{ matrix.runner }}
-  #   steps:
-  #     - name: Run Host Info Collection
-  #       id: collect-host-info
-  #       uses: taosdata/.github/.github/actions/upload-host-info@test/fractal
-  #       with:
-  #         hosts_dirname: ${{ env.HOSTS_DIRNAME }}
-
-  #     - name: Upload Host Info
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name:  "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}"
-  #         path: "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}.txt"
 
   upload-client-hosts-info:
     needs: filter-runners
@@ -291,9 +122,8 @@ jobs:
       matrix:
         runner:
           - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
-    # runs-on: ubuntu-latest
     runs-on:
-      group: $RUNNER_GROUP
+      group: customers
       labels: ${{ matrix.runner }}
     steps:
       - name: Run Host Info Collection
@@ -317,7 +147,7 @@ jobs:
           - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
     # runs-on: ubuntu-latest
     runs-on:
-      group: $RUNNER_GROUP
+      group: customers
       labels: ${{ matrix.runner }}
     steps:
       - name: Run Host Info Collection
@@ -341,7 +171,7 @@ jobs:
           - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
     # runs-on: ubuntu-latest
     runs-on:
-      group: $RUNNER_GROUP
+      group: customers
       labels: ${{ matrix.runner }}
     steps:
       - name: Run Host Info Collection
@@ -363,9 +193,8 @@ jobs:
       matrix:
         runner:
           - ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
-    # runs-on: ubuntu-latest
     runs-on:
-      group: $RUNNER_GROUP
+      group: customers
       labels: ${{ matrix.runner }}
     steps:
       - name: Run Host Info Collection
@@ -393,7 +222,7 @@ jobs:
           - ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
           - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
     runs-on:
-      group: $RUNNER_GROUP
+      group: customers
       labels: ${{ matrix.runner }}
     steps:
       - name: Checkout code
@@ -427,7 +256,7 @@ jobs:
           - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
           - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
     runs-on:
-      group: $RUNNER_GROUP
+      group: customers
       labels: ${{ matrix.runner }}
     steps:
       # - name: Install TDengine Enterprise
@@ -457,7 +286,7 @@ jobs:
         runner:
           - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
     runs-on:
-      group: $RUNNER_GROUP
+      group: customers
       labels: ${{ matrix.runner }}
     steps:
       - name: Sync Repo - taos-test-framework
@@ -518,16 +347,11 @@ jobs:
 
       - name: Print Taostest Hosts
         run: |
-          echo "TEST_ROOT: ${{ env.TEST_ROOT }}"
           echo "TEST_ROOT: $TEST_ROOT"
           echo "MQTT Hosts: $MQTT_HOSTS"
           echo "Single Dnode Hosts: $SINGLE_DNODE_HOSTS"
           echo "Taos Benchmark Hosts: $TAOS_BENCHMARK_HOSTS"
           echo "Cluster Hosts: $CLUSTER_HOSTS"
-          echo "hostname_info: $HOSTNAME_INFO"
-      - name: Get Hosts
-        run: |
-          echo "🔄 Get Hosts..."
           echo "hostname_info: $HOSTNAME_INFO"
 
       - name: Create combined JSON file From Inputs
@@ -582,25 +406,6 @@ jobs:
           node_exporter_hosts: $HOSTNAME_INFO
           process_exporter_hosts: $HOSTNAME_INFO
 
-  # set-runners:
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     runner_combinations: ${{ steps.set-runner-combinations.outputs.runner_combinations }}
-  #   steps:
-  #     - name: Set Runner Combinations
-  #       id: set-runner-combinations
-  #       run: |
-  #           echo "Setting Runner Combinations"
-  #           # 生成 mqtt-client 和 fractal-edge 的标签数组
-  #           mqtt_client=$(seq 1 ${{github.event.inputs.edge-dnode-count}} | sed 's/^/mqtt-client/')
-  #           fractal_edge=$(seq 1 ${{github.event.inputs.edge-dnode-count}} | sed 's/^/fractal-edge-/')
-
-  #           mqtt_json=$(echo "$mqtt_client" | jq -R -s -c 'split("\n")[:-1]')  # 去除末尾空元素
-  #           fractal_json=$(echo "$fractal_edge" | jq -R -s -c 'split("\n")[:-1]')
-
-  #           combinations=$(jq -n --argjson a "$mqtt_json" --argjson b "$fractal_json" '$a | to_entries | map({ mqtt_client: .value, fractal_edge: $b[.key] })'| jq -c .)
-  #           echo "Generated combinations: $combinations"
-  #           echo "::set-output name=runner_combinations::$combinations"
   deploy-fractal-edge:
     needs:
       - filter-runners
@@ -610,7 +415,7 @@ jobs:
         runner:
           - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
     runs-on:
-      group: $RUNNER_GROUP
+      group: customers
       labels: ${{ matrix.runner }}
     steps:
       - name: Install Flashmq
@@ -625,7 +430,7 @@ jobs:
         runner:
           - ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
     runs-on:
-      group: $RUNNER_GROUP
+      group: customers
       labels: ${{ matrix.runner }}
     steps:
       - name: Checkout code
