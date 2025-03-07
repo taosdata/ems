@@ -541,6 +541,7 @@ jobs:
           echo "🔄 Test started at $(date)"
           echo "%PWD%: $PWD"
           test_start_time=$(date +"%Y%m%d_%H%M%S")
+          echo "test_start_time=$test_start_time" >> $GITHUB_ENV
           echo "test_root: $TEST_ROOT"
           workflow_config_path="$RUNNER_WORKSPACE/../TestNG/env"
           echo "🔄 WORKFLOW_CONFIG_PATH: $workflow_config_path"
@@ -570,4 +571,11 @@ jobs:
           taostest --use=fractal-center.yaml --case=customer_scenarios/fractal/stop.py --keep
           taostest --use=fractal-query.yaml --case=customer_scenarios/fractal/fractal_summary.py --keep
           echo "🔄 Test finished at $(date)"
+          echo "finish------perf_report_$test_start_time"
+          echo "finish------$RUNNER_WORKSPACE/../TestNG/env/perf_report_$test_start_time.txt"
 
+      - name: Upload Host Info
+        uses: actions/upload-artifact@v4
+        with:
+          name:  "perf_report_$test_start_time"
+          path: "$RUNNER_WORKSPACE/../TestNG/env/perf_report_$test_start_time.txt"
