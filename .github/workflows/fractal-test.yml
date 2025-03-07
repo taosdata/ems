@@ -573,10 +573,11 @@ jobs:
           echo "🔄 Test finished at $(date)"
           echo "finish------perf_report_$test_start_time"
           echo "finish------$RUNNER_WORKSPACE/../TestNG/env/perf_report_$test_start_time.txt"
-          report_file=$(realpath -m "$RUNNER_WORKSPACE/../TestNG/env/perf_report_$test_start_time.txt"")
+          report_file=$(realpath -m "$RUNNER_WORKSPACE/../TestNG/env/perf_report_$test_start_time.txt")
+          echo "REPORT_FILE=$report_file"
           echo "REPORT_FILE=$report_file" >> $GITHUB_ENV
 
-      - name: Upload Host Info
+      - name: Upload Report File
         uses: actions/upload-artifact@v4
         with:
           name:  "perf_report_$test_start_time"
