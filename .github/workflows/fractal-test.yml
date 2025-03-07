@@ -260,11 +260,11 @@ jobs:
       group: customers
       labels: ${{ matrix.runner }}
     steps:
-      - name: Install TDengine Enterprise
-        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
-        with:
-          version: ${{ github.event.inputs.td-version }}
-          download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
+      # - name: Install TDengine Enterprise
+      #   uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
+      #   with:
+      #     version: ${{ github.event.inputs.td-version }}
+      #     download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
 
       - name: Install Node Exporter In TDengine Nodes
         uses: taosdata/.github/.github/actions/install-node-exporter@test/fractal
@@ -293,11 +293,11 @@ jobs:
       - name: Install Flashmq
         uses: taosdata/.github/.github/actions/install-flashmq@main
 
-      - name: Install TDengine Enterprise
-        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
-        with:
-          version: ${{ github.event.inputs.td-version }}
-          download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
+      # - name: Install TDengine Enterprise
+      #   uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
+      #   with:
+      #     version: ${{ github.event.inputs.td-version }}
+      #     download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
 
       - name: Install Node Exporter In TDengine Nodes
         uses: taosdata/.github/.github/actions/install-node-exporter@test/fractal
@@ -409,11 +409,11 @@ jobs:
           taostest-dir: "$RUNNER_WORKSPACE/../taos-test-framework"
           testng-dir: "$RUNNER_WORKSPACE/../TestNG"
 
-      - name: Install TDengine Enterprise
-        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
-        with:
-            version: ${{ github.event.inputs.td-version }}
-            download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
+      # - name: Install TDengine Enterprise
+      #   uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
+      #   with:
+      #       version: ${{ github.event.inputs.td-version }}
+      #       download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
 
       - name: Install Grafana In Taostest Node
         uses: taosdata/.github/.github/actions/install-grafana@test/fractal
