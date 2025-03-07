@@ -627,7 +627,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install MQTT CLI
-        uses: taosdata/.github/.github/actions/install-mqtt-simulator@main
+        uses: taosdata/.github/.github/actions/install-mqtt-simulator@test/fractal
         with:
           nas_public_url: ${{ secrets.nas_download_url }}
 
