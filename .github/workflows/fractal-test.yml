@@ -66,12 +66,13 @@ env :
   CLIENT_COUNT : 1
   EDGE_DNODE_COUNT : 2
   CENTER_DNODE_COUNT : 3
+  RUNNER_GROUP: "customers"
   RUNNER_WORKSPACE: $RUNNER_WORKSPACE
   HOSTS_DIRNAME: "ip-hostname"
   PROMETHEUS_YML_PATH: /etc/prometheus/prometheus.yml
   PROCESS_EXPORTER_YML_PATH: "/etc/process_exporter.yml"
   MONITORING_PROCESS_NAMES: "taosd,taosadapter"
-  RUNNER_GROUP: "customers"
+
   # EDGE_DNODE_COUNT : ${{ github.event.inputs.edge-dnode-count }}
   # CENTER_DNODE_COUNT : ${{ github.event.inputs.center-dnode-count }}
 
@@ -123,7 +124,7 @@ jobs:
     needs: filter-runners
     # runs-on: ubuntu-latest
     runs-on:
-      group: ${{ env.RUNNER_GROUP }}
+      group: $RUNNER_GROUP
       labels: ${{ matrix.runner }}
     if: ${{ needs.filter-runners.outputs.edge_runner_list != '' }}
     strategy:
@@ -269,7 +270,7 @@ jobs:
   #         - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
   #   # runs-on: ubuntu-latest
   #   runs-on:
-  #     group: ${{ env.RUNNER_GROUP }}
+  #     group: $RUNNER_GROUP
   #     labels: ${{ matrix.runner }}
   #   steps:
   #     - name: Run Host Info Collection
@@ -292,7 +293,7 @@ jobs:
           - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
     # runs-on: ubuntu-latest
     runs-on:
-      group: ${{ env.RUNNER_GROUP }}
+      group: $RUNNER_GROUP
       labels: ${{ matrix.runner }}
     steps:
       - name: Run Host Info Collection
@@ -316,7 +317,7 @@ jobs:
           - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
     # runs-on: ubuntu-latest
     runs-on:
-      group: ${{ env.RUNNER_GROUP }}
+      group: $RUNNER_GROUP
       labels: ${{ matrix.runner }}
     steps:
       - name: Run Host Info Collection
@@ -340,7 +341,7 @@ jobs:
           - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
     # runs-on: ubuntu-latest
     runs-on:
-      group: ${{ env.RUNNER_GROUP }}
+      group: $RUNNER_GROUP
       labels: ${{ matrix.runner }}
     steps:
       - name: Run Host Info Collection
@@ -364,7 +365,7 @@ jobs:
           - ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
     # runs-on: ubuntu-latest
     runs-on:
-      group: ${{ env.RUNNER_GROUP }}
+      group: $RUNNER_GROUP
       labels: ${{ matrix.runner }}
     steps:
       - name: Run Host Info Collection
@@ -392,7 +393,7 @@ jobs:
           - ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
           - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
     runs-on:
-      group: ${{ env.RUNNER_GROUP }}
+      group: $RUNNER_GROUP
       labels: ${{ matrix.runner }}
     steps:
       - name: Checkout code
@@ -426,7 +427,7 @@ jobs:
           - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
           - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
     runs-on:
-      group: ${{ env.RUNNER_GROUP }}
+      group: $RUNNER_GROUP
       labels: ${{ matrix.runner }}
     steps:
       # - name: Install TDengine Enterprise
@@ -456,7 +457,7 @@ jobs:
         runner:
           - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
     runs-on:
-      group: ${{ env.RUNNER_GROUP }}
+      group: $RUNNER_GROUP
       labels: ${{ matrix.runner }}
     steps:
       - name: Sync Repo - taos-test-framework
@@ -609,7 +610,7 @@ jobs:
         runner:
           - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
     runs-on:
-      group: ${{ env.RUNNER_GROUP }}
+      group: $RUNNER_GROUP
       labels: ${{ matrix.runner }}
     steps:
       - name: Install Flashmq
@@ -624,7 +625,7 @@ jobs:
         runner:
           - ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
     runs-on:
-      group: ${{ env.RUNNER_GROUP }}
+      group: $RUNNER_GROUP
       labels: ${{ matrix.runner }}
     steps:
       - name: Checkout code
