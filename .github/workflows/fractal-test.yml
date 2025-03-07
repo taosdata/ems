@@ -586,5 +586,5 @@ jobs:
       - name: Upload Report File
         uses: actions/upload-artifact@v4
         with:
-          name:  "perf_report_$test_start_time"
-          path: "perf_report_$test_start_time.txt"
+          name:  "perf_report_${{ env.test_start_time }}"
+          path: "perf_report_${{ env.test_start_time }}.txt"
