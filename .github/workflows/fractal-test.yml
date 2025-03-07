@@ -543,7 +543,8 @@ jobs:
           echo "%PWD%: $PWD"
           test_start_time=$(date +"%Y%m%d_%H%M%S")
           workflow_config_file="$RUNNER_WORKSPACE/../TestNG/env/${{ env.WORKFLOW_CONFIG_FILE }}"
-          jq --arg test_start_time "$test_start_time" '. + {test_start_time: $test_start_time}' "$workflow_config_file" > tmp.json && mv tmp.json "$workflow_config_file"
+          echo "🔄 WORKFLOW_CONFIG_PATH: $workflow_config_file"
+          jq --arg test_start_time "$test_start_time" '. + {test_start_time: $test_start_time}' "$workflow_config_file" > tmp.json && mv tmp.json $workflow_config_file
           query_json=$(find $RUNNER_WORKSPACE/../ -name query.json 2>/dev/null | head -n 1)
           db_config_json=$(find $RUNNER_WORKSPACE/../ -name db_config.json 2>/dev/null | head -n 1)
           mv db_config_json query_json $TEST_ROOT/env/
