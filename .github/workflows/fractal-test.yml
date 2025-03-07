@@ -389,7 +389,7 @@ jobs:
         with:
           parent-dir: "$RUNNER_WORKSPACE/../"
           repo-url: "https://github.com/taosdata/taos-test-framework.git"
-          branch: "master"
+          branch: "feat/TD-33672"
           res_app_id: ${{ vars.TAOSDATA_BOT_ID }}
           res_app_key: ${{ secrets.TAOSDATA_BOT_KEY }}
 
@@ -398,7 +398,7 @@ jobs:
         with:
           parent-dir: "$RUNNER_WORKSPACE/../"
           repo-url: "https://github.com/taosdata/TestNG.git"
-          branch: "master"
+          branch: "test/TD-33672"
           res_app_id: ${{ vars.TAOSDATA_BOT_ID }}
           res_app_key: ${{ secrets.TAOSDATA_BOT_KEY }}
 
