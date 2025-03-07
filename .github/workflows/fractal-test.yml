@@ -524,8 +524,8 @@ jobs:
       matrix:
         runner: ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
     runs-on:
-      group: ${{ matrix.runner.group }}
-      labels: ${{ matrix.runner.labels }}
+      group: customers
+      labels: ${{ matrix.runner }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
