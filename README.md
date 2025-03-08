@@ -2,7 +2,7 @@
 
 通过 workflow 自动部署集群环境并运行测试，支持多节点分布式环境下的 MQTT 数据流、边缘节点、中心节点和客户端的协调测试。
 
-## 🚀 1.使用说明
+## 🚀 1. 使用说明
 
 ### 手动触发 Workflow
 1. 进入仓库的 **Actions** 选项卡
@@ -21,7 +21,7 @@
 🔗 [Workflow Trigger Demo](https://github.com/taosdata/fractal/actions/runs/13734315147)
 
 
-## ⚙️ 2.工作流程
+## ⚙️ 2. 工作流程
 
 ### 阶段概览
 ```mermaid
@@ -47,7 +47,7 @@ graph TD
 | `deploy-client-nodes`     | 部署客户端测试环境                | combine-and-update-hosts           |
 | `run-test`                | 执行分布式测试用例                | 所有部署阶段                       |
 
-## 📁 3.配置文件说明
+## 📁 3. 配置文件说明
 
 位于 `fractal/config` 目录下的配置文件用于定义测试行为和数据库参数：
 
@@ -108,7 +108,7 @@ config/
 🔗 更多配置请参考 [taosBenchmark 查询配置文档](https://docs.taosdata.com/reference/tools/taosbenchmark/#%E6%9F%A5%E8%AF%A2%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0)
 
 
-## 📊 4.测试结果
+## 📊 4. 测试结果
 测试完成后生成的性能报告将作为 Artifact 存储：
 
 ```bash
@@ -120,7 +120,7 @@ perf_report_YYYYMMDD_HHMMSS.txt
 - ⏱️ 消息延迟分布
 - 🖥️ 资源利用率 (CPU/MEM/Disk)
 
-## 🔧 5.环境要求
+## 🔧 5. 环境要求
 
 ### 必要 Secrets
 ```env
@@ -137,7 +137,7 @@ CENTER_LABEL: "20C16G"  # 中心节点规格
 CLIENT_LABEL: "24C64G"  # 客户端规格
 ```
 
-## ⁉️ 6.常见问题
+## ⁉️ 6. 常见问题
 
 ### Q1: 如何访问测试报告？
 ```markdown
