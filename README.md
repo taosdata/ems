@@ -18,14 +18,14 @@
 | `source-interval`      | 数据源间隔 (毫秒)       | string  | ✅   | 1000     | -             |
 | `enable-compression`   | 启用数据压缩            | choice  | ✅   | false    | true/false    |
 
-![Workflow Trigger Demo](https://github.com/taosdata/fractal/actions/runs/13734315147)
+🔄[Workflow Trigger Demo](https://github.com/taosdata/fractal/actions/runs/13734315147)
 
 ## ⚙️ 工作流程
 
 ### 阶段概览
 ```mermaid
 graph TD
-    A[filter-runners] --> B[upload-*-hosts-info]
+    A[filter-runners] --> B[upload-hosts-info]
     B --> C[combine-and-update-hosts]
     C --> D[deploy-center-nodes]
     C --> E[deploy-edge-nodes]
