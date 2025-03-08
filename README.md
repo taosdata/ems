@@ -19,7 +19,7 @@
 | `enable-compression`   | 启用数据压缩            | choice  | ✅   | false    | true/false    |
 
 [Workflow Trigger Demo](https://github.com/taosdata/fractal/actions/runs/13734315147)
-![Workflow Trigger Demo](https://via.placeholder.com/600x200?text=Workflow+Trigger+Example)
+
 
 ## ⚙️ 工作流程
 
