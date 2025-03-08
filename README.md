@@ -1,35 +1,18 @@
 # Fractal Test Workflow
-通过 workflow 自动部署集群环境并运行测试，支持多节点分布式环境下的 MQTT 数据流、边缘节点、中心节点和客户端的协调测试。
+通过 Workflow 自动部署集群环境并运行测试，支持多节点分布式环境下的 MQTT 数据流、边缘节点、中心节点和客户端的协调测试。
 
 # Table of Contents
 1. [使用说明](#1-使用说明)
-1. [工作流程](##2-工作流程)
-1. [必备工具](#3-必备工具)
-    - [3.1 Linux预备](#31-linux系统)
-    - [3.2 macOS预备](#32-macos系统)
-    - [3.3 Windows预备](#33-windows系统)
-    - [3.4 克隆仓库](#34-克隆仓库)
-1. [构建](#4-构建)
-    - [4.1 Linux系统上构建](#41-linux系统上构建)
-    - [4.2 macOS系统上构建](#42-macos系统上构建)
-    - [4.3 Windows系统上构建](#43-windows系统上构建)
-1. [打包](#5-打包)
-1. [安装](#6-安装)
-    - [6.1 Linux系统上安装](#61-linux系统上安装)
-    - [6.2 macOS系统上安装](#62-macos系统上安装)
-    - [6.3 Windows系统上安装](#63-windows系统上安装)
-1. [快速运行](#7-快速运行)
-    - [7.1 Linux系统上运行](#71-linux系统上运行)
-    - [7.2 macOS系统上运行](#72-macos系统上运行)
-    - [7.3 Windows系统上运行](#73-windows系统上运行)
-1. [测试](#8-测试)
-1. [版本发布](#9-版本发布)
-1. [工作流](#10-工作流)
-1. [覆盖率](#11-覆盖率)
-1. [成为社区贡献者](#12-成为社区贡献者)
+1. [工作流程](#2-工作流程)
+1. [配置文件说明](#3-配置文件说明)
+    - [3.1 数据库参数配置](#31-数据库参数配置)
+    - [3.2 查询参数配置](#32-查询参数配置)
+1. [测试结果](#4-测试结果)
+1. [环境要求](#5-环境要求)
+1. [常见问题](#6-常见问题)
 
 
-## 🚀 1. 使用说明
+## 1. 使用说明
 
 ### 手动触发 Workflow
 1. 进入仓库的 **Actions** 选项卡
@@ -48,7 +31,7 @@
 🔗 [Workflow Trigger Demo](https://github.com/taosdata/fractal/actions/runs/13734315147)
 
 
-## ⚙️ 2. 工作流程
+## 2. 工作流程
 
 ### 阶段概览
 ```mermaid
@@ -74,7 +57,7 @@ graph TD
 | `deploy-client-nodes`     | 部署客户端测试环境                | combine-and-update-hosts           |
 | `run-test`                | 执行分布式测试用例                | 所有部署阶段                       |
 
-## 📁 3. 配置文件说明
+## 3. 配置文件说明
 
 位于 `fractal/config` 目录下的配置文件用于定义测试行为和数据库参数：
 
@@ -106,7 +89,7 @@ config/
 🔗 更多配置请参考 [TDengine 数据库参数文档](https://docs.taosdata.com/reference/taos-sql/database/#%E5%88%9B%E5%BB%BA%E6%95%B0%E6%8D%AE%E5%BA%93)
 
 
-### 3.2 查询配置 (query.json)
+### 3.2 查询参数配置 (query.json)
 ```json
 {
     "host": "u2-195",
@@ -135,7 +118,7 @@ config/
 🔗 更多配置请参考 [taosBenchmark 查询配置文档](https://docs.taosdata.com/reference/tools/taosbenchmark/#%E6%9F%A5%E8%AF%A2%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0)
 
 
-## 📊 4. 测试结果
+## 4. 测试结果
 测试完成后生成的性能报告将作为 Artifact 存储：
 
 ```bash
@@ -147,7 +130,7 @@ perf_report_YYYYMMDD_HHMMSS.txt
 - ⏱️ 消息延迟分布
 - 🖥️ 资源利用率 (CPU/MEM/Disk)
 
-## 🔧 5. 环境要求
+## 5. 环境要求
 
 ### 必要 Secrets
 ```env
