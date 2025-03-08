@@ -2,9 +2,6 @@
 
 # Fractal Test Workflow
 
-```markdown
-# Fractal Test Workflow
-
 ![Workflow Status](https://img.shields.io/github/actions/workflow/status/yourname/repo/fractal-test.yml?label=Fractal%20Test)
 
 用于验证 TDengine 分布式部署架构的性能测试框架，支持多节点分布式环境下的 MQTT 数据流、边缘节点、中心节点和客户端的协调测试。
