@@ -571,7 +571,7 @@ jobs:
           taostest --use=fractal-center.yaml --case=customer_scenarios/fractal/stop.py --keep
           taostest --use=fractal-query.yaml --case=customer_scenarios/fractal/fractal_summary.py --keep
           echo "🔄 Test finished at $(date)"
-          cp "$RUNNER_WORKSPACE/../TestNG/env/perf_report_$test_start_time.txt" $GITHUB_WORKSPACE/../
+          cp "$RUNNER_WORKSPACE/../TestNG/env/perf_report_$test_start_time.txt" $GITHUB_WORKSPACE/
 
       - name: Upload Report File
         uses: actions/upload-artifact@v4
