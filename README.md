@@ -18,7 +18,7 @@
 | `source-interval`      | 数据源间隔 (毫秒)       | string  | ✅   | 1000     | -             |
 | `enable-compression`   | 启用数据压缩            | choice  | ✅   | false    | true/false    |
 
-🔗 [Workflow Trigger Demo](https://github.com/taosdata/fractal/actions/runs/13734315147)
+🔗 [Workflow Trigger Demo](https:# github.com/taosdata/fractal/actions/runs/13734315147)
 
 ## ⚙️ 工作流程
 
@@ -60,25 +60,25 @@ config/
 ### 1. 数据库参数配置 (db_config.json)
 ```json
 {
-    "vgroups": 10,     //初始 vgroup 的数目
-    "stt_trigger": 2,  //落盘文件触发文件合并的个数
-    "buffer": 4096,    //写入内存池大小
-    "minrows": 100     //文件块中记录的最小条数
+    "vgroups": 10,     # 初始 vgroup 的数目
+    "stt_trigger": 2,  # 落盘文件触发文件合并的个数
+    "buffer": 4096,    # 写入内存池大小
+    "minrows": 100     # 文件块中记录的最小条数
 }
 ```
-🔗 参考 [TDengine 数据库参数文档](https://docs.taosdata.com/reference/taos-sql/database/#%E5%88%9B%E5%BB%BA%E6%95%B0%E6%8D%AE%E5%BA%93)
+🔗 参考 [TDengine 数据库参数文档](https:# docs.taosdata.com/reference/taos-sql/database/#%E5%88%9B%E5%BB%BA%E6%95%B0%E6%8D%AE%E5%BA%93)
 
 
 ### 2. 查询配置 (query.json)
 ```json
 {
-    "host": "u2-195",             // 数据库主机地址
-    "port": 6030,                 // 连接端口
-    "databases": "center_db",     // 目标数据库
-    "query_times": 100,           // 总查询次数
+    "host": "u2-195",             #  数据库主机地址
+    "port": 6030,                 #  连接端口
+    "databases": "center_db",     #  目标数据库
+    "query_times": 100,           #  总查询次数
     "specified_table_query": {
-        "query_interval": 10,     //查询时间间隔
-        "concurrent": 10,         // 并发线程数
+        "query_interval": 10,     # 查询时间间隔
+        "concurrent": 10,         #  并发线程数
         "sqls": [{
             "sql": "select last_row(*) from site_topic7_u2_193;",
             "result": "./query_res0.txt"
@@ -92,9 +92,9 @@ config/
 | query_times    | 总查询次数      |
 | sqls[]        | 多语句并行测试配置         |
 | concurrent      | 并发线程数             |
-| query_interval      | //查询时间间隔             |
+| query_interval      | # 查询时间间隔             |
 
-🔗 参考 [taosBenchmark 查询配置文档](https://docs.taosdata.com/reference/tools/taosbenchmark/#%E6%9F%A5%E8%AF%A2%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0)
+🔗 参考 [taosBenchmark 查询配置文档](https:# docs.taosdata.com/reference/tools/taosbenchmark/#%E6%9F%A5%E8%AF%A2%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0)
 
 ## 📊 测试结果
 测试完成后生成的性能报告将作为 Artifact 存储：
