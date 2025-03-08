@@ -146,7 +146,6 @@ jobs:
       matrix:
         runner:
           - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
-    # runs-on: ubuntu-latest
     runs-on:
       group: customers
       labels: ${{ matrix.runner }}
@@ -260,11 +259,11 @@ jobs:
       group: customers
       labels: ${{ matrix.runner }}
     steps:
-      # - name: Install TDengine Enterprise
-      #   uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
-      #   with:
-      #     version: ${{ github.event.inputs.td-version }}
-      #     download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
+      - name: Install TDengine Enterprise
+        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
+        with:
+          version: ${{ github.event.inputs.td-version }}
+          download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
 
       - name: Install Node Exporter In TDengine Nodes
         uses: taosdata/.github/.github/actions/install-node-exporter@test/fractal
@@ -293,11 +292,11 @@ jobs:
       - name: Install Flashmq
         uses: taosdata/.github/.github/actions/install-flashmq@main
 
-      # - name: Install TDengine Enterprise
-      #   uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
-      #   with:
-      #     version: ${{ github.event.inputs.td-version }}
-      #     download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
+      - name: Install TDengine Enterprise
+        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
+        with:
+          version: ${{ github.event.inputs.td-version }}
+          download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
 
       - name: Install Node Exporter In TDengine Nodes
         uses: taosdata/.github/.github/actions/install-node-exporter@test/fractal
@@ -340,37 +339,6 @@ jobs:
             fractal_toml=$(find $GITHUB_WORKSPACE -name fractal.toml 2>/dev/null | head -n 1)
             echo "FRACTAL_TOML=$fractal_toml" >> $GITHUB_ENV
             rm -f /etc/taos/test.toml && mkdir -p /etc/taos && cp $fractal_toml /etc/taos/test.toml
-  # install-tdengine-nodes:
-  #   needs:
-  #    - combine-and-update-hosts
-  #    - filter-runners
-  #   strategy:
-  #     matrix:
-  #       runner:
-  #         - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
-  #         - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
-  #         - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
-  #   runs-on:
-  #     group: customers
-  #     labels: ${{ matrix.runner }}
-  #   steps:
-  #     # - name: Install TDengine Enterprise
-  #     #   uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
-  #     #   with:
-  #     #     version: ${{ github.event.inputs.td-version }}
-  #     #     download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
-
-  #     - name: Install Node Exporter In TDengine Nodes
-  #       uses: taosdata/.github/.github/actions/install-node-exporter@test/fractal
-
-  #     - name: Install Process Exporter In TDengine Nodes
-  #       uses: taosdata/.github/.github/actions/install-process-exporter@test/fractal
-
-  #     - name: Config Process Exporter YAML In TDengine Nodes
-  #       uses: taosdata/.github/.github/actions/config-process-exporter-yml@test/fractal
-  #       with:
-  #         yml_file_path: "${{ env.PROCESS_EXPORTER_YML_PATH }}"
-  #         process_names: "${{ env.MONITORING_PROCESS_NAMES }}"
 
   deploy-client-nodes:
     needs:
@@ -409,11 +377,11 @@ jobs:
           taostest-dir: "$RUNNER_WORKSPACE/../taos-test-framework"
           testng-dir: "$RUNNER_WORKSPACE/../TestNG"
 
-      # - name: Install TDengine Enterprise
-      #   uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
-      #   with:
-      #       version: ${{ github.event.inputs.td-version }}
-      #       download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
+      - name: Install TDengine Enterprise
+        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
+        with:
+            version: ${{ github.event.inputs.td-version }}
+            download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
 
       - name: Install Grafana In Taostest Node
         uses: taosdata/.github/.github/actions/install-grafana@test/fractal
