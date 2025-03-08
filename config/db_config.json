@@ -1,0 +1,6 @@
+{
+    "vgroups": 10,
+    "stt_trigger": 2,
+    "buffer": 4096,
+    "minrows": 100
+}
