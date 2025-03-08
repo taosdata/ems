@@ -18,7 +18,7 @@
 | `source-interval`      | 数据源间隔 (毫秒)       | string  | ✅   | 1000     | -             |
 | `enable-compression`   | 启用数据压缩            | choice  | ✅   | false    | true/false    |
 
-🔗 [Workflow Trigger Demo](https:# github.com/taosdata/fractal/actions/runs/13734315147)
+[Workflow Trigger Demo](https:# github.com/taosdata/fractal/actions/runs/13734315147)
 
 ## ⚙️ 工作流程
 
@@ -74,7 +74,7 @@ config/
 | buffer        | 写入内存池大小             |
 | minrows       | 文件块中记录的最小条数       |
 
-🔗 参考 [TDengine 数据库参数文档](https:# docs.taosdata.com/reference/taos-sql/database/#%E5%88%9B%E5%BB%BA%E6%95%B0%E6%8D%AE%E5%BA%93)
+[TDengine 数据库参数文档](https:# docs.taosdata.com/reference/taos-sql/database/#%E5%88%9B%E5%BB%BA%E6%95%B0%E6%8D%AE%E5%BA%93)
 
 
 ### 2. 查询配置 (query.json)
@@ -102,7 +102,7 @@ config/
 | concurrent     | 并发线程数               |
 | query_interval | 查询时间间隔             |
 
-🔗 参考 [taosBenchmark 查询配置文档](https:# docs.taosdata.com/reference/tools/taosbenchmark/#%E6%9F%A5%E8%AF%A2%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0)
+🔗参考 [taosBenchmark 查询配置文档](https:# docs.taosdata.com/reference/tools/taosbenchmark/#%E6%9F%A5%E8%AF%A2%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0)
 
 ## 📊 测试结果
 测试完成后生成的性能报告将作为 Artifact 存储：
