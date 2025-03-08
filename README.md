@@ -1,4 +1,4 @@
-简体中文 | [English](./README.md)
+简体中文 | [English](./README-EN.md)
 
 # Fractal Test Workflow
 
