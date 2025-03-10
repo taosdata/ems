@@ -75,14 +75,14 @@ graph TD
 
     subgraph EdgeGroups[边缘节点组 xN]
         subgraph Edge_Group[边缘组]
-            FlashMQ <-->|本地通信| EdgeTD[TDengine]
+            FlashMQ <-->|本地通信| EdgeTD["TDengine\n单节点"]
             EdgeTD -->|taosX 同步| CenterCluster
         end
         style Edge_Group stroke-dasharray:5 5
     end
 
     subgraph Center[中心集群]
-        CenterCluster[TDengine Cluster\n(多副本集群)]
+        CenterCluster["TDengine Cluster\n(多副本集群)"]
     end
 
     %% 关键数据流
