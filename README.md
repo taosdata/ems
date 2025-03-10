@@ -61,34 +61,43 @@ graph TD
 ### 组件拓扑图
 ```mermaid
 graph TD
-    subgraph Center[数据中心]
+    subgraph Client[客户端]
+        CL1[taosBenchmark] -->|压力测试| Center
+        CL2[taosTest 主控] -->|任务分发| MQTT & Edge & Center
+        CL3[Prometheus] -->|采集监控| AllExporters
+        CL4[Grafana] -->|可视化| CL3
+    end
+
+    subgraph MQTT[MQTT模拟层]
+        M1[MQTT Simulator] -->|写入消息| FLASHMQ
+    end
+
+    subgraph Edge[边缘节点集群]
+        subgraph Edge_Group[边缘组N]
+            E1[FlashMQ] <-->|本地通信| E2[TDengine单节点]
+            E2 -->|taosX同步| Center
+            E1 --> E3[process-exporter]
+            E2 --> E4[node-exporter]
+        end
+    end
+
+    subgraph Center[中心集群]
         C1[TDengine 副本1] <--> C2[TDengine 副本2]
         C2 <--> C3[TDengine 副本3]
         C1 & C2 & C3 --> C4[process-exporter]
         C1 & C2 & C3 --> C5[node-exporter]
     end
 
-    subgraph Edge[边缘节点]
-        E1[TDengine 单节点] <--> E2[FlashMQ]
-        E1 --> E3[process-exporter]
-        E1 --> E4[node-exporter]
-    end
+    %% 数据流关键路径
+    CL2 -->|启动| M1
+    M1 -->|MQTT消息| E1
+    Edge_Group -. 多组边缘节点 .- Edge_Group
 
-    subgraph Client[客户端]
-        CL1[taosBenchmark] -->|压测数据| Center
-        CL2[taosTest] -->|功能测试| Edge
-        CL3[Prometheus] -->|采集监控| C4 & C5 & E3 & E4
-        CL4[Grafana] -->|可视化| CL3
-    end
-
-    subgraph MQTT[MQTT 模拟器]
-        M1[MQTT Simulator] -->|模拟数据流| E2
-    end
-
-    style Center fill:#f9f9f9,stroke:#4a90e2
-    style Edge fill:#f9f9f9,stroke:#50e3c2
-    style Client fill:#f9f9f9,stroke:#f5a623
-    style MQTT fill:#f9f9f9,stroke:#bd10e0
+    style Center fill:#e6f7ff,stroke:#1890ff
+    style Edge fill:#eafff7,stroke:#13c2c2
+    style Client fill:#fff7e6,stroke:#ffa940
+    style MQTT fill:#f9f0ff,stroke:#722ed1
+    style Edge_Group stroke-dasharray:5 5
 ```
 
 
