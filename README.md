@@ -69,6 +69,7 @@ graph LR
   subgraph MQTT-Nodes
     A1[MQTT Simulator1]
     A2[MQTT Simulator2]
+    AN[MQTT SimulatorN]
   end
 
   subgraph Edge-Nodes
@@ -91,6 +92,7 @@ graph LR
 
   A1 -->|生成数据| B1
   A2 -->|生成数据| B2
+  AN -->|生成数据| BN
 
   B1 -->|taosx| C1
   B2 -->|taosx| C2
@@ -98,6 +100,7 @@ graph LR
 
   C1 -->|taosx| E
   C2 -->|taosx| E
+  CN -->|taosx| E
 
   J -->|执行查询| E
 
@@ -107,6 +110,7 @@ graph LR
 
   style A1 fill:#ffcc99,stroke:#cc6600
   style A2 fill:#ffcc99,stroke:#cc6600
+  style AN fill:#ffcc99,stroke:#cc6600
   style B1 fill:#99ccff,stroke:#3366cc
   style B2 fill:#99ccff,stroke:#3366cc
   style BN fill:#99ccff,stroke:#3366cc
