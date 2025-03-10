@@ -57,6 +57,39 @@ graph TD
 | `deploy-client-nodes`     | 部署客户端测试环境                | combine-and-update-hosts           |
 | `run-test`                | 执行分布式测试用例                | 所有部署阶段                       |
 
+
+### 组件拓扑图
+graph TD
+    subgraph Center[数据中心]
+        C1[TDengine 副本1] <--> C2[TDengine 副本2]
+        C2 <--> C3[TDengine 副本3]
+        C1 & C2 & C3 --> C4[process-exporter]
+        C1 & C2 & C3 --> C5[node-exporter]
+    end
+
+    subgraph Edge[边缘节点]
+        E1[TDengine 单节点] <--> E2[FlashMQ]
+        E1 --> E3[process-exporter]
+        E1 --> E4[node-exporter]
+    end
+
+    subgraph Client[客户端]
+        CL1[taosBenchmark] -->|压测数据| Center
+        CL2[taosTest] -->|功能测试| Edge
+        CL3[Prometheus] -->|采集监控| C4 & C5 & E3 & E4
+        CL4[Grafana] -->|可视化| CL3
+    end
+
+    subgraph MQTT[MQTT 模拟器]
+        M1[MQTT Simulator] -->|模拟数据流| E2
+    end
+
+    style Center fill:#f9f9f9,stroke:#4a90e2
+    style Edge fill:#f9f9f9,stroke:#50e3c2
+    style Client fill:#f9f9f9,stroke:#f5a623
+    style MQTT fill:#f9f9f9,stroke:#bd10e0
+
+
 ## 3. 配置文件说明
 
 位于 `fractal/config` 目录下的配置文件用于定义测试行为和数据库参数：
