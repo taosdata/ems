@@ -62,38 +62,39 @@ graph TD
 ```mermaid
 graph TD
     subgraph Client[客户端]
-        CL1[taosBenchmark] -->|压力测试| CenterCluster
-        CL2[taosTest 主控] -->|启动控制| MQTT_Simulator
-        CL2 -->|分发任务| EdgeGroups
-        CL3[Prometheus] -->|采集数据| CenterCluster
-        CL4[Grafana] -->|展示| CL3
+        TTest[taosTest] -->|1a.启动| MQTT_Sim
+        TTest -->|1b.启动| EdgeTD
+        TTest -->|1c.启动| CenterCluster
+        TTest -->|1d.启动| EdgeX
+        TTest -->|1e.启动| CenterX
+        TBench[taosBenchmark] -->|1f.查询| CenterCluster
     end
 
-    subgraph MQTT[MQTT模拟器]
-        MQTT_Simulator -.->|写入数据| EdgeFlashMQ
+    subgraph MQTT_Node[MQTT节点]
+        MQTT_Sim[MQTT模拟器] -->|2.写入| FlashMQ
     end
 
-    subgraph EdgeGroups[边缘节点组 xN]
-        subgraph Edge_Group[边缘组]
-            FlashMQ <-->|本地通信| EdgeTD["TDengine\n单节点"]
-            EdgeTD -->|taosX 同步| CenterCluster
-        end
-        style Edge_Group stroke-dasharray:5 5
+    subgraph Edge_Node[边缘节点]
+        FlashMQ -->|3.采集| EdgeX[taosX]
+        EdgeX -->|4.存储| EdgeTD[TDengine单节点]
+        EdgeTD -->|5.同步| CenterX
     end
 
-    subgraph Center[中心集群]
-        CenterCluster["TDengine Cluster\n(多副本集群)"]
+    subgraph Center_Node[中心节点]
+        CenterX[taosX] -->|6.入库| CenterCluster[TDengine集群]
     end
 
-    %% 关键数据流
-    MQTT_Simulator -->|MQTT消息| FlashMQ
-    EdgeTD -->|时序数据存储| EdgeTD
-    EdgeGroups -. 多组部署 .-> EdgeGroups
+    %% 多节点标注
+    Edge_Node -. N个边缘节点 .- Edge_Node
 
-    style Center fill:#e6f7ff,stroke:#1890ff
-    style EdgeGroups fill:#eafff7,stroke:#13c2c2
-    style Client fill:#fff7e6,stroke:#ffa940
-    style MQTT fill:#f9f0ff,stroke:#722ed1
+    %% 样式定义
+    style Client fill:#fcf6e3,stroke:#d4b106
+    style MQTT_Node fill:#f0faff,stroke:#1890ff
+    style Edge_Node fill:#e6ffe6,stroke:#52c41a
+    style Center_Node fill:#f9f0ff,stroke:#722ed1
+
+    classDef control fill:#fffbe6,stroke:#faad14
+    class TTest control
 ```
 
 
