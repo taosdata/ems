@@ -60,41 +60,59 @@ graph TD
 
 ### 组件拓扑图
 ```mermaid
-graph TD
-    subgraph Client[客户端]
-        TTest[taosTest] -->|1a.启动| MQTT_Sim
-        TTest -->|1b.启动| EdgeTD
-        TTest -->|1c.启动| CenterCluster
-        TTest -->|1d.启动| EdgeX
-        TTest -->|1e.启动| CenterX
-        TBench[taosBenchmark] -->|1f.查询| CenterCluster
-    end
+graph LR
+  subgraph MQTT Nodes
+    A1[MQTT Simulator1]
+    A2[MQTT Simulator2]
+  end
 
-    subgraph MQTT_Node[MQTT节点]
-        MQTT_Sim[MQTT模拟器] -->|2.写入| FlashMQ
-    end
+  subgraph Edge Nodes
+    B1[flashmq1]
+    C1[TDengine dnode1]
+    B2[flashmq2]
+    C2[TDengine dnode2]
+    BN[flashmqN]
+    CN[TDengine dnodeN]
+  end
 
-    subgraph Edge_Node[边缘节点]
-        FlashMQ -->|3.采集| EdgeX[taosX]
-        EdgeX -->|4.存储| EdgeTD[TDengine单节点]
-        EdgeTD -->|5.同步| CenterX
-    end
+  subgraph Center Nodes
+    E[TDengine Cluster]
+  end
 
-    subgraph Center_Node[中心节点]
-        CenterX[taosX] -->|6.入库| CenterCluster[TDengine集群]
-    end
+  subgraph Client Nodes
+    J[taosBenchmark]
+    H[taostest]
+  end
 
-    %% 多节点标注
-    Edge_Node -. N个边缘节点 .- Edge_Node
+  A1 -->|生成数据| B1
+  A2 -->|生成数据| B2
 
-    %% 样式定义
-    style Client fill:#fcf6e3,stroke:#d4b106
-    style MQTT_Node fill:#f0faff,stroke:#1890ff
-    style Edge_Node fill:#e6ffe6,stroke:#52c41a
-    style Center_Node fill:#f9f0ff,stroke:#722ed1
+  B1 -->|taosx| C1
+  B2 -->|taosx| C2
+  BN -->|taosx| CN
 
-    classDef control fill:#fffbe6,stroke:#faad14
-    class TTest control
+  C1 -->|taosx| E
+  C2 -->|taosx| E
+
+  J -->|执行查询| E
+
+  H -->|调度| A1
+  H -->|调度| A2
+  H -->|调度| B1
+  H -->|调度| B2
+  H -->|调度| E
+
+  style A1 fill:#ffcc99,stroke:#cc6600
+  style A2 fill:#ffcc99,stroke:#cc6600
+  style B1 fill:#99ccff,stroke:#3366cc
+  style B2 fill:#99ccff,stroke:#3366cc
+  style BN fill:#99ccff,stroke:#3366cc
+  style C1 fill:#ff99cc,stroke:#ff99cc
+  style C2 fill:#ff99cc,stroke:#ff99cc
+  style CN fill:#ff99cc,stroke:#ff99cc
+  style E fill:#99ff99,stroke:#339933
+  style J fill:#ff9999,stroke:#cc0000
+  style H fill:#ff9999,stroke:#cc0000
 ```
 
 
