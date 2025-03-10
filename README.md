@@ -62,42 +62,38 @@ graph TD
 ```mermaid
 graph TD
     subgraph Client[客户端]
-        CL1[taosBenchmark] -->|压力测试| Center
-        CL2[taosTest 主控] -->|任务分发| MQTT & Edge & Center
-        CL3[Prometheus] -->|采集监控| AllExporters
-        CL4[Grafana] -->|可视化| CL3
+        CL1[taosBenchmark] -->|压力测试| CenterCluster
+        CL2[taosTest 主控] -->|启动控制| MQTT_Simulator
+        CL2 -->|分发任务| EdgeGroups
+        CL3[Prometheus] -->|采集数据| CenterCluster
+        CL4[Grafana] -->|展示| CL3
     end
 
-    subgraph MQTT[MQTT模拟层]
-        M1[MQTT Simulator] -->|写入消息| FLASHMQ
+    subgraph MQTT[MQTT模拟器]
+        MQTT_Simulator -.->|写入数据| EdgeFlashMQ
     end
 
-    subgraph Edge[边缘节点集群]
-        subgraph Edge_Group[边缘组N]
-            E1[FlashMQ] <-->|本地通信| E2[TDengine单节点]
-            E2 -->|taosX同步| Center
-            E1 --> E3[process-exporter]
-            E2 --> E4[node-exporter]
+    subgraph EdgeGroups[边缘节点组 xN]
+        subgraph Edge_Group[边缘组]
+            FlashMQ <-->|本地通信| EdgeTD[TDengine]
+            EdgeTD -->|taosX 同步| CenterCluster
         end
+        style Edge_Group stroke-dasharray:5 5
     end
 
     subgraph Center[中心集群]
-        C1[TDengine 副本1] <--> C2[TDengine 副本2]
-        C2 <--> C3[TDengine 副本3]
-        C1 & C2 & C3 --> C4[process-exporter]
-        C1 & C2 & C3 --> C5[node-exporter]
+        CenterCluster[TDengine Cluster\n(多副本集群)]
     end
 
-    %% 数据流关键路径
-    CL2 -->|启动| M1
-    M1 -->|MQTT消息| E1
-    Edge_Group -. 多组边缘节点 .- Edge_Group
+    %% 关键数据流
+    MQTT_Simulator -->|MQTT消息| FlashMQ
+    EdgeTD -->|时序数据存储| EdgeTD
+    EdgeGroups -. 多组部署 .-> EdgeGroups
 
     style Center fill:#e6f7ff,stroke:#1890ff
-    style Edge fill:#eafff7,stroke:#13c2c2
+    style EdgeGroups fill:#eafff7,stroke:#13c2c2
     style Client fill:#fff7e6,stroke:#ffa940
     style MQTT fill:#f9f0ff,stroke:#722ed1
-    style Edge_Group stroke-dasharray:5 5
 ```
 
 
