@@ -59,6 +59,7 @@ graph TD
 
 
 ### 组件拓扑图
+```mermaid
 graph TD
     subgraph Center[数据中心]
         C1[TDengine 副本1] <--> C2[TDengine 副本2]
@@ -88,6 +89,7 @@ graph TD
     style Edge fill:#f9f9f9,stroke:#50e3c2
     style Client fill:#f9f9f9,stroke:#f5a623
     style MQTT fill:#f9f9f9,stroke:#bd10e0
+```
 
 
 ## 3. 配置文件说明
