@@ -4,12 +4,13 @@
 # Table of Contents
 1. [使用说明](#1-使用说明)
 1. [工作流程](#2-工作流程)
-1. [配置文件说明](#3-配置文件说明)
-    - [3.1 数据库参数配置](#31-数据库参数配置-db_configjson)
-    - [3.2 查询参数配置](#32-查询参数配置-queryjson)
-2. [测试结果](#4-测试结果)
-3. [环境要求](#5-环境要求)
-4. [常见问题](#6-常见问题)
+1. [组件拓扑图](#3-组件拓扑图)
+1. [配置文件说明](#4-配置文件说明)
+    - [4.1 数据库参数配置](#41-数据库参数配置-db_configjson)
+    - [4.2 查询参数配置](#42-查询参数配置-queryjson)
+1. [测试结果](#5-测试结果)
+1. [环境要求](#6-环境要求)
+1. [常见问题](#7-常见问题)
 
 
 ## 1. 使用说明
@@ -58,16 +59,19 @@ graph TD
 | `run-test`                | 执行分布式测试用例                | 所有部署阶段                       |
 
 
+## 3. 组件拓扑图
 
-### 组件拓扑图
+以下为系统的组件拓扑图，展示了 MQTT 节点、边缘节点、中心节点和客户端节点之间的连接和数据流动。
+
+
 ```mermaid
 graph LR
-  subgraph MQTT Nodes
+  subgraph MQTT-Nodes
     A1[MQTT Simulator1]
     A2[MQTT Simulator2]
   end
 
-  subgraph Edge Nodes
+  subgraph Edge-Nodes
     B1[flashmq1]
     C1[TDengine dnode1]
     B2[flashmq2]
@@ -76,11 +80,11 @@ graph LR
     CN[TDengine dnodeN]
   end
 
-  subgraph Center Nodes
+  subgraph Center-Nodes
     E[TDengine Cluster]
   end
 
-  subgraph Client Nodes
+  subgraph Client-Nodes
     J[taosBenchmark]
     H[taostest]
   end
@@ -97,10 +101,8 @@ graph LR
 
   J -->|执行查询| E
 
-  H -->|调度| A1
-  H -->|调度| A2
-  H -->|调度| B1
-  H -->|调度| B2
+  H -->|调度| MQTT-Nodes
+  H -->|调度| Edge-Nodes
   H -->|调度| E
 
   style A1 fill:#ffcc99,stroke:#cc6600
@@ -117,7 +119,7 @@ graph LR
 ```
 
 
-## 3. 配置文件说明
+## 4. 配置文件说明
 
 位于 `fractal/config` 目录下的配置文件用于定义测试行为和数据库参数：
 
@@ -128,7 +130,7 @@ config/
 └── fractal.toml      # MQTT 模拟器参数配置，一般不需要配置
 ```
 
-### 3.1 数据库参数配置 (db_config.json)
+### 4.1 数据库参数配置 (db_config.json)
 
 ```json
 {
@@ -150,7 +152,7 @@ config/
 🔗 更多配置请参考 [TDengine 数据库参数文档](https://docs.taosdata.com/reference/taos-sql/database/#%E5%88%9B%E5%BB%BA%E6%95%B0%E6%8D%AE%E5%BA%93)
 
 
-### 3.2 查询参数配置 (query.json)
+### 4.2 查询参数配置 (query.json)
 ```json
 {
     "host": "u2-195",
@@ -179,7 +181,7 @@ config/
 🔗 更多配置请参考 [taosBenchmark 查询配置文档](https://docs.taosdata.com/reference/tools/taosbenchmark/#%E6%9F%A5%E8%AF%A2%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0)
 
 
-## 4. 测试结果
+## 5. 测试结果
 测试完成后生成的性能报告将作为 Artifact 存储：
 
 ```bash
@@ -191,7 +193,7 @@ perf_report_YYYYMMDD_HHMMSS.txt
 - ⏱️ 消息延迟分布
 - 🖥️ 资源利用率 (CPU/MEM/Disk)
 
-## 5. 环境要求
+## 6. 环境要求
 
 ### 必要 Secrets
 ```env
@@ -208,7 +210,7 @@ CENTER_LABEL: "20C16G"  # 中心节点规格
 CLIENT_LABEL: "24C64G"  # 客户端规格
 ```
 
-## 6. 常见问题
+## 7. 常见问题
 
 ### Q1: 如何访问测试报告？
 ```markdown
