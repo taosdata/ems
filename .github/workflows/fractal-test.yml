@@ -255,6 +255,12 @@ jobs:
         with:
           entries: ${{ steps.combine-ip-hostname.outputs.combined_info }}
 
+      - name: Delete dynamic labels
+        uses: taosdata/.github/.github/actions/delete-labels@test/fractal
+        with:
+          gh_token: ${{ secrets.RUNNER_PAT }}
+          labels: "fractal"
+          runner_name: ${{ runner.name }}
   deploy-center-nodes:
     needs:
      - combine-and-update-hosts
