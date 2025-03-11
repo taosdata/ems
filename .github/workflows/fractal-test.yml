@@ -228,6 +228,12 @@ jobs:
       group: customers
       labels: ${{ matrix.runner }}
     steps:
+      - name: Add dynamic labels
+        uses: taosdata/.github/.github/actions/add-labels@test/fractal
+        with:
+          gh_token: ${{ secrets.RUNNER_PAT }}
+          labels: "fractal"
+
       - name: Checkout code
         uses: actions/checkout@v4
 
