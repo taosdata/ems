@@ -116,7 +116,6 @@ jobs:
           echo "🔄 Runner workspace: $RUNNER_WORKSPACE"
           echo "🔄 Current workspace: $(pwd)"
 
-
   upload-client-hosts-info:
     needs: filter-runners
     strategy:
@@ -255,12 +254,7 @@ jobs:
         with:
           entries: ${{ steps.combine-ip-hostname.outputs.combined_info }}
 
-      - name: Delete dynamic labels
-        uses: taosdata/.github/.github/actions/delete-labels@test/fractal
-        with:
-          gh_token: ${{ secrets.RUNNER_PAT }}
-          labels: "fractal"
-          runner_name: ${{ runner.name }}
+
   deploy-center-nodes:
     needs:
      - combine-and-update-hosts
@@ -514,13 +508,10 @@ jobs:
           # Print File
           cat $workflow_config_file
 
-  clean-env:
+  clean-artifacts:
     runs-on: ubuntu-latest
     needs:
-      - deploy-mqtt-simulator
-      - deploy-edge-nodes
-      - deploy-center-nodes
-      - deploy-client-nodes
+      - combine-and-update-hosts
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -531,7 +522,7 @@ jobs:
           gh_token: ${{ secrets.RUNNER_PAT }}
 
   run-test:
-    needs: [filter-runners, clean-env]
+    needs: [filter-runners, clean-artifacts]
     strategy:
       matrix:
         runner: ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
@@ -591,3 +582,26 @@ jobs:
         with:
           name:  "perf_report_${{ env.test_start_time }}"
           path: "perf_report_${{ env.test_start_time }}.txt"
+
+  clean-up:
+    needs:
+      - run-test
+      - filter-runners
+    if: always()
+    strategy:
+      matrix:
+        runner:
+          - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
+          - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
+          - ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
+          - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
+    runs-on:
+      group: customers
+      labels: ${{ matrix.runner }}
+    steps:
+      - name: Delete dynamic labels
+        uses: taosdata/.github/.github/actions/delete-labels@test/fractal
+        with:
+          gh_token: ${{ secrets.RUNNER_PAT }}
+          labels: "fractal"
+          runner_name: ${{ runner.name }}
