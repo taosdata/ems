@@ -17,23 +17,23 @@
 ### 手动启动 Docker Compose
 1. 确保已安装 Docker 和 Docker Compose。
 2. 克隆仓库并进入项目目录：
-   ```bash
-   git clone <repository-url>
-   cd <repository-folder>/docker-compose
-   ```
+  ```bash
+  git clone <repository-url>
+  cd <repository-folder>/docker-compose
+  ```
 3. 启动所有服务：
-   ```bash
-   docker-compose up -d
-   ```
+  ```bash
+  docker-compose up -d
+  ```
 4. 验证服务是否正常运行：
-   ```bash
-   docker-compose ps
-   ```
+  ```bash
+  docker-compose ps
+  ```
 5. 服务均正常启动后可登录 taos-explorer 前端验证数据写入情况并查询结果：
-    ```markdown
-    边缘节点：http://$your_ip:7060
-    中心节点：http://$your_ip:6060
-    ```
+  ```markdown
+  边缘节点：http://$your_ip:7060
+  中心节点：http://$your_ip:6060
+  ```
 
 
 ### 参数说明

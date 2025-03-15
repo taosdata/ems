@@ -2,7 +2,9 @@
 Fractal 客户场景旨在通过分布式架构实现 MQTT 数据流、边缘节点、中心节点和客户端的协调工作，满足复杂场景下的数据采集、处理和同步需求。
 
 本仓库提供了两种灵活的部署方式，帮助用户在不同环境下快速搭建和测试：
+
 Workflow 自动部署：通过 GitHub Actions 自动部署集群环境并运行测试，适合在 CI/CD 或云端环境中使用。【见下文】
+
 Docker Compose 本地部署：通过 Docker Compose 在本地快速搭建测试环境，适合本地开发测试或演示。【见[ Docker Compose 部署 ]( ./docker-compose )】
 
 # Table of Contents
@@ -61,6 +63,7 @@ graph TD
 | `deploy-mqtt-simulator`   | 部署 MQTT 模拟器                 | combine-and-update-hosts           |
 | `deploy-client-nodes`     | 部署客户端测试环境                | combine-and-update-hosts           |
 | `run-test`                | 执行分布式测试用例                | 所有部署阶段                       |
+| `summary-report`       | 总结报告                           | run-test                       |
 
 
 ## 3. 组件拓扑图
