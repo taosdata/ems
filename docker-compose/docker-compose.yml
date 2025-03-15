@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  # TDengine Central Node
+  center-node:
+    image: tdengine/tdengine-ee-amd64:3.3.5.8
+    container_name: center-node
+    hostname: buildkitsandbox
+    ports:
+      - "6030:6030"
+      - "6041:6041"
+      - "6060:6060"
+    volumes:
+      - tdengine-data:/var/lib/taos
+    networks:
+      - tdengine-net
+    environment:
+      TAOS_FQDN: center-node  # Set FQDN to container name
+      TAOS_FIRST_EP: center-node  # Set first EP to container name
+
+
+  # Edge Node 1 - FlashMQ
+  edge-node1-flashmq:
+    image: privatecoder/flashmq:latest
+    container_name: edge-node1-flashmq
+    ports:
+      - "1883:1883"   # MQTT standard port
+    volumes:
+      - ./edge-node/flashmq/flashmq.conf:/etc/flashmq/flashmq.conf
+    networks:
+      - tdengine-net
+    environment:
+      FLASHMQ_LOG_LEVEL: debug  # Debug log level
+
+  # Edge Node 1 - TDengine
+  edge-node1-tdengine:
+    image: tdengine/tdengine-ee-amd64:3.3.5.8
+    container_name: edge-node1-tdengine
+    hostname: buildkitsandbox
+    ports:
+      - "7030:6030"  # Avoid port conflict with central node
+      - "7041:6041"  # Avoid port conflict with central node
+      - "7060:6060"  # Avoid port conflict with central node
+    volumes:
+      - edge-node1-tdengine-data:/var/lib/taos
+    networks:
+      - tdengine-net
+    environment:
+      TAOS_FQDN: edge-node1-tdengine  # Set FQDN to container name
+      TAOS_FIRST_EP: edge-node1-tdengine  # Set first EP to central node
+      MQTT_HOST: edge-node1-flashmq  # Set MQTT service address
+    depends_on:
+      - edge-node1-flashmq
+
+  # Client Node
+  client-node:
+    build: ./client-node
+    container_name: client-node
+    networks:
+      - tdengine-net
+    environment:
+      EDGE_HOST: edge-node1-tdengine
+      MQTT_HOST: edge-node1-flashmq
+      CENTER_HOST: center-node
+      TARGET_DBNAME: mqtt_datain
+      CENTER_DBNAME: center_db
+    depends_on:
+      - edge-node1-tdengine
+      - edge-node1-flashmq
+
+  # MQTT Simulator
+  mqtt-simulator:
+    build: ./mqtt-simulator
+    container_name: mqtt-simulator
+    networks:
+      - tdengine-net
+    environment:
+      - MQTT_PUB_INTERVAL=1000
+      - EDGE_HOST=edge-node1-flashmq
+    depends_on:
+      - edge-node1-flashmq
+
+volumes:
+  tdengine-data:
+  edge-node1-tdengine-data:
+
+networks:
+  tdengine-net:
+    driver: bridge
+
+
+
