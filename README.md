@@ -1,5 +1,9 @@
-# Fractal Test Workflow
-通过 Workflow 自动部署集群环境并运行测试，支持多节点分布式环境下的 MQTT 数据流、边缘节点、中心节点和客户端的协调测试。
+# Fractal Test
+Fractal 客户场景旨在通过分布式架构实现 MQTT 数据流、边缘节点、中心节点和客户端的协调工作，满足复杂场景下的数据采集、处理和同步需求。
+
+本仓库提供了两种灵活的部署方式，帮助用户在不同环境下快速搭建和测试：
+Workflow 自动部署：通过 GitHub Actions 自动部署集群环境并运行测试，适合在 CI/CD 或云端环境中使用。【见下文】
+Docker Compose 本地部署：通过 Docker Compose 在本地快速搭建测试环境，适合本地开发测试或演示。【见[ Docker Compose 部署 ]( ./docker-compose )】
 
 # Table of Contents
 1. [使用说明](#1-使用说明)
@@ -44,7 +48,7 @@ graph TD
     C --> F[deploy-mqtt-simulator]
     C --> G[deploy-client-nodes]
     D & E & F & G --> H[run-test]
-    H --> I[生成性能报告]
+    H --> I[summary-report]
 ```
 
 ### 关键 Job 说明
@@ -74,11 +78,11 @@ graph LR
 
   subgraph Edge-Nodes
     B1[flashmq1]
-    C1[TDengine dnode1]
+    C1[TDengine node1]
     B2[flashmq2]
-    C2[TDengine dnode2]
+    C2[TDengine node2]
     BN[flashmqN]
-    CN[TDengine dnodeN]
+    CN[TDengine nodeN]
   end
 
   subgraph Center-Nodes
@@ -94,13 +98,13 @@ graph LR
   A2 -->|生成数据| B2
   AN -->|生成数据| BN
 
-  B1 -->|taosx| C1
-  B2 -->|taosx| C2
-  BN -->|taosx| CN
+  B1 --> C1
+  B2 --> C2
+  BN --> CN
 
-  C1 -->|taosx| E
-  C2 -->|taosx| E
-  CN -->|taosx| E
+  C1 --> E
+  C2 --> E
+  CN --> E
 
   J -->|执行查询| E
 

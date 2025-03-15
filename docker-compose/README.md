@@ -9,9 +9,8 @@
 1. [配置文件说明](#4-配置文件说明)
     - [4.1 数据库参数配置](#41-数据库参数配置)
     - [4.2 MQTT 模拟器配置](#42-mqtt-模拟器配置)
-1. [测试结果](#5-测试结果)
-1. [环境要求](#6-环境要求)
-1. [常见问题](#7-常见问题)
+1. [环境要求](#5-环境要求)
+2. [常见问题](#6-常见问题)
 
 ## 1. 使用说明
 
@@ -20,7 +19,7 @@
 2. 克隆仓库并进入项目目录：
    ```bash
    git clone <repository-url>
-   cd <repository-folder>
+   cd <repository-folder>/docker-compose
    ```
 3. 启动所有服务：
    ```bash
@@ -30,6 +29,12 @@
    ```bash
    docker-compose ps
    ```
+5. 服务均正常启动后可登录 taos-explorer 前端验证数据写入情况并查询结果：
+    ```markdown
+    边缘节点：http://$your_ip:7060
+    中心节点：http://$your_ip:6060
+    ```
+
 
 ### 参数说明
 | 参数名称               | 描述                     | 类型    | 必需 | 默认值    |
@@ -67,7 +72,7 @@ graph LR
   end
 
   subgraph Edge-Nodes-Container
-    C[TDengine dnode]
+    C[TDengine node]
   end
 
   subgraph Center-Nodes-Container
@@ -79,8 +84,8 @@ graph LR
   end
 
   A -->|生成数据| B
-  B -->|taosx| C
-  C -->|taosx| D
+  B --> C
+  C --> D
   F -->|调度| C
   F -->|调度| D
 
@@ -107,12 +112,7 @@ graph LR
   - `MQTT_PUB_INTERVAL`: 设置为 `1000`（数据发布间隔，单位为毫秒）。
   - `EDGE_HOST`: 设置为 `edge-node1-flashmq`。
 
-## 5. 测试验证
-组件启动后可以登录 taos-explorer 前端验证数据写入情况及查询结果：
-- 边缘节点：http://$your_ip:7060
-- 中心节点：http://$your_ip:6060
-
-## 6. 环境要求
+## 5. 环境要求
 
 ### 必要端口
 确保以下端口可用：
@@ -120,7 +120,7 @@ graph LR
 - `7030`, `7041`, `7060`（边缘节点 TDengine）
 - `1883`（FlashMQ）
 
-## 7. 常见问题
+## 6. 常见问题
 
 ### Q1: 如何访问测试报告？
 ```markdown
