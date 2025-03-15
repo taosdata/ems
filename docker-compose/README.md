@@ -1,4 +1,4 @@
-# TDengine 边缘-中心架构测试工作流
+# Docker-compose for Fractal-test
 
 通过 Docker Compose 自动部署集群环境并运行测试，支持多节点分布式环境下的 MQTT 数据流、边缘节点、中心节点和客户端的协调测试。
 
