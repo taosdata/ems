@@ -37,7 +37,7 @@ Docker Compose 本地部署：通过 Docker Compose 在本地快速搭建测试�
 
 4. 点击刚刚启动的 **workflow**，可以在下级页面查看详细的运行状态；
 
-5. 全部流程运行完成后，在详情页面最下方可下载名为 **perf_report_YYYYMMDD_HHMMSS.txt** 的测试报告。
+5. 全部流程运行完成后，在详情页面最下方 **Artifacts** 区域可下载名为 **perf_report_YYYYMMDD_HHMMSS.txt** 的测试报告。
 
 
 🔗 [Workflow Trigger Demo](https://github.com/taosdata/fractal/actions/runs/13734315147)
@@ -205,6 +205,7 @@ perf_report_YYYYMMDD_HHMMSS.txt
 包含以下指标：
 - 📈 数据写入吞吐量
 - ⏱️ 消息延迟分布
+- 🗜️ 压缩率
 - 🖥️ 资源利用率 (CPU/MEM/Disk)
 
 ## 6. 环境要求
