@@ -22,8 +22,8 @@ Docker Compose 本地部署：通过 Docker Compose 在本地快速搭建测试�
 ## 1. 使用说明
 
 ### 手动触发 Workflow
-1. 进入仓库的 **Actions** 选项卡
-2. 选择 **Fractal Test** workflow
+1. 进入仓库的 **Actions** 选项卡；
+2. 选择 **Fractal Test** workflow；
 3. 点击 **Run workflow** 按钮，填写参数：
 
 | 参数名称               | 描述                     | 类型    | 必需 | 默认值    | 选项          |
@@ -34,6 +34,11 @@ Docker Compose 本地部署：通过 Docker Compose 在本地快速搭建测试�
 | `exec-time`            | 测试执行时长 (秒)       | string  | ✅   | 300      | -             |
 | `source-interval`      | 数据源间隔 (毫秒)       | string  | ✅   | 1000     | -             |
 | `enable-compression`   | 启用数据压缩            | choice  | ✅   | false    | true/false    |
+
+4. 点击刚刚启动的 **workflow**，可以在下级页面查看详细的运行状态；
+
+5. 全部流程运行完成后，在详情页面最下方可下载名为 **perf_report_YYYYMMDD_HHMMSS.txt** 的测试报告。
+
 
 🔗 [Workflow Trigger Demo](https://github.com/taosdata/fractal/actions/runs/13734315147)
 
