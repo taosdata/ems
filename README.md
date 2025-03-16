@@ -54,8 +54,7 @@ graph TD
     C --> E[deploy-edge-nodes]
     C --> F[deploy-mqtt-simulator]
     C --> G[deploy-client-nodes]
-    D & E & F & G --> H[run-test]
-    H --> I[summary-report]
+    D & E & F & G --> H[test-and-report]
 ```
 
 ### 关键 Job 说明
@@ -67,8 +66,7 @@ graph TD
 | `deploy-edge-nodes`       | 部署边缘节点组件                  | combine-and-update-hosts           |
 | `deploy-mqtt-simulator`   | 部署 MQTT 模拟器                 | combine-and-update-hosts           |
 | `deploy-client-nodes`     | 部署客户端测试环境                | combine-and-update-hosts           |
-| `run-test`                | 执行分布式测试用例                | 所有部署阶段                       |
-| `summary-report`       | 总结报告                           | run-test                       |
+| `test-and-report`                | 分布式执行测试用例并上传测试报告          | 所有部署阶段                       |
 
 
 ## 3. 组件拓扑图
