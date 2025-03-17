@@ -53,7 +53,7 @@
 | 参数名称               | 描述                     | 类型    | 必需 | 默认值    |
 |------------------------|--------------------------|---------|------|-----------|
 | center-host          | 中心节点主机名           | string  | ✅   | center-node |
-| edge-host            | 边缘节点主机名           | string  | ✅   | edge-node1  |
+| edge-host            | 边缘节点主机名           | string  | ✅   | edge-node1-tdengine  |
 | mqtt-host            | MQTT 主机名             | string  | ✅   | edge-node1-flashmq |
 | edge-dbname          | 边缘节点数据库名称       | string  | ✅   | mqtt_datain |
 | center-dbname        | 中心节点数据库名称       | string  | ✅   | center_db |

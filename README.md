@@ -38,12 +38,12 @@ To facilitate rapid deployment and testing in different environments, this repos
 
 | Parameter Name          | Description                     | Type    | Required | Default    | Options          |
 |-------------------------|---------------------------------|---------|----------|------------|------------------|
-| `td-version`            | TDengine Version               | string  | ✅       | 3.3.5.5    | -                |
-| `edge-dnode-count`      | Edge Node Count                | choice  | ✅       | 2          | 1/2              |
-| `center-dnode-count`    | Center Node Count              | choice  | ✅       | 3          | 1/2/3            |
-| `exec-time`             | Test Execution Duration (sec)  | string  | ✅       | 300        | -                |
-| `source-interval`       | Data Source Interval (ms)      | string  | ✅       | 1000       | -                |
-| `enable-compression`    | Enable Data Compression        | choice  | ✅       | false      | true/false       |
+| td-version            | TDengine Version               | string  | ✅       | 3.3.5.5    | -                |
+| edge-dnode-count      | Edge Node Count                | choice  | ✅       | 2          | 1/2              |
+| center-dnode-count    | Center Node Count              | choice  | ✅       | 3          | 1/2/3            |
+| exec-time             | Test Execution Duration (sec)  | string  | ✅       | 300        | -                |
+| source-interval       | Data Source Interval (ms)      | string  | ✅       | 1000       | -                |
+| enable-compression    | Enable Data Compression        | choice  | ✅       | false      | true/false       |
 
 4. Click the newly started **workflow** to view detailed running status on the subpage;
 
