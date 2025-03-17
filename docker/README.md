@@ -1,53 +1,35 @@
-简体中文 | [English](README.md)
-
-# Docker-compose for Fractal-test
+# TDengine 边缘-中心架构测试工作流
 
 通过 Docker Compose 自动部署集群环境并运行测试，支持多节点分布式环境下的 MQTT 数据流、边缘节点、中心节点和客户端的协调测试。
 
-
 # 目录
-
-- [Docker-compose for Fractal-test](#docker-compose-for-fractal-test)
-- [目录](#目录)
-  - [1. 使用说明](#1-使用说明)
-    - [手动启动 Docker Compose](#手动启动-docker-compose)
-    - [参数说明](#参数说明)
-  - [2. 工作流程](#2-工作流程)
-    - [关键组件说明](#关键组件说明)
-  - [3. 组件拓扑图](#3-组件拓扑图)
-  - [4. 配置文件说明](#4-配置文件说明)
+1. [使用说明](#1-使用说明)
+1. [工作流程](#2-工作流程)
+1. [组件拓扑图](#3-组件拓扑图)
+1. [配置文件说明](#4-配置文件说明)
     - [4.1 数据库参数配置](#41-数据库参数配置)
     - [4.2 MQTT 模拟器配置](#42-mqtt-模拟器配置)
-  - [5. 环境要求](#5-环境要求)
-    - [必要端口](#必要端口)
-  - [6. 常见问题](#6-常见问题)
-    - [Q1: 如何访问测试报告？](#q1-如何访问测试报告)
-    - [Q2: 如何调试失败的测试？](#q2-如何调试失败的测试)
-    - [Q3: 如何修改 MQTT 数据发布间隔？](#q3-如何修改-mqtt-数据发布间隔)
+1. [测试结果](#5-测试结果)
+1. [环境要求](#6-环境要求)
+1. [常见问题](#7-常见问题)
 
 ## 1. 使用说明
 
 ### 手动启动 Docker Compose
 1. 确保已安装 Docker 和 Docker Compose。
 2. 克隆仓库并进入项目目录：
-  ```bash
-  git clone <repository-url>
-  cd <repository-folder>/docker-compose
-  ```
+   ```bash
+   git clone <repository-url>
+   cd <repository-folder>
+   ```
 3. 启动所有服务：
-  ```bash
-  docker-compose up -d
-  ```
+   ```bash
+   docker-compose up -d
+   ```
 4. 验证服务是否正常运行：
-  ```bash
-  docker-compose ps
-  ```
-5. 服务均正常启动后可登录 taos-explorer 前端验证数据写入情况并查询结果：
-  ```markdown
-  边缘节点：http://$your_ip:7060
-  中心节点：http://$your_ip:6060
-  ```
-
+   ```bash
+   docker-compose ps
+   ```
 
 ### 参数说明
 | 参数名称               | 描述                     | 类型    | 必需 | 默认值    |
@@ -85,7 +67,7 @@ graph LR
   end
 
   subgraph Edge-Nodes-Container
-    C[TDengine node]
+    C[TDengine dnode]
   end
 
   subgraph Center-Nodes-Container
@@ -97,8 +79,8 @@ graph LR
   end
 
   A -->|生成数据| B
-  B --> C
-  C --> D
+  B -->|taosx| C
+  C -->|taosx| D
   F -->|调度| C
   F -->|调度| D
 
@@ -125,7 +107,12 @@ graph LR
   - `MQTT_PUB_INTERVAL`: 设置为 `1000`（数据发布间隔，单位为毫秒）。
   - `EDGE_HOST`: 设置为 `edge-node1-flashmq`。
 
-## 5. 环境要求
+## 5. 测试验证
+组件启动后可以登录 taos-explorer 前端验证数据写入情况及查询结果：
+- 边缘节点：http://$your_ip:7060
+- 中心节点：http://$your_ip:6060
+
+## 6. 环境要求
 
 ### 必要端口
 确保以下端口可用：
@@ -133,12 +120,13 @@ graph LR
 - `7030`, `7041`, `7060`（边缘节点 TDengine）
 - `1883`（FlashMQ）
 
-## 6. 常见问题
+## 7. 常见问题
 
-### Q1: 如何访问测试报告？
+### Q1: 无法登录 taos-explorer？
 ```markdown
-1. 在项目目录下查找生成的报告文件。
-2. 使用文本编辑器或命令行工具查看报告内容。
+1. 在服务器查看相关容器是否正常启动；
+2. 在服务器关闭防火墙，开启 ipv4 转发等；
+3. 在使用浏览器的终端 telnet 容器对外开放的相关端口；
 ```
 
 ### Q2: 如何调试失败的测试？
@@ -149,5 +137,5 @@ graph LR
 
 ### Q3: 如何修改 MQTT 数据发布间隔？
 ```markdown
-在 `docker-compose.yml` 中修改 `mqtt-simulator` 服务的 `MQTT_PUB_INTERVAL` 环境变量。
+在 `mqtt-simulator/Dockerfile` 中修改 `mqtt-simulator` 服务的 `MQTT_PUB_INTERVAL` 环境变量。
 ```

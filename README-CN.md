@@ -10,9 +10,9 @@ Fractal 客户场景基于分布式架构，旨在实现 MQTT 数据流、边缘
 
 - **Docker Compose 本地部署**：通过 Docker Compose 在本地快速搭建测试环境，适合本地开发测试或演示。【见[ Docker Compose 部署 ]( ./docker-compose )】
 
-# Table of Contents
+# 目录
 - [Fractal Test](#fractal-test)
-- [Table of Contents](#table-of-contents)
+- [目录](#目录)
   - [1. 使用说明](#1-使用说明)
     - [手动触发 Workflow](#手动触发-workflow)
   - [2. 工作流程](#2-工作流程)
