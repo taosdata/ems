@@ -490,7 +490,7 @@ jobs:
         with:
           gh_token: ${{ secrets.RUNNER_PAT }}
 
-  run-test:
+  test-and-report:
     needs: [filter-runners, clean-artifacts]
     strategy:
       matrix:
@@ -554,7 +554,7 @@ jobs:
 
   clean-up:
     needs:
-      - run-test
+      - test-and-report
       - filter-runners
     if: always()
     strategy:
