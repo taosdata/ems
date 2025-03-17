@@ -440,6 +440,9 @@ jobs:
       - name: Create combined JSON file From Inputs
         run: |
           # Get Inputs
+          TD_VERSION="${{ github.event.inputs.td-version }}"
+          EDGE_DNODE_COUNT="${{ github.event.inputs.edge-dnode-count }}"
+          CENTER_DNODE_COUNT="${{ github.event.inputs.center-dnode-count }}"
           EXEC_TIME="${{ github.event.inputs.exec-time }}"
           SOURCE_INTERVAL="${{ github.event.inputs.source-interval }}"
           ENABLE_COMPRESSION="${{ github.event.inputs.enable-compression }}"
@@ -450,6 +453,9 @@ jobs:
 
           # Combine Inputs into a single JSON object
           COMBINED_JSON=$(jq -n \
+            --arg td_version "$TD_VERSION" \
+            --arg edge_dnode_count "$EDGE_DNODE_COUNT" \
+            --arg center_dnode_count "$CENTER_DNODE_COUNT" \
             --arg execTime "$EXEC_TIME" \
             --arg sourceInterval "$SOURCE_INTERVAL" \
             --arg enableCompression "$ENABLE_COMPRESSION" \
@@ -458,6 +464,9 @@ jobs:
             --argjson taosBenchmarkHosts "$TAOS_BENCHMARK_HOSTS" \
             --argjson centerDnodeHosts "$CENTER_DNODE_HOSTS" \
             '{
+              td_version: $td_version,
+              edge_dnode_count: $edge_dnode_count,
+              center_dnode_count: $center_dnode_count,
               exec_time: $execTime,
               source_interval: $sourceInterval,
               enable_compression: $enableCompression,
