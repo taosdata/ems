@@ -51,7 +51,7 @@ Automatically deploy a cluster environment and run tests using Docker Compose, s
 |-------------------------|---------------------------------|---------|----------|------------|
 | center-host           | Central Node Hostname           | string  | ✅       | center-node |
 | edge-host             | Edge Node Hostname              | string  | ✅       | edge-node1-tdengine  |
-| mqtt-host             | MQTT Hostname                   | string  | ✅       | edge-node1-flashmq |
+| mqtt-host             | MQTT Node Hostname              | string  | ✅       | edge-node1-flashmq |
 | edge-dbname           | Edge Node Database Name         | string  | ✅       | mqtt_datain |
 | center-dbname         | Central Node Database Name      | string  | ✅       | center_db |
 
