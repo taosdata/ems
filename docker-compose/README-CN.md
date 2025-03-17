@@ -52,11 +52,11 @@
 ### 参数说明
 | 参数名称               | 描述                     | 类型    | 必需 | 默认值    |
 |------------------------|--------------------------|---------|------|-----------|
-| `center-host`          | 中心节点主机名           | string  | ✅   | center-node |
-| `edge-host`            | 边缘节点主机名           | string  | ✅   | edge-node1  |
-| `mqtt-host`            | MQTT 主机名             | string  | ✅   | edge-node1-flashmq |
-| `edge-dbname`          | 边缘节点数据库名称       | string  | ✅   | mqtt_datain |
-| `center-dbname`        | 中心节点数据库名称       | string  | ✅   | center_db |
+| center-host          | 中心节点主机名           | string  | ✅   | center-node |
+| edge-host            | 边缘节点主机名           | string  | ✅   | edge-node1  |
+| mqtt-host            | MQTT 主机名             | string  | ✅   | edge-node1-flashmq |
+| edge-dbname          | 边缘节点数据库名称       | string  | ✅   | mqtt_datain |
+| center-dbname        | 中心节点数据库名称       | string  | ✅   | center_db |
 
 ## 2. 工作流程
 
@@ -64,11 +64,11 @@
 ### 关键组件说明
 | 组件名称               | 功能描述                          | 依赖项                              |
 |------------------------|-----------------------------------|-------------------------------------|
-| `center-node`          | 中心节点 TDengine 服务           | -                                   |
-| `edge-node1-flashmq`   | 边缘节点 MQTT 服务               | -                                   |
-| `edge-node1-tdengine`  | 边缘节点 TDengine 服务           | `edge-node1-flashmq`                |
-| `client-node`          | 客户端测试环境                    | `edge-node1-tdengine` 和 `center-node` |
-| `mqtt-simulator`       | MQTT 数据模拟器                  | `edge-node1-flashmq`                |
+| center-node          | 中心节点 TDengine 服务           | -                                   |
+| edge-node1-flashmq   | 边缘节点 MQTT 服务               | -                                   |
+| edge-node1-tdengine  | 边缘节点 TDengine 服务           | edge-node1-flashmq                |
+| client-node          | 客户端测试环境                    | edge-node1-tdengine 和 center-node |
+| mqtt-simulator       | MQTT 数据模拟器                  | edge-node1-flashmq                |
 
 ## 3. 组件拓扑图
 

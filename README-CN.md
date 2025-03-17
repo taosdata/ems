@@ -71,15 +71,15 @@ graph TD
 ```
 
 ### 关键 Job 说明
-| Job 名称                   | 功能描述                          | 依赖项                              |
-|---------------------------|-----------------------------------|-------------------------------------|
-| `filter-runners`          | 动态选择指定规格的运行器          | -                                   |
-| `combine-and-update-hosts`| 同步所有节点的 hosts 配置         | filter-runners                      |
-| `deploy-center-nodes`     | 部署中心节点组件                  | combine-and-update-hosts           |
-| `deploy-edge-nodes`       | 部署边缘节点组件                  | combine-and-update-hosts           |
-| `deploy-mqtt-simulator`   | 部署 MQTT 模拟器                 | combine-and-update-hosts           |
-| `deploy-client-nodes`     | 部署客户端测试环境                | combine-and-update-hosts           |
-| `test-and-report`                | 分布式执行测试用例并上传测试报告          | 所有部署阶段                       |
+| Job 名称                   | 功能描述                      | 依赖项                              |
+|---------------------------|------------------------------|-------------------------------------|
+| filter-runners          | 动态选择指定规格的运行器           | -                                   |
+| combine-and-update-hosts| 同步所有节点的 hosts 配置         | filter-runners                      |
+| deploy-center-nodes     | 部署中心节点组件                  | combine-and-update-hosts           |
+| deploy-edge-nodes       | 部署边缘节点组件                  | combine-and-update-hosts           |
+| deploy-mqtt-simulator   | 部署 MQTT 模拟器                 | combine-and-update-hosts           |
+| deploy-client-nodes     | 部署客户端测试环境                | combine-and-update-hosts           |
+| test-and-report         | 分布式执行测试用例并上传测试报告     | 所有部署阶段                       |
 
 
 ## 3. 组件拓扑图
@@ -150,10 +150,10 @@ graph LR
 
 | 场景                    | 描述                                           |
 |------------------------|------------------------------------------------|
-| `MQTT 数据采集性能`      | 从 MQTT 订阅设备采集数据并写入到边缘节点的存储中      |
-| `taosx 数据迁移性能`     | 将数据从边缘节点迁移到中心节点的存储中               |
-| `数据查询性能`           | 在数据迁移过程中测试查询 QPS                       |
-| `数据压缩性能`           | 压缩后数据大小与原始数据大小的比值                  |
+| MQTT 数据采集性能      | 从 MQTT 订阅设备采集数据并写入到边缘节点的存储中      |
+| taosx 数据迁移性能     | 将数据从边缘节点迁移到中心节点的存储中               |
+| 数据查询性能           | 在数据迁移过程中测试查询 QPS                       |
+| 数据压缩性能           | 压缩后数据大小与原始数据大小的比值                  |
 
 
 

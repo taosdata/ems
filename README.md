@@ -68,13 +68,13 @@ graph TD
 ### Key Job Descriptions
 | Job Name                | Description                          | Dependencies                         |
 |-------------------------|--------------------------------------|--------------------------------------|
-| `filter-runners`        | Dynamically select specified runners | -                                    |
-| `combine-and-update-hosts`| Synchronize hosts configuration of all nodes | filter-runners          |
-| `deploy-center-nodes`   | Deploy center node components        | combine-and-update-hosts            |
-| `deploy-edge-nodes`     | Deploy edge node components          | combine-and-update-hosts            |
-| `deploy-mqtt-simulator` | Deploy MQTT simulator               | combine-and-update-hosts            |
-| `deploy-client-nodes`   | Deploy client test environment       | combine-and-update-hosts            |
-| `test-and-report`       | Execute test cases and upload report | All deployment phases               |
+| filter-runners        | Dynamically select specified runners | -                                    |
+| combine-and-update-hosts| Synchronize hosts configuration of all nodes | filter-runners          |
+| deploy-center-nodes   | Deploy center node components        | combine-and-update-hosts            |
+| deploy-edge-nodes     | Deploy edge node components          | combine-and-update-hosts            |
+| deploy-mqtt-simulator | Deploy MQTT simulator               | combine-and-update-hosts            |
+| deploy-client-nodes   | Deploy client test environment       | combine-and-update-hosts            |
+| test-and-report       | Execute test cases and upload report | All deployment phases               |
 
 ## 3. Component Topology
 
@@ -142,10 +142,10 @@ graph LR
 
 | Scenario                | Description                                           |
 |-------------------------|-------------------------------------------------------|
-| `MQTT Data Collection Performance` | Collect data from MQTT and write to edge node storage |
-| `taosx Data Migration Performance` | Migrate data from edge nodes to center node storage   |
-| `Data Query Performance` | Test query QPS during data migration                  |
-| `Data Compression Performance` | Ratio of compressed data size to original data size   |
+| MQTT Data Collection Performance | Collect data from MQTT and write to edge node storage |
+| taosx Data Migration Performance | Migrate data from edge nodes to center node storage   |
+| Data Query Performance | Test query QPS during data migration                  |
+| Data Compression Performance | Ratio of compressed data size to original data size   |
 
 ## 5. Configuration File Description
 

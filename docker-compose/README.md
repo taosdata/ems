@@ -49,22 +49,22 @@ Automatically deploy a cluster environment and run tests using Docker Compose, s
 ### Parameter Description
 | Parameter Name          | Description                     | Type    | Required | Default    |
 |-------------------------|---------------------------------|---------|----------|------------|
-| `center-host`           | Central Node Hostname           | string  | ✅       | center-node |
-| `edge-host`             | Edge Node Hostname              | string  | ✅       | edge-node1  |
-| `mqtt-host`             | MQTT Hostname                   | string  | ✅       | edge-node1-flashmq |
-| `edge-dbname`           | Edge Node Database Name         | string  | ✅       | mqtt_datain |
-| `center-dbname`         | Central Node Database Name      | string  | ✅       | center_db |
+| center-host           | Central Node Hostname           | string  | ✅       | center-node |
+| edge-host             | Edge Node Hostname              | string  | ✅       | edge-node1  |
+| mqtt-host             | MQTT Hostname                   | string  | ✅       | edge-node1-flashmq |
+| edge-dbname           | Edge Node Database Name         | string  | ✅       | mqtt_datain |
+| center-dbname         | Central Node Database Name      | string  | ✅       | center_db |
 
 ## 2. Workflow
 
 ### Key Component Descriptions
 | Component Name          | Description                          | Dependencies                         |
 |-------------------------|--------------------------------------|--------------------------------------|
-| `center-node`           | Central Node TDengine Service        | -                                    |
-| `edge-node1-flashmq`    | Edge Node MQTT Service               | -                                    |
-| `edge-node1-tdengine`   | Edge Node TDengine Service           | `edge-node1-flashmq`                 |
-| `client-node`           | Client Test Environment              | `edge-node1-tdengine` and `center-node` |
-| `mqtt-simulator`        | MQTT Data Simulator                  | `edge-node1-flashmq`                 |
+| center-node           | Central Node TDengine Service        | -                                    |
+| edge-node1-flashmq    | Edge Node MQTT Service               | -                                    |
+| edge-node1-tdengine   | Edge Node TDengine Service           | edge-node1-flashmq                 |
+| client-node           | Client Test Environment              | edge-node1-tdengine and center-node |
+| mqtt-simulator        | MQTT Data Simulator                  | edge-node1-flashmq                 |
 
 ## 3. Component Topology
 
