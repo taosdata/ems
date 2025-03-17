@@ -1,65 +1,74 @@
+English | [简体中文](README-CN.md)
+
 # Docker-compose for Fractal-test
 
-通过 Docker Compose 自动部署集群环境并运行测试，支持多节点分布式环境下的 MQTT 数据流、边缘节点、中心节点和客户端的协调测试。
+Automatically deploy a cluster environment and run tests using Docker Compose, supporting coordinated testing of MQTT data streams, edge nodes, central nodes, and clients in a multi-node distributed environment.
 
-# 目录
-1. [使用说明](#1-使用说明)
-1. [工作流程](#2-工作流程)
-1. [组件拓扑图](#3-组件拓扑图)
-1. [配置文件说明](#4-配置文件说明)
-    - [4.1 数据库参数配置](#41-数据库参数配置)
-    - [4.2 MQTT 模拟器配置](#42-mqtt-模拟器配置)
-1. [环境要求](#5-环境要求)
-2. [常见问题](#6-常见问题)
+# Table of Contents
+- [Docker-compose for Fractal-test](#docker-compose-for-fractal-test)
+- [Table of Contents](#table-of-contents)
+  - [1. Usage Instructions](#1-usage-instructions)
+    - [Manually Start Docker Compose](#manually-start-docker-compose)
+    - [Parameter Description](#parameter-description)
+  - [2. Workflow](#2-workflow)
+    - [Key Component Descriptions](#key-component-descriptions)
+  - [3. Component Topology](#3-component-topology)
+  - [4. Configuration File Description](#4-configuration-file-description)
+    - [4.1 Database Parameter Configuration](#41-database-parameter-configuration)
+    - [4.2 MQTT Simulator Configuration](#42-mqtt-simulator-configuration)
+  - [5. Environment Requirements](#5-environment-requirements)
+    - [Required Ports](#required-ports)
+  - [6. Frequently Asked Questions](#6-frequently-asked-questions)
+    - [Q1: How to access the test report?](#q1-how-to-access-the-test-report)
+    - [Q2: How to debug failed tests?](#q2-how-to-debug-failed-tests)
+    - [Q3: How to modify the MQTT data publishing interval?](#q3-how-to-modify-the-mqtt-data-publishing-interval)
 
-## 1. 使用说明
+## 1. Usage Instructions
 
-### 手动启动 Docker Compose
-1. 确保已安装 Docker 和 Docker Compose。
-2. 克隆仓库并进入项目目录：
+### Manually Start Docker Compose
+1. Ensure Docker and Docker Compose are installed.
+2. Clone the repository and navigate to the project directory:
   ```bash
   git clone <repository-url>
   cd <repository-folder>/docker-compose
   ```
-3. 启动所有服务：
+3. Start all services:
   ```bash
   docker-compose up -d
   ```
-4. 验证服务是否正常运行：
+4. Verify if the services are running properly:
   ```bash
   docker-compose ps
   ```
-5. 服务均正常启动后可登录 taos-explorer 前端验证数据写入情况并查询结果：
+5. Once all services are running, log in to the taos-explorer frontend to verify data writing and query results:
   ```markdown
-  边缘节点：http://$your_ip:7060
-  中心节点：http://$your_ip:6060
+  Edge Node: http://$your_ip:7060
+  Central Node: http://$your_ip:6060
   ```
 
+### Parameter Description
+| Parameter Name          | Description                     | Type    | Required | Default    |
+|-------------------------|---------------------------------|---------|----------|------------|
+| `center-host`           | Central Node Hostname           | string  | ✅       | center-node |
+| `edge-host`             | Edge Node Hostname              | string  | ✅       | edge-node1  |
+| `mqtt-host`             | MQTT Hostname                   | string  | ✅       | edge-node1-flashmq |
+| `edge-dbname`           | Edge Node Database Name         | string  | ✅       | mqtt_datain |
+| `center-dbname`         | Central Node Database Name      | string  | ✅       | center_db |
 
-### 参数说明
-| 参数名称               | 描述                     | 类型    | 必需 | 默认值    |
-|------------------------|--------------------------|---------|------|-----------|
-| `center-host`          | 中心节点主机名           | string  | ✅   | center-node |
-| `edge-host`            | 边缘节点主机名           | string  | ✅   | edge-node1  |
-| `mqtt-host`            | MQTT 主机名             | string  | ✅   | edge-node1-flashmq |
-| `edge-dbname`          | 边缘节点数据库名称       | string  | ✅   | mqtt_datain |
-| `center-dbname`        | 中心节点数据库名称       | string  | ✅   | center_db |
+## 2. Workflow
 
-## 2. 工作流程
+### Key Component Descriptions
+| Component Name          | Description                          | Dependencies                         |
+|-------------------------|--------------------------------------|--------------------------------------|
+| `center-node`           | Central Node TDengine Service        | -                                    |
+| `edge-node1-flashmq`    | Edge Node MQTT Service               | -                                    |
+| `edge-node1-tdengine`   | Edge Node TDengine Service           | `edge-node1-flashmq`                 |
+| `client-node`           | Client Test Environment              | `edge-node1-tdengine` and `center-node` |
+| `mqtt-simulator`        | MQTT Data Simulator                  | `edge-node1-flashmq`                 |
 
+## 3. Component Topology
 
-### 关键组件说明
-| 组件名称               | 功能描述                          | 依赖项                              |
-|------------------------|-----------------------------------|-------------------------------------|
-| `center-node`          | 中心节点 TDengine 服务           | -                                   |
-| `edge-node1-flashmq`   | 边缘节点 MQTT 服务               | -                                   |
-| `edge-node1-tdengine`  | 边缘节点 TDengine 服务           | `edge-node1-flashmq`                |
-| `client-node`          | 客户端测试环境                    | `edge-node1-tdengine` 和 `center-node` |
-| `mqtt-simulator`       | MQTT 数据模拟器                  | `edge-node1-flashmq`                |
-
-## 3. 组件拓扑图
-
-以下为系统的组件拓扑图，展示了 MQTT 节点、边缘节点、中心节点和客户端节点之间的连接和数据流动。
+The following is the component topology of the system, showing the connections and data flow between MQTT nodes, edge nodes, central nodes, and client nodes.
 
 ```mermaid
 graph LR
@@ -83,11 +92,11 @@ graph LR
     F[client]
   end
 
-  A -->|生成数据| B
+  A -->|Generate Data| B
   B --> C
   C --> D
-  F -->|调度| C
-  F -->|调度| D
+  F -->|Schedule| C
+  F -->|Schedule| D
 
   style A fill:#ffcc99,stroke:#cc6600
   style B fill:#99ccff,stroke:#3366cc
@@ -96,45 +105,45 @@ graph LR
   style F fill:#ff9999,stroke:#cc0000
 ```
 
-## 4. 配置文件说明
+## 4. Configuration File Description
 
-### 4.1 数据库参数配置
-- **中心节点**：
-  - `TAOS_FQDN`: 设置为 `center-node`。
-  - `TAOS_FIRST_EP`: 设置为 `center-node`。
-- **边缘节点**：
-  - `TAOS_FQDN`: 设置为 `edge-node1-tdengine`。
-  - `TAOS_FIRST_EP`: 设置为 `edge-node1-tdengine`。
-  - `MQTT_HOST`: 设置为 `edge-node1-flashmq`。
+### 4.1 Database Parameter Configuration
+- **Central Node**:
+  - `TAOS_FQDN`: Set to `center-node`.
+  - `TAOS_FIRST_EP`: Set to `center-node`.
+- **Edge Node**:
+  - `TAOS_FQDN`: Set to `edge-node1-tdengine`.
+  - `TAOS_FIRST_EP`: Set to `edge-node1-tdengine`.
+  - `MQTT_HOST`: Set to `edge-node1-flashmq`.
 
-### 4.2 MQTT 模拟器配置
-- **MQTT 模拟器**：
-  - `MQTT_PUB_INTERVAL`: 设置为 `1000`（数据发布间隔，单位为毫秒）。
-  - `EDGE_HOST`: 设置为 `edge-node1-flashmq`。
+### 4.2 MQTT Simulator Configuration
+- **MQTT Simulator**:
+  - `MQTT_PUB_INTERVAL`: Set to `1000` (data publishing interval in milliseconds).
+  - `EDGE_HOST`: Set to `edge-node1-flashmq`.
 
-## 5. 环境要求
+## 5. Environment Requirements
 
-### 必要端口
-确保以下端口可用：
-- `6030`, `6041`, `6060`（中心节点 TDengine）
-- `7030`, `7041`, `7060`（边缘节点 TDengine）
-- `1883`（FlashMQ）
+### Required Ports
+Ensure the following ports are available:
+- `6030`, `6041`, `6060` (Central Node TDengine)
+- `7030`, `7041`, `7060` (Edge Node TDengine)
+- `1883` (FlashMQ)
 
-## 6. 常见问题
+## 6. Frequently Asked Questions
 
-### Q1: 如何访问测试报告？
+### Q1: How to access the test report?
 ```markdown
-1. 在项目目录下查找生成的报告文件。
-2. 使用文本编辑器或命令行工具查看报告内容。
+1. Locate the generated report file in the project directory.
+2. Use a text editor or command-line tool to view the report content.
 ```
 
-### Q2: 如何调试失败的测试？
+### Q2: How to debug failed tests?
 ```markdown
-1. 查看 `docker-compose logs <service-name>` 日志。
-2. 检查端口是否被占用或服务是否正常启动。
+1. Check logs using `docker-compose logs <service-name>`.
+2. Verify if ports are occupied or services are running properly.
 ```
 
-### Q3: 如何修改 MQTT 数据发布间隔？
+### Q3: How to modify the MQTT data publishing interval?
 ```markdown
-在 `docker-compose.yml` 中修改 `mqtt-simulator` 服务的 `MQTT_PUB_INTERVAL` 环境变量。
+Modify the `MQTT_PUB_INTERVAL` environment variable for the `mqtt-simulator` service in `docker-compose.yml`.
 ```

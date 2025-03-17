@@ -1,51 +1,59 @@
+English | [简体中文](README-CN.md)
+
 # Fractal Test
-Fractal 客户场景旨在通过分布式架构实现 MQTT 数据流、边缘节点、中心节点和客户端的协调工作，满足复杂场景下的数据采集、处理和同步需求。
+The Fractal customer scenario is based on a distributed architecture, aiming to achieve efficient collaboration between MQTT data streams, edge nodes, central nodes, and clients to meet the data collection, processing, and synchronization requirements in complex scenarios.
 
-本仓库提供了两种灵活的部署方式，帮助用户在不同环境下快速搭建和测试：
+To facilitate rapid deployment and testing in different environments, this repository provides two flexible deployment methods:
 
-Workflow 自动部署：通过 GitHub Actions 自动部署集群环境并运行测试，适合在 CI/CD 或云端环境中使用。【见下文】
-
-Docker Compose 本地部署：通过 Docker Compose 在本地快速搭建测试环境，适合本地开发测试或演示。【见[ Docker Compose 部署 ]( ./docker-compose )】
+- **Workflow Auto Deployment**: Automatically deploy the cluster environment and run tests through GitHub Actions, suitable for CI/CD or cloud environments. [See below]
+- **Docker Compose Local Deployment**: Quickly set up a test environment locally using Docker Compose, suitable for local development, testing, or demonstrations. [See [Docker Compose Deployment](./docker-compose)]
 
 # Table of Contents
-1. [使用说明](#1-使用说明)
-1. [工作流程](#2-工作流程)
-1. [组件拓扑图](#3-组件拓扑图)
-1. [配置文件说明](#4-配置文件说明)
-    - [4.1 数据库参数配置](#41-数据库参数配置-db_configjson)
-    - [4.2 查询参数配置](#42-查询参数配置-queryjson)
-1. [测试结果](#5-测试结果)
-1. [环境要求](#6-环境要求)
-1. [常见问题](#7-常见问题)
+- [Fractal Test](#fractal-test)
+- [Table of Contents](#table-of-contents)
+  - [1. Usage Instructions](#1-usage-instructions)
+    - [Manually Trigger Workflow](#manually-trigger-workflow)
+  - [2. Workflow](#2-workflow)
+    - [Phase Overview](#phase-overview)
+    - [Key Job Descriptions](#key-job-descriptions)
+  - [3. Component Topology](#3-component-topology)
+  - [4. Test Scenarios](#4-test-scenarios)
+  - [5. Configuration File Description](#5-configuration-file-description)
+    - [5.1 Database Parameter Configuration (db\_config.json)](#51-database-parameter-configuration-db_configjson)
+    - [5.2 Query Parameter Configuration (query.json)](#52-query-parameter-configuration-queryjson)
+  - [6. Test Results](#6-test-results)
+  - [7. Environment Requirements](#7-environment-requirements)
+    - [Required Secrets](#required-secrets)
+    - [Node Label Requirements](#node-label-requirements)
+  - [8. Frequently Asked Questions](#8-frequently-asked-questions)
+    - [Q1: Any suggestions for parameter selection?](#q1-any-suggestions-for-parameter-selection)
+    - [Q2: How to debug failed tests?](#q2-how-to-debug-failed-tests)
 
+## 1. Usage Instructions
 
-## 1. 使用说明
+### Manually Trigger Workflow
+1. Go to the [Actions](https://github.com/taosdata/fractal/actions) tab of the repository;
+2. Select the [Fractal Test](https://github.com/taosdata/fractal/actions/workflows/fractal-test.yml) workflow;
+3. Click the **Run workflow** button and fill in the parameters:
 
-### 手动触发 Workflow
-1. 进入仓库的 **Actions** 选项卡；
-2. 选择 **Fractal Test** workflow；
-3. 点击 **Run workflow** 按钮，填写参数：
+| Parameter Name          | Description                     | Type    | Required | Default    | Options          |
+|-------------------------|---------------------------------|---------|----------|------------|------------------|
+| `td-version`            | TDengine Version               | string  | ✅       | 3.3.5.5    | -                |
+| `edge-dnode-count`      | Edge Node Count                | choice  | ✅       | 2          | 1/2              |
+| `center-dnode-count`    | Center Node Count              | choice  | ✅       | 3          | 1/2/3            |
+| `exec-time`             | Test Execution Duration (sec)  | string  | ✅       | 300        | -                |
+| `source-interval`       | Data Source Interval (ms)      | string  | ✅       | 1000       | -                |
+| `enable-compression`    | Enable Data Compression        | choice  | ✅       | false      | true/false       |
 
-| 参数名称               | 描述                     | 类型    | 必需 | 默认值    | 选项          |
-|------------------------|--------------------------|---------|------|-----------|---------------|
-| `td-version`           | TDengine 版本           | string  | ✅   | 3.3.5.5  | -             |
-| `edge-dnode-count`     | 边缘节点数量            | choice  | ✅   | 2        | 1/2           |
-| `center-dnode-count`   | 中心节点数量            | choice  | ✅   | 3        | 1/2/3         |
-| `exec-time`            | 测试执行时长 (秒)       | string  | ✅   | 300      | -             |
-| `source-interval`      | 数据源间隔 (毫秒)       | string  | ✅   | 1000     | -             |
-| `enable-compression`   | 启用数据压缩            | choice  | ✅   | false    | true/false    |
+4. Click the newly started **workflow** to view detailed running status on the subpage;
 
-4. 点击刚刚启动的 **workflow**，可以在下级页面查看详细的运行状态；
-
-5. 全部流程运行完成后，在详情页面最下方 **Artifacts** 区域可下载名为 **perf_report_YYYYMMDD_HHMMSS.txt** 的测试报告。
-
+5. After all processes are completed, download the test report named **perf_report_YYYYMMDD_HHMMSS.txt** from the **Artifacts** section at the bottom of the details page.
 
 🔗 [Workflow Trigger Demo](https://github.com/taosdata/fractal/actions/runs/13734315147)
 
+## 2. Workflow
 
-## 2. 工作流程
-
-### 阶段概览
+### Phase Overview
 ```mermaid
 graph TD
     A[filter-runners] --> B[upload-hosts-info]
@@ -57,22 +65,20 @@ graph TD
     D & E & F & G --> H[test-and-report]
 ```
 
-### 关键 Job 说明
-| Job 名称                   | 功能描述                          | 依赖项                              |
-|---------------------------|-----------------------------------|-------------------------------------|
-| `filter-runners`          | 动态选择指定规格的运行器          | -                                   |
-| `combine-and-update-hosts`| 同步所有节点的 hosts 配置         | filter-runners                      |
-| `deploy-center-nodes`     | 部署中心节点组件                  | combine-and-update-hosts           |
-| `deploy-edge-nodes`       | 部署边缘节点组件                  | combine-and-update-hosts           |
-| `deploy-mqtt-simulator`   | 部署 MQTT 模拟器                 | combine-and-update-hosts           |
-| `deploy-client-nodes`     | 部署客户端测试环境                | combine-and-update-hosts           |
-| `test-and-report`                | 分布式执行测试用例并上传测试报告          | 所有部署阶段                       |
+### Key Job Descriptions
+| Job Name                | Description                          | Dependencies                         |
+|-------------------------|--------------------------------------|--------------------------------------|
+| `filter-runners`        | Dynamically select specified runners | -                                    |
+| `combine-and-update-hosts`| Synchronize hosts configuration of all nodes | filter-runners          |
+| `deploy-center-nodes`   | Deploy center node components        | combine-and-update-hosts            |
+| `deploy-edge-nodes`     | Deploy edge node components          | combine-and-update-hosts            |
+| `deploy-mqtt-simulator` | Deploy MQTT simulator               | combine-and-update-hosts            |
+| `deploy-client-nodes`   | Deploy client test environment       | combine-and-update-hosts            |
+| `test-and-report`       | Execute test cases and upload report | All deployment phases               |
 
+## 3. Component Topology
 
-## 3. 组件拓扑图
-
-以下为系统的组件拓扑图，展示了 MQTT 节点、边缘节点、中心节点和客户端节点之间的连接和数据流动。
-
+The following is the component topology of the system, showing the connections and data flow between MQTT nodes, edge nodes, center nodes, and client nodes.
 
 ```mermaid
 graph LR
@@ -100,9 +106,9 @@ graph LR
     H[taostest]
   end
 
-  A1 -->|生成数据| B1
-  A2 -->|生成数据| B2
-  AN -->|生成数据| BN
+  A1 -->|Generate Data| B1
+  A2 -->|Generate Data| B2
+  AN -->|Generate Data| BN
 
   B1 --> C1
   B2 --> C2
@@ -112,11 +118,11 @@ graph LR
   C2 --> E
   CN --> E
 
-  J -->|执行查询| E
+  J -->|Execute Queries| E
 
-  H -->|调度| MQTT-Nodes
-  H -->|调度| Edge-Nodes
-  H -->|调度| E
+  H -->|Schedule| MQTT-Nodes
+  H -->|Schedule| Edge-Nodes
+  H -->|Schedule| E
 
   style A1 fill:#ffcc99,stroke:#cc6600
   style A2 fill:#ffcc99,stroke:#cc6600
@@ -132,19 +138,27 @@ graph LR
   style H fill:#ff9999,stroke:#cc0000
 ```
 
+## 4. Test Scenarios
 
-## 4. 配置文件说明
+| Scenario                | Description                                           |
+|-------------------------|-------------------------------------------------------|
+| `MQTT Data Collection Performance` | Collect data from MQTT and write to edge node storage |
+| `taosx Data Migration Performance` | Migrate data from edge nodes to center node storage   |
+| `Data Query Performance` | Test query QPS during data migration                  |
+| `Data Compression Performance` | Ratio of compressed data size to original data size   |
 
-位于 `fractal/config` 目录下的配置文件用于定义测试行为和数据库参数：
+## 5. Configuration File Description
+
+Configuration files located in the `fractal/config` directory define test behavior and database parameters:
 
 ```bash
 config/
-├── db_config.json    # 数据库参数配置
-├── query.json        # 查询参数配置
-└── fractal.toml      # MQTT 模拟器参数配置，一般不需要配置
+├── db_config.json    # Database parameter configuration
+├── query.json        # Query parameter configuration
+└── fractal.toml      # MQTT simulator parameter configuration (usually no need to configure)
 ```
 
-### 4.1 数据库参数配置 (db_config.json)
+### 5.1 Database Parameter Configuration (db_config.json)
 
 ```json
 {
@@ -155,18 +169,16 @@ config/
 }
 ```
 
-| 关键字段       | 作用描述                  |
-|---------------|-------------------------|
-| vgroups       | 初始 vgroup 的数目        |
-| stt_trigger   | 落盘文件触发文件合并的个数   |
-| buffer        | 写入内存池大小             |
-| minrows       | 文件块中记录的最小条数       |
+| Key Field       | Description                  |
+|-----------------|-----------------------------|
+| vgroups         | Initial number of vgroups    |
+| stt_trigger     | Number of files to trigger merging |
+| buffer          | Write memory pool size       |
+| minrows         | Minimum number of records in a file block |
 
+🔗 For more configurations, refer to [TDengine Database Parameter Documentation](https://docs.tdengine.com/tdengine-reference/sql-manual/manage-databases/#create-database)
 
-🔗 更多配置请参考 [TDengine 数据库参数文档](https://docs.taosdata.com/reference/taos-sql/database/#%E5%88%9B%E5%BB%BA%E6%95%B0%E6%8D%AE%E5%BA%93)
-
-
-### 4.2 查询参数配置 (query.json)
+### 5.2 Query Parameter Configuration (query.json)
 ```json
 {
     "host": "u2-195",
@@ -184,64 +196,56 @@ config/
 }
 ```
 
-| 关键字段       | 作用描述                  |
-|---------------|-------------------------|
-| query_times    | 总查询次数               |
-| sqls           | 多语句并行测试配置        |
-| concurrent     | 并发线程数               |
-| query_interval | 查询时间间隔             |
+| Key Field       | Description                  |
+|-----------------|-----------------------------|
+| query_times     | Total number of queries     |
+| sqls            | Parallel test configuration for multiple SQL statements |
+| concurrent      | Number of concurrent threads |
+| query_interval  | Query interval              |
 
+🔗 For more configurations, refer to [taosBenchmark Query Configuration Documentation](https://docs.tdengine.com/tdengine-reference/tools/taosbenchmark/#query-parameters)
 
-🔗 更多配置请参考 [taosBenchmark 查询配置文档](https://docs.taosdata.com/reference/tools/taosbenchmark/#%E6%9F%A5%E8%AF%A2%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0)
-
-
-## 5. 测试结果
-测试完成后生成的性能报告将作为 Artifact 存储：
+## 6. Test Results
+The performance report generated after testing is stored as an Artifact:
 
 ```bash
 perf_report_YYYYMMDD_HHMMSS.txt
 ```
 
-包含以下指标：
-- 📈 数据写入吞吐量
-- ⏱️ 消息延迟分布
-- 🗜️ 压缩率
-- 🖥️ 资源利用率 (CPU/MEM/Disk)
+It includes the following metrics:
+- 📈 Data write throughput
+- ⏱️ Message latency distribution
+- 🗜️ Compression ratio
+- 🖥️ Resource utilization (CPU/MEM/Disk)
 
-## 6. 环境要求
+## 7. Environment Requirements
 
-### 必要 Secrets
+### Required Secrets
 ```env
-RUNNER_PAT        # 运行器访问令牌
-NAS_DOWNLOAD_URL  # 企业版软件下载地址
-VM_PASSWD         # 节点SSH密码
+RUNNER_PAT        # Runner access token
+NAS_DOWNLOAD_URL  # Enterprise software download URL
+VM_PASSWD         # Node SSH password
 ```
 
-### 节点标签要求
+### Node Label Requirements
 ```yaml
-MQTT_LABEL: "8C16G"     # MQTT 节点规格
-EDGE_LABEL: "20C16G"    # 边缘节点规格
-CENTER_LABEL: "20C16G"  # 中心节点规格
-CLIENT_LABEL: "24C64G"  # 客户端规格
+MQTT_LABEL: "8C16G"     # MQTT node specification
+EDGE_LABEL: "20C16G"    # Edge node specification
+CENTER_LABEL: "20C16G"  # Center node specification
+CLIENT_LABEL: "24C64G"  # Client specification
 ```
 
-## 7. 常见问题
+## 8. Frequently Asked Questions
 
-### Q1: 如何访问测试报告？
+### Q1: Any suggestions for parameter selection?
 ```markdown
-1. 在 Workflow 运行完成后进入 **Summary** 页面
-2. 在 **Artifacts** 区域下载报告文件
+- Edge node count: Configure based on runner count
+- Data interval: Perform step testing in the 100-5000ms range; smaller interval means higher collection frequency
+- Enable compression: Recommended when testing network bandwidth bottlenecks
 ```
 
-### Q2: 参数选择有什么建议？
+### Q2: How to debug failed tests?
 ```markdown
-- 边缘节点数量: 根据 runner 数量配置
-- 数据间隔: 100-5000ms 区间进行阶梯测试，interval 越小，采集频率越高
-- 压缩启用: 当测试网络带宽瓶颈时建议开启
-```
-
-### Q3: 如何调试失败的测试？
-```markdown
-1. 查看 `filter-runners` job 的节点筛选结果
-2. 查看各部署阶段的组件安装日志
+1. Check the node selection results in the `filter-runners` job
+2. Check the component installation logs in each deployment phase
 ```
