@@ -41,12 +41,12 @@ Fractal 客户场景基于分布式架构，旨在实现 MQTT 数据流、边缘
 
 | 参数名称               | 描述                     | 类型    | 必需 | 默认值    | 选项          |
 |------------------------|--------------------------|---------|------|-----------|---------------|
-| `td-version`           | TDengine 版本           | string  | ✅   | 3.3.5.5  | -             |
-| `edge-dnode-count`     | 边缘节点数量            | choice  | ✅   | 2        | 1/2           |
-| `center-dnode-count`   | 中心节点数量            | choice  | ✅   | 3        | 1/2/3         |
-| `exec-time`            | 测试执行时长 (秒)       | string  | ✅   | 300      | -             |
-| `source-interval`      | 数据源间隔 (毫秒)       | string  | ✅   | 1000     | -             |
-| `enable-compression`   | 启用数据压缩            | choice  | ✅   | false    | true/false    |
+| td-version           | TDengine 版本           | string  | ✅   | 3.3.5.5  | -             |
+| edge-dnode-count     | 边缘节点数量            | choice  | ✅   | 2        | 1/2           |
+| center-dnode-count   | 中心节点数量            | choice  | ✅   | 3        | 1/2/3         |
+| exec-time            | 测试执行时长 (秒)       | string  | ✅   | 300      | -             |
+| source-interval      | 数据源间隔 (毫秒)       | string  | ✅   | 1000     | -             |
+| enable-compression   | 启用数据压缩            | choice  | ✅   | false    | true/false    |
 
 4. 点击刚刚启动的 **workflow**，可以在下级页面查看详细的运行状态；
 
