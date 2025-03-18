@@ -53,7 +53,7 @@ Fractal 客户场景基于分布式架构，旨在实现 MQTT 数据流、边缘
 5. 全部流程运行完成后，在详情页面最下方 **Artifacts** 区域可下载名为 **perf_report_YYYYMMDD_HHMMSS.txt** 的测试报告。
 
 
-🔗 [Workflow Trigger Demo](https://github.com/taosdata/fractal/actions/runs/13907130819)
+🔗 [Workflow Trigger Demo](https://github.com/taosdata/fractal/actions/runs/13916584983)
 
 
 ## 2. 工作流程
