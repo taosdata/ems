@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # TDengine Central Node
   center-node:
-    image: tdengine/tdengine-ee-amd64:3.3.5.8
+    image: tdengine/tdengine-ee:3.3.5.10
     container_name: center-node
     hostname: buildkitsandbox
     ports:
@@ -34,7 +34,7 @@ services:
 
   # Edge Node 1 - TDengine
   edge-node1-tdengine:
-    image: tdengine/tdengine-ee-amd64:3.3.5.8
+    image: tdengine/tdengine-ee:3.3.5.10
     container_name: edge-node1-tdengine
     hostname: buildkitsandbox
     ports:
