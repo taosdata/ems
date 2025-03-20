@@ -70,7 +70,8 @@ services:
 
   # MQTT Simulator
   mqtt-simulator:
-    build: ./mqtt-simulator
+    # build: ./mqtt-simulator
+    image: tdengine/mqtt-simulator:1.0
     container_name: mqtt-simulator
     networks:
       - tdengine-net
