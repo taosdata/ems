@@ -19,7 +19,7 @@ Automatically deploy a cluster environment and run tests using Docker Compose, s
   - [5. Environment Requirements](#5-environment-requirements)
     - [Required Ports](#required-ports)
   - [6. Frequently Asked Questions](#6-frequently-asked-questions)
-    - [Q1: How to access the test report?](#q1-how-to-access-the-test-report)
+    - [Q1: Does this deployment mode generate test reports?](#q1-does-this-deployment-mode-generate-test-reports)
     - [Q2: How to debug failed tests?](#q2-how-to-debug-failed-tests)
     - [Q3: How to modify the MQTT data publishing interval?](#q3-how-to-modify-the-mqtt-data-publishing-interval)
 
@@ -131,10 +131,10 @@ Ensure the following ports are available:
 
 ## 6. Frequently Asked Questions
 
-### Q1: How to access the test report?
+### Q1: Does this deployment mode generate test reports?
 ```markdown
-1. Locate the generated report file in the project directory.
-2. Use a text editor or command-line tool to view the report content.
+The purpose of the docker-compose deployment is more inclined towards setting up a local demonstration environment.
+After deployment, you need login taos-explorer to view the results.
 ```
 
 ### Q2: How to debug failed tests?
