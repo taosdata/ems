@@ -2,7 +2,7 @@
 FROM ubuntu:22.04
 
 # Download mqtt_pub from nas
-ADD http://192.168.1.131/data/nas/mqtt-simulator/mqtt_pub /usr/local/bin/mqtt_pub
+ADD http://platform.tdengine.net:8090/download/mqtt_pub /usr/local/bin/mqtt_pub
 
 # set mqtt_pub as executable
 RUN chmod +x /usr/local/bin/mqtt_pub
