@@ -1,7 +1,7 @@
 English | [简体中文](README-CN.md)
 
-# Fractal Test
-The Fractal customer scenario is based on a distributed architecture, aiming to achieve efficient collaboration between MQTT data streams, edge nodes, central nodes, and clients to meet the data collection, processing, and synchronization requirements in complex scenarios.
+# EMS Test
+The EMS(Energy Management System) customer scenario is based on a distributed architecture, aiming to achieve efficient collaboration between MQTT data streams, edge nodes, central nodes, and clients to meet the data collection, processing, and synchronization requirements in complex scenarios.
 
 To facilitate rapid deployment and testing in different environments, this repository provides two flexible deployment methods:
 
@@ -9,7 +9,7 @@ To facilitate rapid deployment and testing in different environments, this repos
 - **Docker Compose Local Deployment**: Quickly set up a test environment locally using Docker Compose, suitable for local development, testing, or demonstrations. [See [Docker Compose Deployment](./docker-compose)]
 
 # Table of Contents
-- [Fractal Test](#fractal-test)
+- [EMS Test](#ems-test)
 - [Table of Contents](#table-of-contents)
   - [1. Usage Instructions](#1-usage-instructions)
     - [Manually Trigger Workflow](#manually-trigger-workflow)
@@ -32,8 +32,8 @@ To facilitate rapid deployment and testing in different environments, this repos
 ## 1. Usage Instructions
 
 ### Manually Trigger Workflow
-1. Go to the [Actions](https://github.com/taosdata/fractal/actions) tab of the repository;
-2. Select the [Fractal Test](https://github.com/taosdata/fractal/actions/workflows/fractal-test.yml) workflow;
+1. Go to the [Actions](https://github.com/taosdata/ems/actions) tab of the repository;
+2. Select the [EMS Test](https://github.com/taosdata/ems/actions/workflows/ems-test.yml) workflow;
 3. Click the **Run workflow** button and fill in the parameters:
 
 | Parameter Name          | Description                     | Type    | Required | Default    | Options          |
@@ -49,7 +49,7 @@ To facilitate rapid deployment and testing in different environments, this repos
 
 5. After all processes are completed, download the test report named **perf_report_YYYYMMDD_HHMMSS.txt** from the **Artifacts** section at the bottom of the details page.
 
-🔗 [Workflow Trigger Demo](https://github.com/taosdata/fractal/actions/runs/13916584983)
+🔗 [Workflow Trigger Demo](https://github.com/taosdata/ems/actions/runs/13916584983)
 
 ## 2. Workflow
 
@@ -149,13 +149,13 @@ graph LR
 
 ## 5. Configuration File Description
 
-Configuration files located in the `fractal/config` directory define test behavior and database parameters:
+Configuration files located in the `ems/config` directory define test behavior and database parameters:
 
 ```bash
 config/
 ├── db_config.json    # Database parameter configuration
 ├── query.json        # Query parameter configuration
-└── fractal.toml      # MQTT simulator parameter configuration (usually no need to configure)
+└── ems.toml      # MQTT simulator parameter configuration (usually no need to configure)
 ```
 
 ### 5.1 Database Parameter Configuration (db_config.json)
