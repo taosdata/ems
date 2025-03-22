@@ -1,7 +1,7 @@
 简体中文 | [English](README.md)
 
 # EMS Test
-EMS（Energy Management System）客户场景基于分布式架构，旨在实现 MQTT 数据流、边缘节点、中心节点以及客户端之间的高效协同，满足复杂场景下的数据采集、处理和同步需求。
+EMS(Energy Management System) 客户场景基于分布式架构，旨在实现 MQTT 数据流、边缘节点、中心节点以及客户端之间的高效协同，满足复杂场景下的数据采集、处理和同步需求。
 
 为便于用户在不同环境中快速部署和测试，本仓库提供了两种灵活的部署方式：
 
@@ -35,7 +35,7 @@ EMS（Energy Management System）客户场景基于分布式架构，旨在实�
 ## 1. 使用说明
 
 ### 手动触发 Workflow
-1. 进入仓库的 [Actions](https://github.com/taosdata//actions) 选项卡；
+1. 进入仓库的 [Actions](https://github.com/taosdata/ems/actions) 选项卡；
 2. 选择 [EMS Test](https://github.com/taosdata/ems/actions/workflows/ems-test.yml) workflow；
 3. 点击 **Run workflow** 按钮，填写参数：
 
