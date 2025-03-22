@@ -1,7 +1,7 @@
 简体中文 | [English](README.md)
 
-# Fractal Test
-Fractal 客户场景基于分布式架构，旨在实现 MQTT 数据流、边缘节点、中心节点以及客户端之间的高效协同，满足复杂场景下的数据采集、处理和同步需求。
+# EMS Test
+EMS（Energy Management System）客户场景基于分布式架构，旨在实现 MQTT 数据流、边缘节点、中心节点以及客户端之间的高效协同，满足复杂场景下的数据采集、处理和同步需求。
 
 为便于用户在不同环境中快速部署和测试，本仓库提供了两种灵活的部署方式：
 
@@ -11,7 +11,7 @@ Fractal 客户场景基于分布式架构，旨在实现 MQTT 数据流、边缘
 - **Docker Compose 本地部署**：通过 Docker Compose 在本地快速搭建测试环境，适合本地开发测试或演示。【见[ Docker Compose 部署 ]( ./docker-compose )】
 
 # 目录
-- [Fractal Test](#fractal-test)
+- [EMS Test](#ems-test)
 - [目录](#目录)
   - [1. 使用说明](#1-使用说明)
     - [手动触发 Workflow](#手动触发-workflow)
@@ -35,8 +35,8 @@ Fractal 客户场景基于分布式架构，旨在实现 MQTT 数据流、边缘
 ## 1. 使用说明
 
 ### 手动触发 Workflow
-1. 进入仓库的 [Actions](https://github.com/taosdata/fractal/actions) 选项卡；
-2. 选择 [Fractal Test](https://github.com/taosdata/fractal/actions/workflows/fractal-test.yml) workflow；
+1. 进入仓库的 [Actions](https://github.com/taosdata//actions) 选项卡；
+2. 选择 [EMS Test](https://github.com/taosdata/ems/actions/workflows/ems-test.yml) workflow；
 3. 点击 **Run workflow** 按钮，填写参数：
 
 | 参数名称               | 描述                     | 类型    | 必需 | 默认值    | 选项          |
@@ -53,7 +53,7 @@ Fractal 客户场景基于分布式架构，旨在实现 MQTT 数据流、边缘
 5. 全部流程运行完成后，在详情页面最下方 **Artifacts** 区域可下载名为 **perf_report_YYYYMMDD_HHMMSS.txt** 的测试报告。
 
 
-🔗 [Workflow Trigger Demo](https://github.com/taosdata/fractal/actions/runs/13916584983)
+🔗 [Workflow Trigger Demo](https://github.com/taosdata/ems/actions/runs/13916584983)
 
 
 ## 2. 工作流程
@@ -159,13 +159,13 @@ graph LR
 
 ## 5. 配置文件说明
 
-位于 `fractal/config` 目录下的配置文件用于定义测试行为和数据库参数：
+位于 `ems/config` 目录下的配置文件用于定义测试行为和数据库参数：
 
 ```bash
 config/
 ├── db_config.json    # 数据库参数配置
 ├── query.json        # 查询参数配置
-└── fractal.toml      # MQTT 模拟器参数配置，一般不需要配置
+└── ems.toml      # MQTT 模拟器参数配置，一般不需要配置
 ```
 
 ### 5.1 数据库参数配置 (db_config.json)

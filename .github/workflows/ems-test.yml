@@ -1,4 +1,4 @@
-name: Fractal Test
+name: EMS Test
 
 on:
   workflow_dispatch:
@@ -74,7 +74,7 @@ jobs:
     steps:
       - name: Get Client Runners
         id: get-client-runners
-        uses: taosdata/.github/.github/actions/get-runners@test/fractal
+        uses: taosdata/.github/.github/actions/get-runners@test/ems
         with:
           include_labels: ${{ env.CLIENT_LABEL }}
           required_count: 1
@@ -82,7 +82,7 @@ jobs:
 
       - name: Get MQTT Runners
         id: get-mqtt-runners
-        uses: taosdata/.github/.github/actions/get-runners@test/fractal
+        uses: taosdata/.github/.github/actions/get-runners@test/ems
         with:
           include_labels: ${{ env.MQTT_LABEL }}
           required_count: ${{ env.EDGE_DNODE_COUNT }}
@@ -90,7 +90,7 @@ jobs:
 
       - name: Get Edge Runners
         id: get-edge-runners
-        uses: taosdata/.github/.github/actions/get-runners@test/fractal
+        uses: taosdata/.github/.github/actions/get-runners@test/ems
         with:
           include_labels: ${{ env.EDGE_LABEL }}
           required_count: ${{ env.EDGE_DNODE_COUNT }}
@@ -99,7 +99,7 @@ jobs:
 
       - name: Get Center Runners
         id: center-edge-runners
-        uses: taosdata/.github/.github/actions/get-runners@test/fractal
+        uses: taosdata/.github/.github/actions/get-runners@test/ems
         with:
           include_labels: "${{ env.CENTER_LABEL }},exclusive"
           required_count: ${{ env.CENTER_DNODE_COUNT }}
@@ -128,7 +128,7 @@ jobs:
     steps:
       - name: Run Host Info Collection
         id: collect-host-info
-        uses: taosdata/.github/.github/actions/upload-host-info@test/fractal
+        uses: taosdata/.github/.github/actions/upload-host-info@test/ems
         with:
           hosts_dirname: ${{ env.HOSTS_DIRNAME }}
           role: "client"
@@ -151,7 +151,7 @@ jobs:
     steps:
       - name: Run Host Info Collection
         id: collect-host-info
-        uses: taosdata/.github/.github/actions/upload-host-info@test/fractal
+        uses: taosdata/.github/.github/actions/upload-host-info@test/ems
         with:
           hosts_dirname: ${{ env.HOSTS_DIRNAME }}
           role: "edge"
@@ -174,7 +174,7 @@ jobs:
     steps:
       - name: Run Host Info Collection
         id: collect-host-info
-        uses: taosdata/.github/.github/actions/upload-host-info@test/fractal
+        uses: taosdata/.github/.github/actions/upload-host-info@test/ems
         with:
           hosts_dirname: ${{ env.HOSTS_DIRNAME }}
           role: "center"
@@ -197,7 +197,7 @@ jobs:
     steps:
       - name: Run Host Info Collection
         id: collect-host-info
-        uses: taosdata/.github/.github/actions/upload-host-info@test/fractal
+        uses: taosdata/.github/.github/actions/upload-host-info@test/ems
         with:
           hosts_dirname: ${{ env.HOSTS_DIRNAME }}
           role: "mqtt"
@@ -227,30 +227,30 @@ jobs:
       labels: ${{ matrix.runner }}
     steps:
       - name: Add dynamic labels
-        uses: taosdata/.github/.github/actions/dynamic-labels@test/fractal
+        uses: taosdata/.github/.github/actions/dynamic-labels@test/ems
         with:
           gh_token: ${{ secrets.RUNNER_PAT }}
           operation_type: "add"
-          labels: "fractal"
+          labels: "ems"
           runner_name: ${{ runner.name }}
 
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Download Host Info
-        uses: taosdata/.github/.github/actions/download-artifacts@test/fractal
+        uses: taosdata/.github/.github/actions/download-artifacts@test/ems
         with:
           gh_token: ${{ secrets.RUNNER_PAT }}
           download_dir: "$RUNNER_WORKSPACE/${{ env.HOSTS_DIRNAME }}"
 
       - name: Combine IP and Hostname Info In Each Runner
         id: combine-ip-hostname
-        uses: taosdata/.github/.github/actions/combine-ip-hostname@test/fractal
+        uses: taosdata/.github/.github/actions/combine-ip-hostname@test/ems
         with:
           input-dir: "$RUNNER_WORKSPACE/${{ env.HOSTS_DIRNAME }}"
 
       - name: Update /etc/hosts In Each Runner
-        uses: taosdata/.github/.github/actions/update-etc-hosts@test/fractal
+        uses: taosdata/.github/.github/actions/update-etc-hosts@test/ems
         with:
           entries: ${{ steps.combine-ip-hostname.outputs.combined_info }}
 
@@ -268,19 +268,19 @@ jobs:
       labels: ${{ matrix.runner }}
     steps:
       - name: Install TDengine Enterprise
-        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
+        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/ems
         with:
           version: ${{ github.event.inputs.td-version }}
           download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
 
       - name: Install Node Exporter In TDengine Nodes
-        uses: taosdata/.github/.github/actions/install-node-exporter@test/fractal
+        uses: taosdata/.github/.github/actions/install-node-exporter@test/ems
 
       - name: Install Process Exporter In TDengine Nodes
-        uses: taosdata/.github/.github/actions/install-process-exporter@test/fractal
+        uses: taosdata/.github/.github/actions/install-process-exporter@test/ems
 
       - name: Config Process Exporter YAML In TDengine Nodes
-        uses: taosdata/.github/.github/actions/config-process-exporter-yml@test/fractal
+        uses: taosdata/.github/.github/actions/config-process-exporter-yml@test/ems
         with:
           yml_file_path: "${{ env.PROCESS_EXPORTER_YML_PATH }}"
           process_names: "${{ env.MONITORING_PROCESS_NAMES }}"
@@ -301,19 +301,19 @@ jobs:
         uses: taosdata/.github/.github/actions/install-flashmq@main
 
       - name: Install TDengine Enterprise
-        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
+        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/ems
         with:
           version: ${{ github.event.inputs.td-version }}
           download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
 
       - name: Install Node Exporter In TDengine Nodes
-        uses: taosdata/.github/.github/actions/install-node-exporter@test/fractal
+        uses: taosdata/.github/.github/actions/install-node-exporter@test/ems
 
       - name: Install Process Exporter In TDengine Nodes
-        uses: taosdata/.github/.github/actions/install-process-exporter@test/fractal
+        uses: taosdata/.github/.github/actions/install-process-exporter@test/ems
 
       - name: Config Process Exporter YAML In TDengine Nodes
-        uses: taosdata/.github/.github/actions/config-process-exporter-yml@test/fractal
+        uses: taosdata/.github/.github/actions/config-process-exporter-yml@test/ems
         with:
           yml_file_path: "${{ env.PROCESS_EXPORTER_YML_PATH }}"
           process_names: "${{ env.MONITORING_PROCESS_NAMES }}"
@@ -334,19 +334,19 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install MQTT CLI
-        uses: taosdata/.github/.github/actions/install-mqtt-simulator@test/fractal
+        uses: taosdata/.github/.github/actions/install-mqtt-simulator@test/ems
         with:
           nas_public_url: ${{ secrets.nas_download_url }}
 
-      - name: Find mqtt_pub binary and fractal toml
+      - name: Find mqtt_pub binary and ems toml
         run: |
             mqtt_pub_path=$(find $GITHUB_WORKSPACE -name mqtt_pub 2>/dev/null | head -n 1)
             echo "MQTT_PUB_PATH=$mqtt_pub_path" >> $GITHUB_ENV
             rm -f /usr/bin/mqtt_pub && cp $mqtt_pub_path /usr/bin/mqtt_pub
             chmod +x /usr/bin/mqtt_pub
-            fractal_toml=$(find $GITHUB_WORKSPACE -name fractal.toml 2>/dev/null | head -n 1)
-            echo "FRACTAL_TOML=$fractal_toml" >> $GITHUB_ENV
-            rm -f /etc/taos/test.toml && mkdir -p /etc/taos && cp $fractal_toml /etc/taos/test.toml
+            ems_toml=$(find $GITHUB_WORKSPACE -name ems.toml 2>/dev/null | head -n 1)
+            echo "EMS_TOML=$ems_toml" >> $GITHUB_ENV
+            rm -f /etc/taos/test.toml && mkdir -p /etc/taos && cp $ems_toml /etc/taos/test.toml
 
   deploy-client-nodes:
     needs:
@@ -361,7 +361,7 @@ jobs:
       labels: ${{ matrix.runner }}
     steps:
       - name: Sync Repo - taos-test-framework
-        uses: taosdata/.github/.github/actions/sync-repo@test/fractal
+        uses: taosdata/.github/.github/actions/sync-repo@test/ems
         with:
           parent-dir: "$RUNNER_WORKSPACE/../"
           repo-url: "https://github.com/taosdata/taos-test-framework.git"
@@ -370,7 +370,7 @@ jobs:
           res_app_key: ${{ secrets.TAOSDATA_BOT_KEY }}
 
       - name: Sync Repo - TestNG
-        uses: taosdata/.github/.github/actions/sync-repo@test/fractal
+        uses: taosdata/.github/.github/actions/sync-repo@test/ems
         with:
           parent-dir: "$RUNNER_WORKSPACE/../"
           repo-url: "https://github.com/taosdata/TestNG.git"
@@ -380,49 +380,49 @@ jobs:
 
       - name: Deploy Taostest And TestNG
         id: deploy-taostest-testng
-        uses: taosdata/.github/.github/actions/deploy-taostest-testng@test/fractal
+        uses: taosdata/.github/.github/actions/deploy-taostest-testng@test/ems
         with:
           taostest-dir: "$RUNNER_WORKSPACE/../taos-test-framework"
           testng-dir: "$RUNNER_WORKSPACE/../TestNG"
 
       - name: Install TDengine Enterprise
-        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/fractal
+        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/ems
         with:
             version: ${{ github.event.inputs.td-version }}
             download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
 
       - name: Install Grafana In Taostest Node
-        uses: taosdata/.github/.github/actions/install-grafana@test/fractal
+        uses: taosdata/.github/.github/actions/install-grafana@test/ems
 
       - name: Install Prometheus In Taostest Node
-        uses: taosdata/.github/.github/actions/install-prometheus@test/fractal
+        uses: taosdata/.github/.github/actions/install-prometheus@test/ems
 
       - name: Install Node Exporter In Taostest Node
-        uses: taosdata/.github/.github/actions/install-node-exporter@test/fractal
+        uses: taosdata/.github/.github/actions/install-node-exporter@test/ems
 
       - name: Install Process Exporter In Taostest Node
-        uses: taosdata/.github/.github/actions/install-process-exporter@test/fractal
+        uses: taosdata/.github/.github/actions/install-process-exporter@test/ems
 
       - name: Config Process Exporter YAML In Taostest Node
-        uses: taosdata/.github/.github/actions/config-process-exporter-yml@test/fractal
+        uses: taosdata/.github/.github/actions/config-process-exporter-yml@test/ems
         with:
           yml_file_path: "${{ env.PROCESS_EXPORTER_YML_PATH }}"
           process_names: "${{ env.MONITORING_PROCESS_NAMES }}"
 
       - name: Gen Taostest Hosts
-        uses: taosdata/.github/.github/actions/gen-taostest-env@test/fractal
+        uses: taosdata/.github/.github/actions/gen-taostest-env@test/ems
         with:
           json_file: "$RUNNER_WORKSPACE/${{ env.HOSTS_DIRNAME }}/${{ env.ROLE_FILE }}"
           test_root: "$TEST_ROOT"
 
       - name: Configure SSH-Keyless Login
-        uses: taosdata/.github/.github/actions/ssh-keyless-login@test/fractal
+        uses: taosdata/.github/.github/actions/ssh-keyless-login@test/ems
         with:
           target_hosts: $HOSTNAME_INFO
           password: ${{ secrets.VM_PASSWD }}
 
       - name: Config Prometheus YAML
-        uses: taosdata/.github/.github/actions/config-prometheus-yml@test/fractal
+        uses: taosdata/.github/.github/actions/config-prometheus-yml@test/ems
         with:
           yml_file_path: ${{ env.PROMETHEUS_YML_PATH }}
           node_exporter_hosts: $HOSTNAME_INFO
@@ -495,7 +495,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Delete Artifacts
-        uses: taosdata/.github/.github/actions/delete-artifacts@test/fractal
+        uses: taosdata/.github/.github/actions/delete-artifacts@test/ems
         with:
           gh_token: ${{ secrets.RUNNER_PAT }}
 
@@ -533,25 +533,25 @@ jobs:
           db_config_json=$(find $GITHUB_WORKSPACE -name db_config.json 2>/dev/null | head -n 1)
           mv $db_config_json $query_json $workflow_config_path
 
-          echo "FRACTAL_TOML=$fractal_toml"
-          echo "FRACTAL_TOML=$fractal_toml" >> $GITHUB_ENV
-          taostest --convert-json=fractal-center.json
-          taostest --convert-json=fractal-edge-1.json
-          taostest --convert-json=fractal-edge-2.json
-          taostest --convert-json=fractal-query.json
-          taostest --setup=fractal-center.yaml --case=customer_scenarios/fractal/start.py --keep
-          taostest --setup=fractal-edge-1.yaml --case=customer_scenarios/fractal/start.py --keep
-          taostest --setup=fractal-edge-2.yaml --case=customer_scenarios/fractal/start.py --keep
-          taostest --use=fractal-edge-1.yaml --case=customer_scenarios/fractal/fractal_edge.py --keep
-          taostest --use=fractal-edge-2.yaml --case=customer_scenarios/fractal/fractal_edge.py --keep
+          echo "EMS_TOML=$ems_toml"
+          echo "EMS_TOML=$ems_toml" >> $GITHUB_ENV
+          taostest --convert-json=ems-center.json
+          taostest --convert-json=ems-edge-1.json
+          taostest --convert-json=ems-edge-2.json
+          taostest --convert-json=ems-query.json
+          taostest --setup=ems-center.yaml --case=customer_scenarios/ems/start.py --keep
+          taostest --setup=ems-edge-1.yaml --case=customer_scenarios/ems/start.py --keep
+          taostest --setup=ems-edge-2.yaml --case=customer_scenarios/ems/start.py --keep
+          taostest --use=ems-edge-1.yaml --case=customer_scenarios/ems/ems_edge.py --keep
+          taostest --use=ems-edge-2.yaml --case=customer_scenarios/ems/ems_edge.py --keep
           sleep 60
-          taostest --use=fractal-center.yaml --case=customer_scenarios/fractal/fractal_center.py --keep
-          taostest --use=fractal-query.yaml --case=customer_scenarios/fractal/fractal_query.py --keep
+          taostest --use=ems-center.yaml --case=customer_scenarios/ems/ems_center.py --keep
+          taostest --use=ems-query.yaml --case=customer_scenarios/ems/ems_query.py --keep
           sleep ${{ github.event.inputs.exec-time }}
-          taostest --use=fractal-edge-1.yaml --case=customer_scenarios/fractal/stop.py --keep
-          taostest --use=fractal-edge-2.yaml --case=customer_scenarios/fractal/stop.py --keep
-          taostest --use=fractal-center.yaml --case=customer_scenarios/fractal/stop.py --keep
-          taostest --use=fractal-query.yaml --case=customer_scenarios/fractal/fractal_summary.py --keep
+          taostest --use=ems-edge-1.yaml --case=customer_scenarios/ems/stop.py --keep
+          taostest --use=ems-edge-2.yaml --case=customer_scenarios/ems/stop.py --keep
+          taostest --use=ems-center.yaml --case=customer_scenarios/ems/stop.py --keep
+          taostest --use=ems-query.yaml --case=customer_scenarios/ems/ems_summary.py --keep
           echo "🔄 Test finished at $(date)"
           cp "$RUNNER_WORKSPACE/../TestNG/env/perf_report_$test_start_time.txt" $GITHUB_WORKSPACE/
 
@@ -578,9 +578,9 @@ jobs:
       labels: ${{ matrix.runner }}
     steps:
       - name: Delete dynamic labels
-        uses: taosdata/.github/.github/actions/dynamic-labels@test/fractal
+        uses: taosdata/.github/.github/actions/dynamic-labels@test/ems
         with:
           gh_token: ${{ secrets.RUNNER_PAT }}
           operation_type: "delete"
-          labels: "fractal"
+          labels: "ems"
           runner_name: ${{ runner.name }}
