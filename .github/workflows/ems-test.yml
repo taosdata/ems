@@ -346,8 +346,12 @@ jobs:
             chmod +x /usr/bin/mqtt_pub
             ems_toml=$(find $GITHUB_WORKSPACE -name ems.toml 2>/dev/null | head -n 1)
             echo "EMS_TOML=$ems_toml" >> $GITHUB_ENV
+            current_time=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ" -d '+8 hours')
+            interval="${{ github.event.inputs.source-interval }}ms"
+            sed -i "s/\(start_time = \)[^,]*/\1\"$current_time\"/" $ems_toml
+            sed -i "s/\(interval = \"\)[^\"]*/\1$interval/" $ems_toml
             rm -f /etc/taos/test.toml && mkdir -p /etc/taos && cp $ems_toml /etc/taos/test.toml
-
+            
   deploy-client-nodes:
     needs:
      - combine-and-update-hosts
