@@ -269,7 +269,7 @@ jobs:
     with:
       version: ${{ github.event.inputs.td-version }}
       group: customers
-      labels: ${{ matrix.runner }}
+      labels: "${{ matrix.runner }}"
 
   # deploy-center-nodes:
   #   needs:
