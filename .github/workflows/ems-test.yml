@@ -254,8 +254,7 @@ jobs:
         with:
           entries: ${{ steps.combine-ip-hostname.outputs.combined_info }}
 
-
-  deploy-center-nodes:
+  install-tdengine:
     needs:
      - combine-and-update-hosts
      - filter-runners
@@ -266,13 +265,30 @@ jobs:
     runs-on:
       group: customers
       labels: ${{ matrix.runner }}
-    steps:
-      - name: Install TDengine Enterprise
-        uses: taosdata/.github/.github/workflows/install-tdengine@enh/ems_refactor
-        with:
-          version: ${{ github.event.inputs.td-version }}
-          group: customers
-          labels: ${{ matrix.runner }}
+    uses: taosdata/.github/.github/workflows/install-tdengine@enh/ems_refactor
+    with:
+      version: ${{ github.event.inputs.td-version }}
+      group: customers
+      labels: ${{ matrix.runner }}
+
+  # deploy-center-nodes:
+  #   needs:
+  #    - combine-and-update-hosts
+  #    - filter-runners
+  #   strategy:
+  #     matrix:
+  #       runner:
+  #         - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
+  #   runs-on:
+  #     group: customers
+  #     labels: ${{ matrix.runner }}
+  #   steps:
+  #     - name: Install TDengine Enterprise
+  #       uses: taosdata/.github/.github/workflows/install-tdengine@enh/ems_refactor
+  #       with:
+  #         version: ${{ github.event.inputs.td-version }}
+  #         group: customers
+  #         labels: ${{ matrix.runner }}
 
       # - name: Install Node Exporter In TDengine Nodes
       #   uses: taosdata/.github/.github/actions/install-node-exporter@main
