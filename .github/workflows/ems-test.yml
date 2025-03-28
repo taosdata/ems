@@ -262,10 +262,10 @@ jobs:
       matrix:
         runner:
           - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
-    runs-on:
-      group: customers
-      labels: ${{ matrix.runner }}
-    uses: taosdata/.github/.github/workflows/install-tdengine@enh/ems_refactor
+    # runs-on:
+    #   group: customers
+    #   labels: ${{ matrix.runner }}
+    uses: taosdata/.github/.github/workflows/install-tdengine.yml@enh/ems_refactor
     with:
       version: ${{ github.event.inputs.td-version }}
       group: customers
