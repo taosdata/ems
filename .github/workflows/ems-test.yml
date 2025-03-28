@@ -269,7 +269,7 @@ jobs:
     with:
       version: ${{ github.event.inputs.td-version }}
       group: customers
-      labels: "${{ matrix.runner }}"
+      labels: "[self-hosted,Linux,X64,20C16G,exclusive,u2-195,ems]"
 
   # deploy-center-nodes:
   #   needs:
