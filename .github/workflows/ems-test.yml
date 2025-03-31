@@ -330,8 +330,8 @@ jobs:
       group: customers
       labels: ${{ matrix.runner }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      # - name: Checkout code
+      #   uses: actions/checkout@v4
 
       - name: Install MQTT CLI
         uses: taosdata/.github/.github/actions/install-mqtt-simulator@enh/TD-34342
@@ -502,8 +502,8 @@ jobs:
     needs:
       - combine-and-update-hosts
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      # - name: Checkout code
+      #   uses: actions/checkout@v4
 
       - name: Delete Artifacts
         uses: taosdata/.github/.github/actions/delete-artifacts@main
@@ -519,8 +519,8 @@ jobs:
       group: customers
       labels: ${{ matrix.runner }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      # - name: Checkout code
+      #   uses: actions/checkout@v4
 
       - name: Run Test
         run: |
