@@ -421,7 +421,7 @@ jobs:
           process_names: "${{ env.MONITORING_PROCESS_NAMES }}"
 
       - name: Gen Taostest Hosts
-        uses: taosdata/.github/.github/actions/gen-taostest-env@main
+        uses: taosdata/.github/.github/actions/gen-taostest-env@enh/TD-34342
         with:
           json_file: "$RUNNER_WORKSPACE/${{ env.HOSTS_DIRNAME }}/${{ env.ROLE_FILE }}"
           test_root: "$GITHUB_WORKSPACE/tests"
@@ -537,7 +537,6 @@ jobs:
           echo "test_start_time=$test_start_time" >> $GITHUB_ENV
           TEST_ROOT=$GITHUB_WORKSPACE/tests
           echo "test_root: $TEST_ROOT"
-          mkdir -p $TEST_ROOT/env $TEST_ROOT/run
           cp $GITHUB_WORKSPACE/config/*.yaml $TEST_ROOT/env/
           workflow_config_path="$TEST_ROOT/env/"
           echo "🔄 WORKFLOW_CONFIG_PATH: $workflow_config_path"
