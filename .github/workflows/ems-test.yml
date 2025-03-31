@@ -74,7 +74,7 @@ jobs:
     steps:
       - name: Get Client Runners
         id: get-client-runners
-        uses: taosdata/.github/.github/actions/get-runners@test/ems
+        uses: taosdata/.github/.github/actions/get-runners@main
         with:
           include_labels: ${{ env.CLIENT_LABEL }}
           required_count: 1
@@ -82,7 +82,7 @@ jobs:
 
       - name: Get MQTT Runners
         id: get-mqtt-runners
-        uses: taosdata/.github/.github/actions/get-runners@test/ems
+        uses: taosdata/.github/.github/actions/get-runners@main
         with:
           include_labels: ${{ env.MQTT_LABEL }}
           required_count: ${{ env.EDGE_DNODE_COUNT }}
@@ -90,7 +90,7 @@ jobs:
 
       - name: Get Edge Runners
         id: get-edge-runners
-        uses: taosdata/.github/.github/actions/get-runners@test/ems
+        uses: taosdata/.github/.github/actions/get-runners@main
         with:
           include_labels: ${{ env.EDGE_LABEL }}
           required_count: ${{ env.EDGE_DNODE_COUNT }}
@@ -99,7 +99,7 @@ jobs:
 
       - name: Get Center Runners
         id: center-edge-runners
-        uses: taosdata/.github/.github/actions/get-runners@test/ems
+        uses: taosdata/.github/.github/actions/get-runners@main
         with:
           include_labels: "${{ env.CENTER_LABEL }},exclusive"
           required_count: ${{ env.CENTER_DNODE_COUNT }}
@@ -128,7 +128,7 @@ jobs:
     steps:
       - name: Run Host Info Collection
         id: collect-host-info
-        uses: taosdata/.github/.github/actions/upload-host-info@test/ems
+        uses: taosdata/.github/.github/actions/upload-host-info@main
         with:
           hosts_dirname: ${{ env.HOSTS_DIRNAME }}
           role: "client"
@@ -151,7 +151,7 @@ jobs:
     steps:
       - name: Run Host Info Collection
         id: collect-host-info
-        uses: taosdata/.github/.github/actions/upload-host-info@test/ems
+        uses: taosdata/.github/.github/actions/upload-host-info@main
         with:
           hosts_dirname: ${{ env.HOSTS_DIRNAME }}
           role: "edge"
@@ -174,7 +174,7 @@ jobs:
     steps:
       - name: Run Host Info Collection
         id: collect-host-info
-        uses: taosdata/.github/.github/actions/upload-host-info@test/ems
+        uses: taosdata/.github/.github/actions/upload-host-info@main
         with:
           hosts_dirname: ${{ env.HOSTS_DIRNAME }}
           role: "center"
@@ -197,7 +197,7 @@ jobs:
     steps:
       - name: Run Host Info Collection
         id: collect-host-info
-        uses: taosdata/.github/.github/actions/upload-host-info@test/ems
+        uses: taosdata/.github/.github/actions/upload-host-info@main
         with:
           hosts_dirname: ${{ env.HOSTS_DIRNAME }}
           role: "mqtt"
@@ -227,7 +227,7 @@ jobs:
       labels: ${{ matrix.runner }}
     steps:
       - name: Add dynamic labels
-        uses: taosdata/.github/.github/actions/dynamic-labels@test/ems
+        uses: taosdata/.github/.github/actions/dynamic-labels@main
         with:
           gh_token: ${{ secrets.RUNNER_PAT }}
           operation_type: "add"
@@ -238,19 +238,19 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download Host Info
-        uses: taosdata/.github/.github/actions/download-artifacts@test/ems
+        uses: taosdata/.github/.github/actions/download-artifacts@main
         with:
           gh_token: ${{ secrets.RUNNER_PAT }}
           download_dir: "$RUNNER_WORKSPACE/${{ env.HOSTS_DIRNAME }}"
 
       - name: Combine IP and Hostname Info In Each Runner
         id: combine-ip-hostname
-        uses: taosdata/.github/.github/actions/combine-ip-hostname@test/ems
+        uses: taosdata/.github/.github/actions/combine-ip-hostname@main
         with:
           input-dir: "$RUNNER_WORKSPACE/${{ env.HOSTS_DIRNAME }}"
 
       - name: Update /etc/hosts In Each Runner
-        uses: taosdata/.github/.github/actions/update-etc-hosts@test/ems
+        uses: taosdata/.github/.github/actions/update-etc-hosts@main
         with:
           entries: ${{ steps.combine-ip-hostname.outputs.combined_info }}
 
@@ -268,19 +268,19 @@ jobs:
       labels: ${{ matrix.runner }}
     steps:
       - name: Install TDengine Enterprise
-        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/ems
+        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@main
         with:
           version: ${{ github.event.inputs.td-version }}
           download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
 
       - name: Install Node Exporter In TDengine Nodes
-        uses: taosdata/.github/.github/actions/install-node-exporter@test/ems
+        uses: taosdata/.github/.github/actions/install-node-exporter@main
 
       - name: Install Process Exporter In TDengine Nodes
-        uses: taosdata/.github/.github/actions/install-process-exporter@test/ems
+        uses: taosdata/.github/.github/actions/install-process-exporter@main
 
       - name: Config Process Exporter YAML In TDengine Nodes
-        uses: taosdata/.github/.github/actions/config-process-exporter-yml@test/ems
+        uses: taosdata/.github/.github/actions/config-process-exporter-yml@main
         with:
           yml_file_path: "${{ env.PROCESS_EXPORTER_YML_PATH }}"
           process_names: "${{ env.MONITORING_PROCESS_NAMES }}"
@@ -301,19 +301,19 @@ jobs:
         uses: taosdata/.github/.github/actions/install-flashmq@main
 
       - name: Install TDengine Enterprise
-        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/ems
+        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@main
         with:
           version: ${{ github.event.inputs.td-version }}
           download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
 
       - name: Install Node Exporter In TDengine Nodes
-        uses: taosdata/.github/.github/actions/install-node-exporter@test/ems
+        uses: taosdata/.github/.github/actions/install-node-exporter@main
 
       - name: Install Process Exporter In TDengine Nodes
-        uses: taosdata/.github/.github/actions/install-process-exporter@test/ems
+        uses: taosdata/.github/.github/actions/install-process-exporter@main
 
       - name: Config Process Exporter YAML In TDengine Nodes
-        uses: taosdata/.github/.github/actions/config-process-exporter-yml@test/ems
+        uses: taosdata/.github/.github/actions/config-process-exporter-yml@main
         with:
           yml_file_path: "${{ env.PROCESS_EXPORTER_YML_PATH }}"
           process_names: "${{ env.MONITORING_PROCESS_NAMES }}"
@@ -334,9 +334,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install MQTT CLI
-        uses: taosdata/.github/.github/actions/install-mqtt-simulator@test/ems
+        uses: taosdata/.github/.github/actions/install-mqtt-simulator@enh/TD-34342
         with:
-          nas_public_url: ${{ secrets.nas_download_url }}
+          pub_dl_url: ${{ secrets.PUB_DL_URL }}
 
       - name: Find mqtt_pub binary and ems toml
         run: |
@@ -344,14 +344,15 @@ jobs:
             echo "MQTT_PUB_PATH=$mqtt_pub_path" >> $GITHUB_ENV
             rm -f /usr/bin/mqtt_pub && cp $mqtt_pub_path /usr/bin/mqtt_pub
             chmod +x /usr/bin/mqtt_pub
-            ems_toml=$(find $GITHUB_WORKSPACE -name ems.toml 2>/dev/null | head -n 1)
+            # ems_toml=$(find $GITHUB_WORKSPACE -name ems.toml 2>/dev/null | head -n 1)
+            ems_toml="$GITHUB_WORKSPACE/config/ems.toml"
             echo "EMS_TOML=$ems_toml" >> $GITHUB_ENV
             current_time=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ" -d '+8 hours')
             interval="${{ github.event.inputs.source-interval }}ms"
             sed -i "s/\(start_time = \)[^,]*/\1\"$current_time\"/" $ems_toml
             sed -i "s/\(interval = \"\)[^\"]*/\1$interval/" $ems_toml
             rm -f /etc/taos/test.toml && mkdir -p /etc/taos && cp $ems_toml /etc/taos/test.toml
-            
+
   deploy-client-nodes:
     needs:
      - combine-and-update-hosts
@@ -364,69 +365,75 @@ jobs:
       group: customers
       labels: ${{ matrix.runner }}
     steps:
-      - name: Sync Repo - taos-test-framework
-        uses: taosdata/.github/.github/actions/sync-repo@test/ems
-        with:
-          parent-dir: "$RUNNER_WORKSPACE/../"
-          repo-url: "https://github.com/taosdata/taos-test-framework.git"
-          branch: "feat/TD-33672"
-          res_app_id: ${{ vars.TAOSDATA_BOT_ID }}
-          res_app_key: ${{ secrets.TAOSDATA_BOT_KEY }}
+      # - name: Sync Repo - taos-test-framework
+      #   uses: taosdata/.github/.github/actions/sync-repo@main
+      #   with:
+      #     parent-dir: "$RUNNER_WORKSPACE/../"
+      #     repo-url: "https://github.com/taosdata/taos-test-framework.git"
+      #     branch: "feat/TD-33672"
+      #     res_app_id: ${{ vars.TAOSDATA_BOT_ID }}
+      #     res_app_key: ${{ secrets.TAOSDATA_BOT_KEY }}
 
-      - name: Sync Repo - TestNG
-        uses: taosdata/.github/.github/actions/sync-repo@test/ems
-        with:
-          parent-dir: "$RUNNER_WORKSPACE/../"
-          repo-url: "https://github.com/taosdata/TestNG.git"
-          branch: "test/TD-33672"
-          res_app_id: ${{ vars.TAOSDATA_BOT_ID }}
-          res_app_key: ${{ secrets.TAOSDATA_BOT_KEY }}
+      # - name: Sync Repo - TestNG
+      #   uses: taosdata/.github/.github/actions/sync-repo@main
+      #   with:
+      #     parent-dir: "$RUNNER_WORKSPACE/../"
+      #     repo-url: "https://github.com/taosdata/TestNG.git"
+      #     branch: "test/TD-33672"
+      #     res_app_id: ${{ vars.TAOSDATA_BOT_ID }}
+      #     res_app_key: ${{ secrets.TAOSDATA_BOT_KEY }}
 
-      - name: Deploy Taostest And TestNG
-        id: deploy-taostest-testng
-        uses: taosdata/.github/.github/actions/deploy-taostest-testng@test/ems
+      # - name: Deploy Taostest And TestNG
+      #   id: deploy-taostest-testng
+      #   uses: taosdata/.github/.github/actions/deploy-taostest-testng@main
+      #   with:
+      #     taostest-dir: "$RUNNER_WORKSPACE/../taos-test-framework"
+      #     testng-dir: "$RUNNER_WORKSPACE/../TestNG"
+
+      - name: Deploy Taostest
+        id: deploy-taostest
+        uses: taosdata/.github/.github/actions/deploy-taostest@enh/TD-34342
         with:
-          taostest-dir: "$RUNNER_WORKSPACE/../taos-test-framework"
-          testng-dir: "$RUNNER_WORKSPACE/../TestNG"
+          pub_dl_url: ${{ secrets.PUB_DL_URL }}
 
       - name: Install TDengine Enterprise
-        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@test/ems
+        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@main
         with:
             version: ${{ github.event.inputs.td-version }}
             download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
 
       - name: Install Grafana In Taostest Node
-        uses: taosdata/.github/.github/actions/install-grafana@test/ems
+        uses: taosdata/.github/.github/actions/install-grafana@main
 
       - name: Install Prometheus In Taostest Node
-        uses: taosdata/.github/.github/actions/install-prometheus@test/ems
+        uses: taosdata/.github/.github/actions/install-prometheus@main
 
       - name: Install Node Exporter In Taostest Node
-        uses: taosdata/.github/.github/actions/install-node-exporter@test/ems
+        uses: taosdata/.github/.github/actions/install-node-exporter@main
 
       - name: Install Process Exporter In Taostest Node
-        uses: taosdata/.github/.github/actions/install-process-exporter@test/ems
+        uses: taosdata/.github/.github/actions/install-process-exporter@main
 
       - name: Config Process Exporter YAML In Taostest Node
-        uses: taosdata/.github/.github/actions/config-process-exporter-yml@test/ems
+        uses: taosdata/.github/.github/actions/config-process-exporter-yml@main
         with:
           yml_file_path: "${{ env.PROCESS_EXPORTER_YML_PATH }}"
           process_names: "${{ env.MONITORING_PROCESS_NAMES }}"
 
       - name: Gen Taostest Hosts
-        uses: taosdata/.github/.github/actions/gen-taostest-env@test/ems
+        uses: taosdata/.github/.github/actions/gen-taostest-env@main
         with:
           json_file: "$RUNNER_WORKSPACE/${{ env.HOSTS_DIRNAME }}/${{ env.ROLE_FILE }}"
-          test_root: "$TEST_ROOT"
+          test_root: "$GITHUB_WORKSPACE/tests"
 
       - name: Configure SSH-Keyless Login
-        uses: taosdata/.github/.github/actions/ssh-keyless-login@test/ems
+        uses: taosdata/.github/.github/actions/ssh-keyless-login@main
         with:
           target_hosts: $HOSTNAME_INFO
           password: ${{ secrets.VM_PASSWD }}
 
       - name: Config Prometheus YAML
-        uses: taosdata/.github/.github/actions/config-prometheus-yml@test/ems
+        uses: taosdata/.github/.github/actions/config-prometheus-yml@main
         with:
           yml_file_path: ${{ env.PROMETHEUS_YML_PATH }}
           node_exporter_hosts: $HOSTNAME_INFO
@@ -434,7 +441,7 @@ jobs:
 
       - name: Print Hosts
         run: |
-          echo "TEST_ROOT: $TEST_ROOT"
+          echo "TEST_ROOT: $GITHUB_WORKSPACE/tests"
           echo "MQTT Hosts: $MQTT_HOSTS"
           echo "Single Dnode Hosts: $SINGLE_DNODE_HOSTS"
           echo "Taos Benchmark Hosts: $TAOS_BENCHMARK_HOSTS"
@@ -484,7 +491,7 @@ jobs:
           # COMBINED_JSON=$(jq -n --argjson dbConfig "$FORMATTED_DB_CONFIG" '{db_config: $dbConfig}')
 
           # Write to File
-          workflow_config_file="$TEST_ROOT/env/${{ env.WORKFLOW_CONFIG_FILE }}"
+          workflow_config_file="$GITHUB_WORKSPACE/tests/env/${{ env.WORKFLOW_CONFIG_FILE }}"
           echo "$COMBINED_JSON" > $workflow_config_file
 
           # Print File
@@ -499,7 +506,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Delete Artifacts
-        uses: taosdata/.github/.github/actions/delete-artifacts@test/ems
+        uses: taosdata/.github/.github/actions/delete-artifacts@main
         with:
           gh_token: ${{ secrets.RUNNER_PAT }}
 
@@ -528,17 +535,20 @@ jobs:
           echo "%PWD%: $PWD"
           test_start_time=$(date +"%Y%m%d_%H%M%S")
           echo "test_start_time=$test_start_time" >> $GITHUB_ENV
+          TEST_ROOT=$GITHUB_WORKSPACE/tests
           echo "test_root: $TEST_ROOT"
-          workflow_config_path="$RUNNER_WORKSPACE/../TestNG/env"
+          mkdir -p $TEST_ROOT/env $TEST_ROOT/run
+          cp $GITHUB_WORKSPACE/config/*.yaml $TEST_ROOT/env/
+          workflow_config_path="$TEST_ROOT/env/"
           echo "🔄 WORKFLOW_CONFIG_PATH: $workflow_config_path"
           jq --arg test_start_time "$test_start_time" '. + {test_start_time: $test_start_time}' "$workflow_config_path/${{ env.WORKFLOW_CONFIG_FILE }}" > tmp.json
           mv tmp.json $workflow_config_path/${{ env.WORKFLOW_CONFIG_FILE }}
-          query_json=$(find $GITHUB_WORKSPACE -name query.json 2>/dev/null | head -n 1)
-          db_config_json=$(find $GITHUB_WORKSPACE -name db_config.json 2>/dev/null | head -n 1)
-          mv $db_config_json $query_json $workflow_config_path
+          # query_json=$(find $GITHUB_WORKSPACE -name query.json 2>/dev/null | head -n 1)
+          query_json=$GITHUB_WORKSPACE/config/query.json
+          # db_config_json=$(find $GITHUB_WORKSPACE -name db_config.json 2>/dev/null | head -n 1)
+          db_config_json=$GITHUB_WORKSPACE/config/db_config.json
+          mv $db_config_json $query_json $TEST_ROOT
 
-          echo "EMS_TOML=$ems_toml"
-          echo "EMS_TOML=$ems_toml" >> $GITHUB_ENV
           taostest --convert-json=ems-center.json
           taostest --convert-json=ems-edge-1.json
           taostest --convert-json=ems-edge-2.json
@@ -557,7 +567,7 @@ jobs:
           taostest --use=ems-center.yaml --case=customer_scenarios/ems/stop.py --keep
           taostest --use=ems-query.yaml --case=customer_scenarios/ems/ems_summary.py --keep
           echo "🔄 Test finished at $(date)"
-          cp "$RUNNER_WORKSPACE/../TestNG/env/perf_report_$test_start_time.txt" $GITHUB_WORKSPACE/
+          cp "$GITHUB_WORKSPACE/env/perf_report_$test_start_time.txt" $GITHUB_WORKSPACE/
 
       - name: Upload Report File
         uses: actions/upload-artifact@v4
@@ -582,7 +592,7 @@ jobs:
       labels: ${{ matrix.runner }}
     steps:
       - name: Delete dynamic labels
-        uses: taosdata/.github/.github/actions/dynamic-labels@test/ems
+        uses: taosdata/.github/.github/actions/dynamic-labels@main
         with:
           gh_token: ${{ secrets.RUNNER_PAT }}
           operation_type: "delete"
