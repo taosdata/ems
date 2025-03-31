@@ -546,7 +546,7 @@ jobs:
           query_json=$GITHUB_WORKSPACE/config/query.json
           # db_config_json=$(find $GITHUB_WORKSPACE -name db_config.json 2>/dev/null | head -n 1)
           db_config_json=$GITHUB_WORKSPACE/config/db_config.json
-          mv $db_config_json $query_json $TEST_ROOT
+          mv $db_config_json $query_json $TEST_ROOT/env
 
           taostest --convert-json=ems-center.json
           taostest --convert-json=ems-edge-1.json
