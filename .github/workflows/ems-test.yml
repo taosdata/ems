@@ -566,7 +566,7 @@ jobs:
           taostest --use=ems-center.yaml --case=customer_scenarios/ems/stop.py --keep
           taostest --use=ems-query.yaml --case=customer_scenarios/ems/ems_summary.py --keep
           echo "🔄 Test finished at $(date)"
-          cp "$GITHUB_WORKSPACE/env/perf_report_$test_start_time.txt" $GITHUB_WORKSPACE/
+          cp "$TEST_ROOT/env/perf_report_$test_start_time.txt" $GITHUB_WORKSPACE/
 
       - name: Upload Report File
         uses: actions/upload-artifact@v4
