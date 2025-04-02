@@ -61,6 +61,7 @@ env :
   MONITORING_PROCESS_NAMES: "taosd,taosadapter,taostest,taosBenchmark"
   ROLE_FILE: "role_info.json"
   WORKFLOW_CONFIG_FILE: "workflow_config.json"
+  GRAFANA_DATASOURCE_NAME: "tdengine-processes"
 
 jobs:
   filter-runners:
@@ -365,6 +366,11 @@ jobs:
       group: customers
       labels: ${{ matrix.runner }}
     steps:
+      - name: Export Client IP
+        run:
+          ip=$(hostname -I | awk '{print $1}')
+          echo "CLIENT_IP=$ip" >> $GITHUB_ENV
+
       # - name: Sync Repo - taos-test-framework
       #   uses: taosdata/.github/.github/actions/sync-repo@main
       #   with:
@@ -439,6 +445,13 @@ jobs:
           node_exporter_hosts: $HOSTNAME_INFO
           process_exporter_hosts: $HOSTNAME_INFO
 
+      - name: Import Grafana Dashboard
+        uses: taosdata/.github/.github/actions/import-grafana-dashboard@enh/TD-34342
+        with:
+          grafana-url: http://grafana.tdengine.net:3000
+          prometheus-url: http://${{ env.CLIENT_IP }}:9090
+          datasource-name: ${{ env.GRAFANA_DATASOURCE_NAME }}
+
       - name: Print Hosts
         run: |
           echo "TEST_ROOT: $GITHUB_WORKSPACE/tests"
@@ -461,6 +474,7 @@ jobs:
           EDGE_DNODE_HOSTS=$SINGLE_DNODE_HOSTS
           TAOS_BENCHMARK_HOSTS=$TAOS_BENCHMARK_HOSTS
           CENTER_DNODE_HOSTS=$CLUSTER_HOSTS
+          GRAFANA_DATASOURCE_NAME=${{ env.GRAFANA_DATASOURCE_NAME }}
 
           # Combine Inputs into a single JSON object
           COMBINED_JSON=$(jq -n \
@@ -470,6 +484,7 @@ jobs:
             --arg execTime "$EXEC_TIME" \
             --arg sourceInterval "$SOURCE_INTERVAL" \
             --arg enableCompression "$ENABLE_COMPRESSION" \
+            --arg grafanaDatasourceName "$GRAFANA_DATASOURCE_NAME" \
             --argjson mqttHosts "$MQTT_HOSTS" \
             --argjson edgeDnodeHosts "$EDGE_DNODE_HOSTS" \
             --argjson taosBenchmarkHosts "$TAOS_BENCHMARK_HOSTS" \
@@ -485,6 +500,7 @@ jobs:
               edge_dnode_hosts: $edgeDnodeHosts,
               taos_benchmark_hosts: $taosBenchmarkHosts,
               center_dnode_hosts: $centerDnodeHosts
+              grafana_datasource_name: $grafanaDatasourceName
             }')
           echo "COMBINED_JSON: $COMBINED_JSON"
           # COMBINED_JSON=$(jq -n --argjson dbConfig "$FORMATTED_DB_CONFIG" --arg execTime "$EXEC_TIME" '{db_config: $dbConfig, exec_time: $execTime}')
