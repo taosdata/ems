@@ -129,7 +129,7 @@ jobs:
     steps:
       - name: Run Host Info Collection
         id: collect-host-info
-        uses: taosdata/.github/.github/actions/upload-host-info@main
+        uses: taosdata/.github/.github/actions/upload-host-info@enh/TD-34342
         with:
           hosts_dirname: ${{ env.HOSTS_DIRNAME }}
           role: "client"
@@ -152,7 +152,7 @@ jobs:
     steps:
       - name: Run Host Info Collection
         id: collect-host-info
-        uses: taosdata/.github/.github/actions/upload-host-info@main
+        uses: taosdata/.github/.github/actions/upload-host-info@enh/TD-34342
         with:
           hosts_dirname: ${{ env.HOSTS_DIRNAME }}
           role: "edge"
@@ -175,7 +175,7 @@ jobs:
     steps:
       - name: Run Host Info Collection
         id: collect-host-info
-        uses: taosdata/.github/.github/actions/upload-host-info@main
+        uses: taosdata/.github/.github/actions/upload-host-info@enh/TD-34342
         with:
           hosts_dirname: ${{ env.HOSTS_DIRNAME }}
           role: "center"
@@ -198,7 +198,7 @@ jobs:
     steps:
       - name: Run Host Info Collection
         id: collect-host-info
-        uses: taosdata/.github/.github/actions/upload-host-info@main
+        uses: taosdata/.github/.github/actions/upload-host-info@enh/TD-34342
         with:
           hosts_dirname: ${{ env.HOSTS_DIRNAME }}
           role: "mqtt"
@@ -370,6 +370,7 @@ jobs:
         id: export-client-ip
         run:
           ip=$(hostname -I | awk '{print $1}')
+          echo "CLIENT_IP=$ip"
           echo "CLIENT_IP=$ip" >> $GITHUB_OUTPUT
           # echo "CLIENT_IP=$ip" >> $GITHUB_ENV
 
