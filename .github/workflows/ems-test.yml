@@ -452,7 +452,7 @@ jobs:
         uses: taosdata/.github/.github/actions/import-grafana-dashboard@enh/TD-34342
         with:
           grafana-url: http://grafana.tdengine.net:3000
-          prometheus-url: http://${{ steps.export-client-ip.outputs.CLIENT_IP }}:9090
+          prometheus-url: "http://${{ steps.export-client-ip.outputs.CLIENT_IP }}:9090"
           datasource-name: ${{ env.GRAFANA_DATASOURCE_NAME }}
 
       - name: Print Hosts
