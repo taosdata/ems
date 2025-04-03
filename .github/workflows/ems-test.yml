@@ -369,8 +369,6 @@ jobs:
       - name: Export Client IP
         run: |
           ip=$(hostname -I | awk '{print $1}')
-          echo "CLIENT_IP=$ip"
-          # echo "CLIENT_IP=$ip" >> $GITHUB_OUTPUT
           echo "CLIENT_IP=$ip" >> $GITHUB_ENV
 
       # - name: Sync Repo - taos-test-framework
@@ -498,11 +496,11 @@ jobs:
               exec_time: $execTime,
               source_interval: $sourceInterval,
               enable_compression: $enableCompression,
+              grafana_datasource_name: $grafanaDatasourceName,
               mqtt_hosts: $mqttHosts,
               edge_dnode_hosts: $edgeDnodeHosts,
               taos_benchmark_hosts: $taosBenchmarkHosts,
               center_dnode_hosts: $centerDnodeHosts
-              grafana_datasource_name: $grafanaDatasourceName
             }')
           echo "COMBINED_JSON: $COMBINED_JSON"
           # COMBINED_JSON=$(jq -n --argjson dbConfig "$FORMATTED_DB_CONFIG" --arg execTime "$EXEC_TIME" '{db_config: $dbConfig, exec_time: $execTime}')
