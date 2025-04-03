@@ -27,7 +27,7 @@ def create_task(
     """
     compression_param = ""
     case_data = {
-        "from": f"taos+ws://{edge_host}:6041/{edge_dbname}?mode=all&schema=always&schema-polling-interval=5s",
+        "from": f"tmq+ws://{edge_host}:6041/{edge_dbname}?auto.offset.reset=earliest&client.id=10&experimental.snapshot.enable=true",
         "to": f"taos+ws://{center_host}:6041/{center_dbname}?{compression_param}",
         "labels": labels,
     }
