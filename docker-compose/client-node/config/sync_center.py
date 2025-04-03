@@ -26,9 +26,13 @@ def create_task(
         str: The ID of the created task.
     """
     compression_param = ""
-    # "from": f"tmq+ws://{edge_host}:6041/{edge_dbname}?auto_offset_reset=earliest&client_id=test&experimental_snapshot_enable=true",
+        # "from": f"taos+ws://{edge_host}:6041/{edge_dbname}?mode=all&schema=always&schema-polling-interval=5s",
+        # "from": f"tmq+ws://{edge_host}:6041/{edge_dbname}?auto_offset_reset=earliest&client_id=test&experimental_snapshot_enable=true",
+        # "from": "tmq+ws://edge-node1-tdengine:6041/mqtt_datain?auto.offset.reset=earliest&busy_threshold=100%&busy_threshold_type=%&client.id=10&commit.chunk.size=0&commit.interval.ms=0&compression=false&experimental.snapshot.enable=true&health_check_window_in_second_type=s&max_errors_in_window=10&max_queue_length=1000&num.of.consumers=0&num.of.writers=0&prefer=auto&with.meta.delete=true&with.meta.drop=true",
+        # "from": f"tmq+ws://{edge_host}:6041/{edge_dbname}?auto.offset.reset=earliest&client_id=test&experimental_snapshot_enable=true",
+
     case_data = {
-        "from": f"taos+ws://{edge_host}:6041/{edge_dbname}?mode=all&schema=always&schema-polling-interval=5s",
+        "from": f"tmq+ws://{center_host}:6041/{center_dbname}?auto.offset.reset=earliest&client.id=10&experimental.snapshot.enable=true",
         "to": f"taos+ws://{center_host}:6041/{center_dbname}?{compression_param}",
         "labels": labels,
     }
@@ -37,7 +41,6 @@ def create_task(
     response = requests.post(task_url, data=json.dumps(case_data), headers=headers)
     response.raise_for_status()
     return response.json()["id"]
-
 
 def main(
     center_host: str, center_dbname: str, edge_dbname: str, edge_host: List[str]
