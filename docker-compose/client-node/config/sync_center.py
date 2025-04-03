@@ -26,6 +26,7 @@ def create_task(
         str: The ID of the created task.
     """
     compression_param = ""
+    # "from": f"tmq+ws://{edge_host}:6041/{edge_dbname}?auto_offset_reset=earliest&client_id=test&experimental_snapshot_enable=true",
     case_data = {
         "from": f"taos+ws://{edge_host}:6041/{edge_dbname}?mode=all&schema=always&schema-polling-interval=5s",
         "to": f"taos+ws://{center_host}:6041/{center_dbname}?{compression_param}",
