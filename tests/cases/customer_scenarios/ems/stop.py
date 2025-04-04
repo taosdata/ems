@@ -20,7 +20,7 @@ import sys
 from datetime import datetime
 from taostest.util.rest import TDRest
 
-class Start(TDCase):
+class Stop(TDCase):
     def init(self):
         self.tdCom = TDCom(self.tdSql)
         self._remote: Remote = Remote(self.logger)
