@@ -272,7 +272,7 @@ jobs:
         uses: taosdata/.github/.github/actions/install-tdengine-enterprise@enh/TD-34342
         with:
           version: ${{ github.event.inputs.td-version }}
-          download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
+          download_url: ${{ secrets.ASSETS_DL_URL }}
 
       - name: Install Node Exporter In TDengine Nodes
         uses: taosdata/.github/.github/actions/install-node-exporter@main
@@ -305,7 +305,7 @@ jobs:
         uses: taosdata/.github/.github/actions/install-tdengine-enterprise@enh/TD-34342
         with:
           version: ${{ github.event.inputs.td-version }}
-          download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
+          download_url: ${{ secrets.ASSETS_DL_URL }}
 
       - name: Install Node Exporter In TDengine Nodes
         uses: taosdata/.github/.github/actions/install-node-exporter@main
@@ -405,8 +405,8 @@ jobs:
       - name: Install TDengine Enterprise
         uses: taosdata/.github/.github/actions/install-tdengine-enterprise@enh/TD-34342
         with:
-            version: ${{ github.event.inputs.td-version }}
-            download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
+          version: ${{ github.event.inputs.td-version }}
+          download_url: ${{ secrets.ASSETS_DL_URL }}
 
       - name: Install Grafana In Taostest Node
         uses: taosdata/.github/.github/actions/install-grafana@main
