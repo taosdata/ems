@@ -228,12 +228,14 @@ jobs:
       labels: ${{ matrix.runner }}
     steps:
       - name: Add dynamic labels
-        uses: taosdata/.github/.github/actions/dynamic-labels@main
+        uses: taosdata/.github/.github/actions/dynamic-labels@enh/TD-34342
         with:
           gh_token: ${{ secrets.RUNNER_PAT }}
           operation_type: "add"
           labels: "ems"
           runner_name: ${{ runner.name }}
+          scope: org
+          target: taosdata
 
       - name: Checkout code
         uses: actions/checkout@v4
@@ -610,9 +612,11 @@ jobs:
       labels: ${{ matrix.runner }}
     steps:
       - name: Delete dynamic labels
-        uses: taosdata/.github/.github/actions/dynamic-labels@main
+        uses: taosdata/.github/.github/actions/dynamic-labels@enh/TD-34342
         with:
           gh_token: ${{ secrets.RUNNER_PAT }}
           operation_type: "delete"
           labels: "ems"
           runner_name: ${{ runner.name }}
+          scope: org
+          target: taosdata
