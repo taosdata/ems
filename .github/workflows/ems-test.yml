@@ -129,7 +129,7 @@ jobs:
     steps:
       - name: Run Host Info Collection
         id: collect-host-info
-        uses: taosdata/.github/.github/actions/upload-host-info@enh/TD-34342
+        uses: taosdata/.github/.github/actions/upload-host-info@main
         with:
           hosts_dirname: ${{ env.HOSTS_DIRNAME }}
           role: "client"
@@ -152,7 +152,7 @@ jobs:
     steps:
       - name: Run Host Info Collection
         id: collect-host-info
-        uses: taosdata/.github/.github/actions/upload-host-info@enh/TD-34342
+        uses: taosdata/.github/.github/actions/upload-host-info@main
         with:
           hosts_dirname: ${{ env.HOSTS_DIRNAME }}
           role: "edge"
@@ -175,7 +175,7 @@ jobs:
     steps:
       - name: Run Host Info Collection
         id: collect-host-info
-        uses: taosdata/.github/.github/actions/upload-host-info@enh/TD-34342
+        uses: taosdata/.github/.github/actions/upload-host-info@main
         with:
           hosts_dirname: ${{ env.HOSTS_DIRNAME }}
           role: "center"
@@ -198,7 +198,7 @@ jobs:
     steps:
       - name: Run Host Info Collection
         id: collect-host-info
-        uses: taosdata/.github/.github/actions/upload-host-info@enh/TD-34342
+        uses: taosdata/.github/.github/actions/upload-host-info@main
         with:
           hosts_dirname: ${{ env.HOSTS_DIRNAME }}
           role: "mqtt"
@@ -228,7 +228,7 @@ jobs:
       labels: ${{ matrix.runner }}
     steps:
       - name: Add dynamic labels
-        uses: taosdata/.github/.github/actions/dynamic-labels@enh/TD-34342
+        uses: taosdata/.github/.github/actions/dynamic-labels@main
         with:
           gh_token: ${{ secrets.RUNNER_PAT }}
           operation_type: "add"
@@ -241,7 +241,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download Host Info
-        uses: taosdata/.github/.github/actions/download-artifacts@enh/TD-34342
+        uses: taosdata/.github/.github/actions/download-artifacts@main
         with:
           gh_token: ${{ secrets.RUNNER_PAT }}
           download_dir: "$RUNNER_WORKSPACE/${{ env.HOSTS_DIRNAME }}"
@@ -271,7 +271,7 @@ jobs:
       labels: ${{ matrix.runner }}
     steps:
       - name: Install TDengine Enterprise
-        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@enh/TD-34342
+        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@main
         with:
           version: ${{ github.event.inputs.td-version }}
           download_url: ${{ secrets.ASSETS_DL_URL }}
@@ -304,7 +304,7 @@ jobs:
         uses: taosdata/.github/.github/actions/install-flashmq@main
 
       - name: Install TDengine Enterprise
-        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@enh/TD-34342
+        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@main
         with:
           version: ${{ github.event.inputs.td-version }}
           download_url: ${{ secrets.ASSETS_DL_URL }}
@@ -337,7 +337,7 @@ jobs:
       #   uses: actions/checkout@v4
 
       - name: Install MQTT CLI
-        uses: taosdata/.github/.github/actions/install-mqtt-simulator@enh/TD-34342
+        uses: taosdata/.github/.github/actions/install-mqtt-simulator@main
         with:
           pub_dl_url: ${{ secrets.PUB_DL_URL }}
 
@@ -400,12 +400,12 @@ jobs:
 
       - name: Deploy Taostest
         id: deploy-taostest
-        uses: taosdata/.github/.github/actions/deploy-taostest@enh/TD-34342
+        uses: taosdata/.github/.github/actions/deploy-taostest@main
         with:
           pub_dl_url: ${{ secrets.PUB_DL_URL }}
 
       - name: Install TDengine Enterprise
-        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@enh/TD-34342
+        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@main
         with:
           version: ${{ github.event.inputs.td-version }}
           download_url: ${{ secrets.ASSETS_DL_URL }}
@@ -429,7 +429,7 @@ jobs:
           process_names: "${{ env.MONITORING_PROCESS_NAMES }}"
 
       - name: Gen Taostest Hosts
-        uses: taosdata/.github/.github/actions/gen-taostest-env@enh/TD-34342
+        uses: taosdata/.github/.github/actions/gen-taostest-env@main
         with:
           json_file: "$RUNNER_WORKSPACE/${{ env.HOSTS_DIRNAME }}/${{ env.ROLE_FILE }}"
           test_root: "$GITHUB_WORKSPACE/tests"
@@ -448,7 +448,7 @@ jobs:
           process_exporter_hosts: $HOSTNAME_INFO
 
       - name: Import Grafana Dashboard
-        uses: taosdata/.github/.github/actions/import-grafana-dashboard@enh/TD-34342
+        uses: taosdata/.github/.github/actions/import-grafana-dashboard@main
         with:
           grafana-url: http://grafana.tdengine.net:3000
           prometheus-url: http://${{ env.CLIENT_IP }}:9090
@@ -612,7 +612,7 @@ jobs:
       labels: ${{ matrix.runner }}
     steps:
       - name: Delete dynamic labels
-        uses: taosdata/.github/.github/actions/dynamic-labels@enh/TD-34342
+        uses: taosdata/.github/.github/actions/dynamic-labels@main
         with:
           gh_token: ${{ secrets.RUNNER_PAT }}
           operation_type: "delete"
