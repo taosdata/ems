@@ -32,7 +32,7 @@ def create_task(
         # "from": f"tmq+ws://{edge_host}:6041/{edge_dbname}?auto.offset.reset=earliest&client_id=test&experimental_snapshot_enable=true",
 
     case_data = {
-        "from": f"tmq+ws://{center_host}:6041/{center_dbname}?auto.offset.reset=earliest&client.id=10&experimental.snapshot.enable=true",
+        "from": f"tmq+ws://{edge_host}:6041/{edge_dbname}?auto.offset.reset=earliest&client.id=10&experimental.snapshot.enable=true",
         "to": f"taos+ws://{center_host}:6041/{center_dbname}?{compression_param}",
         "labels": labels,
     }

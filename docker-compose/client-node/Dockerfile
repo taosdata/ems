@@ -20,7 +20,7 @@ CMD \
 [   \
     "sh", \
     "-c", \
-    "python mqtt_datain.py --edge-host $EDGE_HOST --mqtt-host $MQTT_HOST --edge-dbname $EDGE_DBNAME && \
+    "python3 mqtt_datain.py --edge-host $EDGE_HOST --mqtt-host $MQTT_HOST --edge-dbname $EDGE_DBNAME && \
     python3 sync_center.py --center-host $CENTER_HOST --center-dbname $CENTER_DBNAME --edge-dbname $EDGE_DBNAME --edge-host $EDGE_HOST && \
     while true; do sleep 1; done" \
 ]
