@@ -269,7 +269,7 @@ jobs:
       labels: ${{ matrix.runner }}
     steps:
       - name: Install TDengine Enterprise
-        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@main
+        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@enh/TD-34342
         with:
           version: ${{ github.event.inputs.td-version }}
           download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
@@ -302,7 +302,7 @@ jobs:
         uses: taosdata/.github/.github/actions/install-flashmq@main
 
       - name: Install TDengine Enterprise
-        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@main
+        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@enh/TD-34342
         with:
           version: ${{ github.event.inputs.td-version }}
           download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
@@ -403,7 +403,7 @@ jobs:
           pub_dl_url: ${{ secrets.PUB_DL_URL }}
 
       - name: Install TDengine Enterprise
-        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@main
+        uses: taosdata/.github/.github/actions/install-tdengine-enterprise@enh/TD-34342
         with:
             version: ${{ github.event.inputs.td-version }}
             download_url: ${{ secrets.NAS_DOWNLOAD_URL }}
