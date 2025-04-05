@@ -1,4 +1,4 @@
-English | [简体中文](USER_REPO_RUNNER_GUIDE.md)
+English | [简体中文](USER_REPO_RUNNER_GUIDE-CN.md)
 
 # EMS Test Guide for User Repo Runner
 In [EMS TEST](./README-CN.md), we deployed the `self-hosted-runners` under the `taosdata` organization. This document guides users on how to create runners in their personal repositories and execute these tests.
