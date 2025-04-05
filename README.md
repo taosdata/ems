@@ -12,7 +12,8 @@ To facilitate rapid deployment and testing in different environments, this repos
 - [EMS Test](#ems-test)
 - [Table of Contents](#table-of-contents)
   - [1. Usage Instructions](#1-usage-instructions)
-    - [Manually Trigger Workflow](#manually-trigger-workflow)
+    - [1.1 Manually Trigger Workflow](#11-manually-trigger-workflow)
+    - [1.2 Logging into taos-explorer to Monitor Operations](#12-logging-into-taos-explorer-to-monitor-operations)
   - [2. Workflow](#2-workflow)
     - [Phase Overview](#phase-overview)
     - [Key Job Descriptions](#key-job-descriptions)
@@ -28,10 +29,11 @@ To facilitate rapid deployment and testing in different environments, this repos
   - [8. Frequently Asked Questions](#8-frequently-asked-questions)
     - [Q1: Any suggestions for parameter selection?](#q1-any-suggestions-for-parameter-selection)
     - [Q2: How to debug failed tests?](#q2-how-to-debug-failed-tests)
+    - [Q3: Does the system use user-provided data?](#q3-does-the-system-use-user-provided-data)
 
 ## 1. Usage Instructions
 
-### Manually Trigger Workflow
+### 1.1 Manually Trigger Workflow
 1. Go to the [Actions](https://github.com/taosdata/ems/actions) tab of the repository;
 2. Select the [EMS Test](https://github.com/taosdata/ems/actions/workflows/ems-test.yml) workflow;
 3. Click the **Run workflow** button and fill in the parameters:
@@ -50,6 +52,16 @@ To facilitate rapid deployment and testing in different environments, this repos
 5. After all processes are completed, download the test report named **perf_report_YYYYMMDD_HHMMSS.txt** from the **Artifacts** section at the bottom of the details page.
 
 🔗 [Workflow Trigger Demo](https://github.com/taosdata/ems/actions/runs/13916584983)
+
+### 1.2 Logging into taos-explorer to Monitor Operations
+
+1. Access the taos-explorer page:
+```markdown
+- http://[Center_Node_IP]:6060
+- http://[Edge_Node_IP]:6060
+```
+2. Log in with credentials (default: root/taosdata)
+3. Check write status in the `Data Browser` and `Data in` sidebar sections
 
 ## 2. Workflow
 
@@ -155,6 +167,8 @@ Configuration files located in the `ems/config` directory define test behavior a
 config/
 ├── db_config.json    # Database parameter configuration
 ├── query.json        # Query parameter configuration
+├── config.yaml       # MQTT subscription & data routing configuration
+├── parser.yaml       # Data parsing & storage rules configuration
 └── ems.toml      # MQTT simulator parameter configuration (usually no need to configure)
 ```
 
@@ -223,8 +237,9 @@ It includes the following metrics:
 ### Required Secrets
 ```env
 RUNNER_PAT        # Runner access token
-NAS_DOWNLOAD_URL  # Enterprise software download URL
-VM_PASSWD         # Node SSH password
+VM_PASSWD         # Unified SSH password for all nodes
+PUB_DL_URL        # Test tool download URL
+ASSETS_DL_URL     # TDengine Enterprise Edition download URL
 ```
 
 ### Node Label Requirements
@@ -248,4 +263,9 @@ CLIENT_LABEL: "24C64G"  # Client specification
 ```markdown
 1. Check the node selection results in the `filter-runners` job
 2. Check the component installation logs in each deployment phase
+```
+
+### Q3: Does the system use user-provided data?
+```markdown
+We referenced user data for modeling purposes but did not directly utilize the user-provided data. Because while we analyzed user data for modeling, the 800MB+ CSV file provided wasn't suitable for workflow/docker-compose integration.
 ```

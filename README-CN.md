@@ -14,7 +14,8 @@ EMS(Energy Management System) 客户场景基于分布式架构，旨在实现 M
 - [EMS Test](#ems-test)
 - [目录](#目录)
   - [1. 使用说明](#1-使用说明)
-    - [手动触发 Workflow](#手动触发-workflow)
+    - [1.1 手动触发 Workflow](#11-手动触发-workflow)
+    - [1.2 登录 taos-explorer 查看运行情况](#12-登录-taos-explorer-查看运行情况)
   - [2. 工作流程](#2-工作流程)
     - [阶段概览](#阶段概览)
     - [关键 Job 说明](#关键-job-说明)
@@ -30,11 +31,12 @@ EMS(Energy Management System) 客户场景基于分布式架构，旨在实现 M
   - [8. 常见问题](#8-常见问题)
     - [Q1: 参数选择有什么建议？](#q1-参数选择有什么建议)
     - [Q2: 如何调试失败的测试？](#q2-如何调试失败的测试)
+    - [Q3: 是否使用了用户提供的数据？](#q3-是否使用了用户提供的数据)
 
 
 ## 1. 使用说明
 
-### 手动触发 Workflow
+### 1.1 手动触发 Workflow
 1. 进入仓库的 [Actions](https://github.com/taosdata/ems/actions) 选项卡；
 2. 选择 [EMS Test](https://github.com/taosdata/ems/actions/workflows/ems-test.yml) workflow；
 3. 点击 **Run workflow** 按钮，填写参数：
@@ -55,6 +57,14 @@ EMS(Energy Management System) 客户场景基于分布式架构，旨在实现 M
 
 🔗 [Workflow Trigger Demo](https://github.com/taosdata/ems/actions/runs/13916584983)
 
+### 1.2 登录 taos-explorer 查看运行情况
+1. 打开 taos-explorer 页面：
+```markdown
+- http://[中心节点IP]:6060
+- http://[边缘节点IP]:6060
+```
+2. 输入用户名密码登录（默认 root/taosdata）
+3. 在`数据浏览器`及`数据写入`侧边栏中查看写入情况
 
 ## 2. 工作流程
 
@@ -165,7 +175,9 @@ graph LR
 config/
 ├── db_config.json    # 数据库参数配置
 ├── query.json        # 查询参数配置
-└── ems.toml      # MQTT 模拟器参数配置，一般不需要配置
+├── config.yaml       # MQTT 订阅与数据路由配置
+├── parser.yaml       # 数据解析与存储规则配置
+└── ems.toml          # MQTT 测试数据生成配置
 ```
 
 ### 5.1 数据库参数配置 (db_config.json)
@@ -237,8 +249,9 @@ perf_report_YYYYMMDD_HHMMSS.txt
 ### 必要 Secrets
 ```env
 RUNNER_PAT        # 运行器访问令牌
-NAS_DOWNLOAD_URL  # 企业版软件下载地址
-VM_PASSWD         # 节点SSH密码
+VM_PASSWD         # 节点 SSH 统一密码
+PUB_DL_URL        # 测试工具下载地址
+ASSETS_DL_URL     # 企业版 TDengine 下载地址
 ```
 
 ### 节点标签要求
@@ -262,4 +275,9 @@ CLIENT_LABEL: "24C64G"  # 客户端规格
 ```markdown
 1. 查看 `filter-runners` job 的节点筛选结果
 2. 查看各部署阶段的组件安装日志
+```
+
+### Q3: 是否使用了用户提供的数据？
+```markdown
+我们参考了用户数据进行建模，并没有使用用户提供的数据，因为用户提供的是一个 800M+ 的 CSV 数据文件，不太方便我们在 workflow 或者 docker-compose 中使用。
 ```

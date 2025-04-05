@@ -2,7 +2,7 @@
 
 # Docker-compose For EMS Test
 
-通过 Docker Compose 自动部署集群环境并运行测试，支持多节点分布式环境下的 MQTT 数据流、边缘节点、中心节点和客户端的协调测试。
+通过 Docker Compose 自动部署 EMS(Energy Management System) 测试环境并运行测试，支持多节点分布式环境下的 MQTT 数据流、边缘节点、中心节点和客户端的协调测试。
 
 # 目录
 
@@ -29,24 +29,32 @@
 ### 手动启动 Docker Compose
 1. 确保已安装 Docker 和 Docker Compose。
 2. 克隆仓库并进入项目目录：
-  ```bash
-  git clone <repository-url>
-  cd <repository-folder>/docker-compose
-  ```
+```bash
+git clone <repository-url>
+cd <repository-folder>/docker-compose
+```
 3. 启动所有服务：
-  ```bash
-  docker-compose up -d
-  ```
+```bash
+docker-compose up -d
+```
 4. 验证服务是否正常运行：
-  ```bash
-  docker-compose ps
-  ```
-5. 服务均正常启动后可登录 taos-explorer 前端验证数据写入情况并查询结果：
-  ```markdown
-  边缘节点：http://$your_ip:7060
-  中心节点：http://$your_ip:6060
-  ```
+```bash
+docker-compose ps
+```
+5. 服务均正常启动后可登录 taos-explorer 前端（默认用户名密码：root/taosdata）：
+```markdown
+边缘节点：http://[宿主机IP]:7060
+中心节点：http://[宿主机IP]:6060
+```
+6. 在`数据浏览器`及`数据写入`页面中您可以：
+- 实时查看数据写入状态
+- 执行查询获取结果
+- 停止/启动相关任务
 
+<div class="note" style="background: #f8f9fa; padding: 12px; border-left: 4px solid #42b983; margin: 12px 0;">
+<strong>Note:</strong>
+在 docker-compose 部署模式下，数据写入不会自动停止，可前往<code>数据写入</code>页面手动终止相关任务。
+</div>
 
 ### 参数说明
 | 参数名称               | 描述                     | 类型    | 必需 | 默认值    |
