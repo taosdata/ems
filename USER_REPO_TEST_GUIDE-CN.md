@@ -1,4 +1,4 @@
-简体中文 | [English](USER_REPO_RUNNER_GUIDE.md)
+简体中文 | [English](USER_REPO_TEST_GUIDE.md)
 
 # EMS Test Guide for User Repo Runner
 在【[ EMS TEST ]( ./README-CN.md )】中我们将 `self-hosted-runners` 部署在 `taosdata` 组织下，本文将指导用户如何在个人仓库下创建 runner 并执行这个测试。
