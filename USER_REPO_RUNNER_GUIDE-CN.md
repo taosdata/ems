@@ -1,7 +1,7 @@
-简体中文 | [English](README.md)
+简体中文 | [English](USER_REPO_RUNNER_GUIDE.md)
 
 # EMS Test Guide for User Repo Runner
-在【[ EMS TEST ]( ./README-CN.md )】中我们将 self-hosted-runner 部署在 taosdata 组织下，本文将指导用户如何在个人仓库下创建 runner 并执行这个测试
+在【[ EMS TEST ]( ./README-CN.md )】中我们将 `self-hosted-runners` 部署在 `taosdata` 组织下，本文将指导用户如何在个人仓库下创建 runner 并执行这个测试。
 
 # 目录
 - [EMS Test Guide for User Repo Runner](#ems-test-guide-for-user-repo-runner)
@@ -41,13 +41,13 @@ git push your-ems main
 
 ## 3.准备 runners
 ```markdown
-设置好对应的标签，因为这个测试要将所需 runner 提前组成一整套环境，为了避免网络延迟时标签重复带来的重复引用，每个 runner 需要有独特的标签；
+设置好对应的标签，因为这个测试要将所需 runner 提前组成一整套环境，为了避免网络延迟时标签重复带来的重复引用，每个 runner 需要有独特的标签。
 ```
 
 ## 4.修改 workflow
 - workflow 中的 env 字段分别修改 MQTT_LABEL、EDGE_LABEL、CENTER_LABEL、CLIENT_LABEL 的信息；
 - 修改自定义action引用了 get-runners 和 dynamic-labels 的 scope 和 target 参数，这两个参数是 runner api 的组成部分；
-- 修改所有的 runs-on 字段，如果是组织内的 runner 且设置了 group，runs-on 字段需要增加 group 选项，如果是个人仓库的 runner，那么删除 group 字段即可
+- 修改所有的 runs-on 字段，如果是组织内的 runner 且设置了 group，runs-on 字段需要增加 group 选项，如果是个人仓库的 runner，那么删除 group 字段即可。
 
 ## 5.运行 workflow
 ```markdown
