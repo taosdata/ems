@@ -51,7 +51,7 @@ To facilitate rapid deployment and testing in different environments, this repos
 
 5. After all processes are completed, download the test report named **perf_report_YYYYMMDD_HHMMSS.txt** from the **Artifacts** section at the bottom of the details page.
 
-🔗 [Workflow Trigger Demo](https://github.com/taosdata/ems/actions/runs/13916584983)
+    🔗 [Workflow Trigger Demo](https://github.com/taosdata/ems/actions/runs/14280051434)
 
 ### 1.2 Logging into taos-explorer to Monitor Operations
 

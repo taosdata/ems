@@ -55,7 +55,7 @@ EMS(Energy Management System) 客户场景基于分布式架构，旨在实现 M
 5. 全部流程运行完成后，在详情页面最下方 **Artifacts** 区域可下载名为 **perf_report_YYYYMMDD_HHMMSS.txt** 的测试报告。
 
 
-🔗 [Workflow Trigger Demo](https://github.com/taosdata/ems/actions/runs/13916584983)
+    🔗 [Workflow Trigger Demo](https://github.com/taosdata/ems/actions/runs/14280051434)
 
 ### 1.2 登录 taos-explorer 查看运行情况
 1. 打开 taos-explorer 页面：
