@@ -29,9 +29,10 @@ EMS(Energy Management System) 客户场景基于分布式架构，旨在实现 M
     - [必要 Secrets](#必要-secrets)
     - [节点标签要求](#节点标签要求)
   - [8. 常见问题](#8-常见问题)
-    - [Q1: 参数选择有什么建议？](#q1-参数选择有什么建议)
-    - [Q2: 如何调试失败的测试？](#q2-如何调试失败的测试)
-    - [Q3: 是否使用了用户提供的数据？](#q3-是否使用了用户提供的数据)
+    - [Q1: 如何修改测试配置参数？](#q1-如何修改测试配置参数)
+    - [Q2: 参数选择有什么建议？](#q2-参数选择有什么建议)
+    - [Q3: 如何调试失败的测试？](#q3-如何调试失败的测试)
+    - [Q4: 是否使用了用户提供的数据？](#q4-是否使用了用户提供的数据)
 
 
 ## 1. 使用说明
@@ -205,18 +206,36 @@ config/
 ### 5.2 查询参数配置 (query.json)
 ```json
 {
+    "filetype": "query",
+    "cfgdir": "/etc/taos",
     "host": "u2-195",
     "port": 6030,
+    "user": "root",
+    "password": "taosdata",
+    "confirm_parameter_prompt": "no",
+    "continue_if_fail": "yes",
     "databases": "center_db",
     "query_times": 100,
+    "query_mode": "rest",
     "specified_table_query": {
-        "query_interval": 10,
-        "concurrent": 10,
-        "sqls": [{
-            "sql": "select last_row(*) from site_topic7_u2_193;",
-            "result": "./query_res0.txt"
-        }]
-    }
+      "query_interval": 10,
+      "concurrent": 10,
+      "sqls": [
+        {
+          "sql": "select last_row(*) from site_topic7_mqtt_1;",
+          "result": "./query_res0.txt"
+        },
+        {
+          "sql": "select count(*) from site_topic7_mqtt_1;",
+          "result": "./query_res1.txt"
+        },
+        {
+          "sql": "select last(*) from site_topic7_mqtt_1;",
+          "result": "./query_res2.txt"
+        }
+      ]
+    },
+    "test_log": "/root/testlog/"
 }
 ```
 
@@ -264,20 +283,26 @@ CLIENT_LABEL: "24C64G"  # 客户端规格
 
 ## 8. 常见问题
 
-### Q1: 参数选择有什么建议？
+### Q1: 如何修改测试配置参数？
 ```markdown
-- 边缘节点数量: 根据 runner 数量配置
-- 数据间隔: 100-5000ms 区间进行阶梯测试，interval 越小，采集频率越高
-- 压缩启用: 当测试网络带宽瓶颈时建议开启
+1. 触发 workflow 时可以定义一些初始化参数，第 1.1 章节已提供对应的参数定义
+2. 修改 ems/config 下的配置文件，第 5 章节中已提供各配置文件的说明
 ```
 
-### Q2: 如何调试失败的测试？
+### Q2: 参数选择有什么建议？
 ```markdown
-1. 查看 `filter-runners` job 的节点筛选结果
+1. 边缘节点数量: 根据 runner 数量配置
+2. 数据间隔: 100-5000ms 区间进行阶梯测试，interval 越小，采集频率越高
+3. 压缩启用: 当测试网络带宽瓶颈时建议开启
+```
+
+### Q3: 如何调试失败的测试？
+```markdown
+1. 查看 filter-runners job 的节点筛选结果
 2. 查看各部署阶段的组件安装日志
 ```
 
-### Q3: 是否使用了用户提供的数据？
+### Q4: 是否使用了用户提供的数据？
 ```markdown
 我们参考了用户数据进行建模，并没有使用用户提供的数据，因为用户提供的是一个 800M+ 的 CSV 数据文件，不太方便我们在 workflow 或者 docker-compose 中使用。
 ```

@@ -27,6 +27,7 @@ To facilitate rapid deployment and testing in different environments, this repos
     - [Required Secrets](#required-secrets)
     - [Node Label Requirements](#node-label-requirements)
   - [8. Frequently Asked Questions](#8-frequently-asked-questions)
+    - [Q1: How to modify the test configuration parameters?](#q1-how-to-modify-the-test-configuration-parameters)
     - [Q1: Any suggestions for parameter selection?](#q1-any-suggestions-for-parameter-selection)
     - [Q2: How to debug failed tests?](#q2-how-to-debug-failed-tests)
     - [Q3: Does the system use user-provided data?](#q3-does-the-system-use-user-provided-data)
@@ -169,7 +170,7 @@ config/
 ├── query.json        # Query parameter configuration
 ├── config.yaml       # MQTT subscription & data routing configuration
 ├── parser.yaml       # Data parsing & storage rules configuration
-└── ems.toml      # MQTT simulator parameter configuration (usually no need to configure)
+└── ems.toml          # MQTT simulator parameter configuration (usually no need to configure)
 ```
 
 ### 5.1 Database Parameter Configuration (db_config.json)
@@ -195,18 +196,36 @@ config/
 ### 5.2 Query Parameter Configuration (query.json)
 ```json
 {
+    "filetype": "query",
+    "cfgdir": "/etc/taos",
     "host": "u2-195",
     "port": 6030,
+    "user": "root",
+    "password": "taosdata",
+    "confirm_parameter_prompt": "no",
+    "continue_if_fail": "yes",
     "databases": "center_db",
     "query_times": 100,
+    "query_mode": "rest",
     "specified_table_query": {
-        "query_interval": 10,
-        "concurrent": 10,
-        "sqls": [{
-            "sql": "select last_row(*) from site_topic7_u2_193;",
-            "result": "./query_res0.txt"
-        }]
-    }
+      "query_interval": 10,
+      "concurrent": 10,
+      "sqls": [
+        {
+          "sql": "select last_row(*) from site_topic7_mqtt_1;",
+          "result": "./query_res0.txt"
+        },
+        {
+          "sql": "select count(*) from site_topic7_mqtt_1;",
+          "result": "./query_res1.txt"
+        },
+        {
+          "sql": "select last(*) from site_topic7_mqtt_1;",
+          "result": "./query_res2.txt"
+        }
+      ]
+    },
+    "test_log": "/root/testlog/"
 }
 ```
 
@@ -252,16 +271,22 @@ CLIENT_LABEL: "24C64G"  # Client specification
 
 ## 8. Frequently Asked Questions
 
+### Q1: How to modify the test configuration parameters?
+```markdown
+1. You can define some initialization parameters when triggering the workflow. The corresponding parameter definitions are provided in Section 1.1.
+2. Modify the configuration files under ems/config. The descriptions of each configuration file are provided in Section 5.
+```
+
 ### Q1: Any suggestions for parameter selection?
 ```markdown
-- Edge node count: Configure based on runner count
-- Data interval: Perform step testing in the 100-5000ms range; smaller interval means higher collection frequency
-- Enable compression: Recommended when testing network bandwidth bottlenecks
+1. Edge node count: Configure based on runner count
+2. Data interval: Perform step testing in the 100-5000ms range; smaller interval means higher collection frequency
+3. Enable compression: Recommended when testing network bandwidth bottlenecks
 ```
 
 ### Q2: How to debug failed tests?
 ```markdown
-1. Check the node selection results in the `filter-runners` job
+1. Check the node selection results in the filter-runners job
 2. Check the component installation logs in each deployment phase
 ```
 
