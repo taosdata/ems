@@ -141,19 +141,18 @@ Ensure the following ports are available:
 
 ### Q1: Does this deployment mode generate test reports?
 ```markdown
-The purpose of the docker-compose deployment is more inclined towards setting up a local demonstration environment.
-After deployment, you need login taos-explorer to view the results.
+This deployment mode does not generate test reports, test report is currently only supported in the workflow. The purpose of using Docker Compose is more geared towards setting up a local demonstration environment. After deployment, you need to login Taos Explorer to check the results.
 ```
 
 ### Q2: How to debug failed tests?
 ```markdown
-1. Check logs using `docker-compose logs <service-name>`.
+1. Check logs using docker-compose logs <service-name>.
 2. Verify if ports are occupied or services are running properly.
 ```
 
 ### Q3: How to modify the MQTT data publishing interval?
 ```markdown
-Modify the `MQTT_PUB_INTERVAL` environment variable for the `mqtt-simulator` service in `docker-compose.yml`.
+Modify the MQTT_PUB_INTERVAL environment variable for the mqtt-simulator service in docker-compose.yml.
 ```
 
 ### Q4: Does the system use user-provided data?

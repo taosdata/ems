@@ -150,13 +150,13 @@ graph LR
 
 ### Q2: 如何调试失败的测试？
 ```markdown
-1. 查看 `docker-compose logs <service-name>` 日志。
+1. 查看 docker-compose logs <service-name> 日志。
 2. 检查端口是否被占用或服务是否正常启动。
 ```
 
 ### Q3: 如何修改 MQTT 数据发布间隔？
-```markdown
-在 `docker-compose.yml` 中修改 `mqtt-simulator` 服务的 `MQTT_PUB_INTERVAL` 环境变量。
+```
+在 docker-compose.yml 中修改 mqtt-simulator 服务的 MQTT_PUB_INTERVAL 环境变量。
 ```
 
 ### Q4: 是否使用了用户提供的数据？
