@@ -112,11 +112,12 @@ class EMSQuery(TDCase):
             # Check response structure and data
             if self.tdRest.resp.get('code') == 0 and self.tdRest.resp.get('data'):
                 query_res = self.tdRest.resp['data'][0][0]
-                if 'Compress_radio' in query_res:
+                if 'Compress_radio' in query_res or 'Compress_ratio' in query_res:
                     ratio_str = query_res.split("=")[1].replace("[", "").replace("]", "")
 
                     # Skip NULL values
                     if ratio_str == 'NULL':
+                        time.sleep(0.1)
                         continue
 
                     # Check if ratio has changed
@@ -130,7 +131,7 @@ class EMSQuery(TDCase):
                     if stable_count >= stable_threshold:
                         return f"{ratio_str}%"
 
-            # Wait for next check (keeping your exponential backoff logic)
+            # Wait for next check with a constant sleep interval
             time.sleep(min(1, self.timeout - (time.time() - start_time)))
 
         # Return final result (last seen ratio or NULL)
