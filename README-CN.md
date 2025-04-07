@@ -58,6 +58,7 @@ EMS(Energy Management System) 客户场景基于分布式架构，旨在实现 M
 
     🔗 [Workflow Trigger Demo](https://github.com/taosdata/ems/actions/runs/14280051434)
 
+
 ### 1.2 登录 taos-explorer 查看运行情况
 1. 打开 taos-explorer 页面：
 ```markdown
@@ -66,6 +67,12 @@ EMS(Energy Management System) 客户场景基于分布式架构，旨在实现 M
 ```
 2. 输入用户名密码登录（默认 root/taosdata）
 3. 在`数据浏览器`及`数据写入`侧边栏中查看写入情况
+
+
+<div class="note" style="background: #f8f9fa; padding: 12px; border-left: 4px solid #42b983; margin: 12px 0;">
+<strong>Note:</strong>
+如果您想在自己的 runner 中运行测试，请参考 <a href="./USER-REPO-TEST-GUIDE-CN.md">Test Guide for User Repo Runner </a>
+</div>
 
 ## 2. 工作流程
 

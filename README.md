@@ -64,6 +64,11 @@ To facilitate rapid deployment and testing in different environments, this repos
 2. Log in with credentials (default: root/taosdata)
 3. Check write status in the `Data Browser` and `Data in` sidebar sections
 
+<div class="note" style="background: #f8f9fa; padding: 12px; border-left: 4px solid #42b983; margin: 12px 0;">
+<strong>Note:</strong>
+If you want to run tests on your self-hosted runner, please refer to <a href="./USER-REPO-TEST-GUIDE.md">Test Guide for User Repo Runner </a>
+</div>
+
 ## 2. Workflow
 
 ### Phase Overview
