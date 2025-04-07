@@ -47,10 +47,8 @@ Refer to official guide: [adding-self-hosted-runners](https://docs.github.com/en
 
 ### 3.2 Label Management
 
-<div class="note" style="background: #f8f9fa; padding: 12px; border-left: 4px solid #42b983; margin: 12px 0;">
-<strong>Note:</strong>
-To prevent duplicate references from identical labels under network latency, each runner's label combinations must be unique. We recommend using <b>resource+hostname</b> format, allowing both resource-based random matching and hostname-specific precision matching.
-</div>
+> **NOTE:**
+> To prevent duplicate references from identical labels under network latency, each runner's label combinations must be unique. We recommend using <b>resource+hostname</b> format, allowing both resource-based random matching and hostname-specific precision matching.
 
 Label configuration example:
 
@@ -63,12 +61,10 @@ Label configuration example:
 
 ## 4. Modifying Workflow
 
-<div class="note" style="background: #f8f9fa; padding: 12px; border-left: 4px solid #42b983; margin: 12px 0;">
-<strong>Note:</strong>
-
-- For organization-hosted runners: Use <a href="https://github.com/taosdata/ems/blob/main/.github/workflows/ems-test.yml">ems-test.yml</a> template
-- For personal account runners: Use <a href="https://github.com/taosdata/ems/blob/main/.github/workflows/ems-test-for-user-repo.yml.demo">ems-test-for-user-repo.yml.demo</a> template (remove group info)
-</div>
+> **NOTE:**
+> - For organization-hosted runners: Use【[ .github/workflow/ems-test.yml ](.github/workflows/ems-test.yml)】
+>
+> - For personal account runners: Use 【[ .github/workflow/ems-test-for-user-repo.yml.demo ](.github/workflows/ems-test-for-user-repo.yml.demo)】 (remove group info)
 
 Required modifications:
 

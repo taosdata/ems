@@ -51,10 +51,8 @@ self-hosted runners 部署教程可参考 [adding-self-hosted-runners](https://d
 
 ### 3.2 标签管理
 
-<div class="note" style="background: #f8f9fa; padding: 12px; border-left: 4px solid #42b983; margin: 12px 0;">
-<strong>Note:</strong>
-因为这个测试要将所需 runner 提前组成一整套环境，为了避免网络延迟时相同标签带来的重复引用，每个 runner 的标签组合需要具有唯一性，建议以资源+主机名的组合来设置标签，这样既可以单独使用资源标签随机匹配 runner，也可以使用主机名精确匹配 runner
-</div>
+> **NOTE:**
+> 因为这个测试要将所需 runner 提前组成一整套环境，为了避免网络延迟时相同标签带来的重复引用，每个 runner 的标签组合需要具有唯一性，建议以资源+主机名的组合来设置标签，这样既可以单独使用资源标签随机匹配 runner，也可以使用主机名精确匹配 runner
 
 
 以下是本测试的一组标签的示例：
@@ -69,11 +67,10 @@ self-hosted runners 部署教程可参考 [adding-self-hosted-runners](https://d
 
 ## 4.修改 Workflow
 
-<div class="note" style="background: #f8f9fa; padding: 12px; border-left: 4px solid #42b983; margin: 12px 0;">
-<strong>Note:</strong>
-
-- 如果您的 self-hosted-runners 位于组织下，可使用 <a href="https://github.com/taosdata/ems/blob/main/.github/workflows/ems-test.yml">.github/workflow/ems-test.yml </a> 作为模版修改
-- 如果您的 self-hosted-runners 位于个人账号下，需要删除 workflow 中 runner 的 group 信息，可使用 <a href="https://github.com/taosdata/ems/blob/main/.github/workflows/ems-test-for-user-repo.yml.demo">.github/workflow/ems-test-for-user-repo.yml.demo </a> 作为模版修改</div>
+> **NOTE:**
+> - 如果您的 self-hosted-runners 位于组织下，可使用 【[ .github/workflow/ems-test.yml ](.github/workflows/ems-test.yml)】
+>
+> - 如果您的 self-hosted-runners 位于个人账号下，需要删除 workflow 中 runner 的 group 信息，可使用 【[ .github/workflow/ems-test-for-user-repo.yml.demo ](.github/workflows/ems-test-for-user-repo.yml.demo)】
 
 
 以下信息需要您手动修改:

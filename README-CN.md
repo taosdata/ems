@@ -69,10 +69,9 @@ EMS(Energy Management System) 客户场景基于分布式架构，旨在实现 M
 3. 在`数据浏览器`及`数据写入`侧边栏中查看写入情况
 
 
-<div class="note" style="background: #f8f9fa; padding: 12px; border-left: 4px solid #42b983; margin: 12px 0;">
-<strong>Note:</strong>
-如果您想在自己的 runner 中运行测试，请参考 <a href="./USER-REPO-TEST-GUIDE-CN.md">Test Guide for User Repo Runner </a>
-</div>
+> **NOTE:**
+> 如果您想在自己的 runner 中运行测试，请参考【[Test Guide for User Repo Runner]( ./USER-REPO-TEST-GUIDE-CN.md )】
+
 
 ## 2. 工作流程
 
