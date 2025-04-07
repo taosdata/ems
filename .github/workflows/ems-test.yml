@@ -53,6 +53,8 @@ env :
   EDGE_LABEL : "20C16G"
   CENTER_LABEL : "20C16G"
   CLIENT_LABEL : "24C64G"
+  SCOPE: "org"
+  TARGET: "taosdata"
   EDGE_DNODE_COUNT : ${{ github.event.inputs.edge-dnode-count }}
   CENTER_DNODE_COUNT : ${{ github.event.inputs.center-dnode-count }}
   HOSTS_DIRNAME: "ip-hostname"
@@ -80,6 +82,8 @@ jobs:
           include_labels: ${{ env.CLIENT_LABEL }}
           required_count: 1
           gh_token: ${{ secrets.RUNNER_PAT }}
+          scope: ${{ env.SCOPE }}
+          target: ${{ env.TARGET }}
 
       - name: Get MQTT Runners
         id: get-mqtt-runners
@@ -88,6 +92,8 @@ jobs:
           include_labels: ${{ env.MQTT_LABEL }}
           required_count: ${{ env.EDGE_DNODE_COUNT }}
           gh_token: ${{ secrets.RUNNER_PAT }}
+          scope: ${{ env.SCOPE }}
+          target: ${{ env.TARGET }}
 
       - name: Get Edge Runners
         id: get-edge-runners
@@ -97,6 +103,8 @@ jobs:
           required_count: ${{ env.EDGE_DNODE_COUNT }}
           exclude_labels: "exclusive"
           gh_token: ${{ secrets.RUNNER_PAT }}
+          scope: ${{ env.SCOPE }}
+          target: ${{ env.TARGET }}
 
       - name: Get Center Runners
         id: center-edge-runners
@@ -105,6 +113,8 @@ jobs:
           include_labels: "${{ env.CENTER_LABEL }},exclusive"
           required_count: ${{ env.CENTER_DNODE_COUNT }}
           gh_token: ${{ secrets.RUNNER_PAT }}
+          scope: ${{ env.SCOPE }}
+          target: ${{ env.TARGET }}
 
       - name: Print Key Infos
         run: |
@@ -234,8 +244,8 @@ jobs:
           operation_type: "add"
           labels: "ems"
           runner_name: ${{ runner.name }}
-          scope: org
-          target: taosdata
+          scope: ${{ env.SCOPE }}
+          target: ${{ env.TARGET }}
 
       - name: Checkout code
         uses: actions/checkout@v4
@@ -618,5 +628,5 @@ jobs:
           operation_type: "delete"
           labels: "ems"
           runner_name: ${{ runner.name }}
-          scope: org
-          target: taosdata
+          scope: ${{ env.SCOPE }}
+          target: ${{ env.TARGET }}
