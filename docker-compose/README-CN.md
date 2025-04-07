@@ -52,10 +52,10 @@ docker-compose ps
 - 执行查询获取结果
 - 停止/启动相关任务
 
-<div class="note" style="background: #f8f9fa; padding: 12px; border-left: 4px solid #42b983; margin: 12px 0;">
-<strong>Note:</strong>
-在 docker-compose 部署模式下，数据写入不会自动停止，可前往<code>数据写入</code>页面手动终止相关任务。
-</div>
+
+> **NOTE:**
+> 在 docker-compose 部署模式下，数据写入不会自动停止，可前往`数据写入`页面手动终止相关任务。
+>
 
 ### 参数说明
 | 参数名称               | 描述                     | 类型    | 必需 | 默认值    |

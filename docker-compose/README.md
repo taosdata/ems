@@ -51,10 +51,8 @@ Central Node: http://[Host_IP]:6060
 - Execute queries and retrieve results
 - Stop or start related tasks
 
-<div class="note" style="background: #f8f9fa; padding: 12px; border-left: 4px solid #42b983; margin: 12px 0;">
-<strong>Note:</strong>
-In the docker-compose deployment mode, data writing will not automatically stop. You can manually terminate the corresponding task by visiting the <code>data in</code> page.
-</div>
+> **NOTE:**
+> In the docker-compose deployment mode, data writing will not automatically stop. You can manually terminate the corresponding task by visiting the `data in` page.
 
 ### Parameter Description
 | Parameter Name          | Description                     | Type    | Required | Default    |
