@@ -130,7 +130,7 @@ class EMSQuery(TDCase):
                     if stable_count >= stable_threshold:
                         return f"{ratio_str}%"
 
-            # Wait for next check (keeping your exponential backoff logic)
+            # Wait for next check with a constant sleep interval
             time.sleep(min(1, self.timeout - (time.time() - start_time)))
 
         # Return final result (last seen ratio or NULL)
