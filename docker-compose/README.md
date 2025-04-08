@@ -22,29 +22,37 @@ Automatically deploy EMS(Energy Management System) test environment and run test
     - [Q1: Does this deployment mode generate test reports?](#q1-does-this-deployment-mode-generate-test-reports)
     - [Q2: How to debug failed tests?](#q2-how-to-debug-failed-tests)
     - [Q3: How to modify the MQTT data publishing interval?](#q3-how-to-modify-the-mqtt-data-publishing-interval)
+    - [Q4: Does the system use user-provided data?](#q4-does-the-system-use-user-provided-data)
 
 ## 1. Usage Instructions
 
 ### Manually Start Docker Compose
 1. Ensure Docker and Docker Compose are installed.
 2. Clone the repository and navigate to the project directory:
-  ```bash
-  git clone <repository-url>
-  cd <repository-folder>/docker-compose
-  ```
+```bash
+git clone <repository-url>
+cd <repository-folder>/docker-compose
+```
 3. Start all services:
-  ```bash
-  docker-compose up -d
-  ```
+```bash
+docker-compose up -d
+```
 4. Verify if the services are running properly:
-  ```bash
-  docker-compose ps
-  ```
-5. Once all services are running, log in to the taos-explorer frontend to verify data writing and query results:
-  ```markdown
-  Edge Node: http://$your_ip:7060
-  Central Node: http://$your_ip:6060
-  ```
+```bash
+docker-compose ps
+```
+5. After all services are successfully started, access the taos-explorer web interface (default credentials: root/taosdata):
+```markdown
+Edge Node: http://[Host_IP]:7060
+Central Node: http://[Host_IP]:6060
+```
+6. In the `Data Browser` and `Data in` pages, you can:
+- Monitor real-time data writing status
+- Execute queries and retrieve results
+- Stop or start related tasks
+
+> **NOTE:**
+> In the docker-compose deployment mode, data writing will not automatically stop. You can manually terminate the corresponding task by visiting the `data in` page.
 
 ### Parameter Description
 | Parameter Name          | Description                     | Type    | Required | Default    |
@@ -133,17 +141,21 @@ Ensure the following ports are available:
 
 ### Q1: Does this deployment mode generate test reports?
 ```markdown
-The purpose of the docker-compose deployment is more inclined towards setting up a local demonstration environment.
-After deployment, you need login taos-explorer to view the results.
+This deployment mode does not generate test reports, test report is currently only supported in the workflow. The purpose of using Docker Compose is more geared towards setting up a local demonstration environment. After deployment, you need to login Taos Explorer to check the results.
 ```
 
 ### Q2: How to debug failed tests?
 ```markdown
-1. Check logs using `docker-compose logs <service-name>`.
+1. Check logs using docker-compose logs <service-name>.
 2. Verify if ports are occupied or services are running properly.
 ```
 
 ### Q3: How to modify the MQTT data publishing interval?
 ```markdown
-Modify the `MQTT_PUB_INTERVAL` environment variable for the `mqtt-simulator` service in `docker-compose.yml`.
+Modify the MQTT_PUB_INTERVAL environment variable for the mqtt-simulator service in docker-compose.yml.
+```
+
+### Q4: Does the system use user-provided data?
+```markdown
+We referenced user data for modeling purposes but did not directly utilize the user-provided data. Because while we analyzed user data for modeling, the 800MB+ CSV file provided wasn't suitable for workflow/docker-compose integration.
 ```

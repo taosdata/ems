@@ -49,12 +49,12 @@ permissions:
   contents: read
 
 env :
-  MQTT_LABEL : "8C16G"
-  EDGE_LABEL : "20C16G"
-  CENTER_LABEL : "20C16G"
-  CLIENT_LABEL : "24C64G"
-  SCOPE: "org"
-  TARGET: "taosdata"
+  MQTT_LABEL : "4C8G"
+  EDGE_LABEL : "4C10G"
+  CENTER_LABEL : "4C10G"
+  CLIENT_LABEL : "8C12G"
+  SCOPE: "repo"
+  TARGET: "github_account_name/repo_name"
   EDGE_DNODE_COUNT : ${{ github.event.inputs.edge-dnode-count }}
   CENTER_DNODE_COUNT : ${{ github.event.inputs.center-dnode-count }}
   HOSTS_DIRNAME: "ip-hostname"
@@ -63,7 +63,7 @@ env :
   MONITORING_PROCESS_NAMES: "taosd,taosadapter,taostest,taosBenchmark"
   ROLE_FILE: "role_info.json"
   WORKFLOW_CONFIG_FILE: "workflow_config.json"
-  GRAFANA_DATASOURCE_NAME: "tdengine-processes"
+  GRAFANA_DATASOURCE_NAME: "tdengine-processes-u3-190"
 
 jobs:
   filter-runners:
@@ -134,7 +134,6 @@ jobs:
         runner:
           - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
     runs-on:
-      group: customers
       labels: ${{ matrix.runner }}
     steps:
       - name: Run Host Info Collection
@@ -157,7 +156,6 @@ jobs:
         runner:
           - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
     runs-on:
-      group: customers
       labels: ${{ matrix.runner }}
     steps:
       - name: Run Host Info Collection
@@ -180,7 +178,6 @@ jobs:
         runner:
           - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
     runs-on:
-      group: customers
       labels: ${{ matrix.runner }}
     steps:
       - name: Run Host Info Collection
@@ -203,7 +200,6 @@ jobs:
         runner:
           - ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
     runs-on:
-      group: customers
       labels: ${{ matrix.runner }}
     steps:
       - name: Run Host Info Collection
@@ -234,7 +230,6 @@ jobs:
           - ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
           - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
     runs-on:
-      group: customers
       labels: ${{ matrix.runner }}
     steps:
       - name: Add dynamic labels
@@ -277,7 +272,6 @@ jobs:
         runner:
           - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
     runs-on:
-      group: customers
       labels: ${{ matrix.runner }}
     steps:
       - name: Install TDengine Enterprise
@@ -307,7 +301,6 @@ jobs:
         runner:
           - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
     runs-on:
-      group: customers
       labels: ${{ matrix.runner }}
     steps:
       - name: Install Flashmq
@@ -340,7 +333,6 @@ jobs:
         runner:
           - ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
     runs-on:
-      group: customers
       labels: ${{ matrix.runner }}
     steps:
       # - name: Checkout code
@@ -375,7 +367,6 @@ jobs:
         runner:
           - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
     runs-on:
-      group: customers
       labels: ${{ matrix.runner }}
     steps:
       - name: Export Client IP
@@ -544,7 +535,6 @@ jobs:
       matrix:
         runner: ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
     runs-on:
-      group: customers
       labels: ${{ matrix.runner }}
     steps:
       # - name: Checkout code
@@ -618,7 +608,6 @@ jobs:
           - ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
           - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
     runs-on:
-      group: customers
       labels: ${{ matrix.runner }}
     steps:
       - name: Delete dynamic labels
