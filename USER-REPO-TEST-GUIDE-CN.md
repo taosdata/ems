@@ -38,7 +38,7 @@ Github 网页端进入对应仓库后，点击 `Settints` -> `Secrets and variab
 | Secret Name   | Description                      |
 |---------------|----------------------------------|
 | VM_PASSWD     | 个人 runner 的统一登录密码            |
-| RUNNER_PAT    | 个人账号的 persional access token  |
+| RUNNER_PAT    | 个人账号的 persional access token, 需要勾选 repo、workflow、admin:org 权限  |
 | PUB_DL_URL    | 测试工具下载地址，联系我们获取       |
 | ASSETS_DL_URL | 企业版 TDengine 下载地址，联系我们获取 |
 

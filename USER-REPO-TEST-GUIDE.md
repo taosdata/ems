@@ -36,7 +36,7 @@ Configure via GitHub: `Settings` → `Secrets and variables` → `Actions` → `
 | Secret Name   | Description                                  |
 |---------------|----------------------------------------------|
 | VM_PASSWD     | Unified login password for personal runners  |
-| RUNNER_PAT    | Personal access token                        |
+| RUNNER_PAT    | Personal access token, You need to check the permissions for repo, workflow, and admin:org.                        |
 | PUB_DL_URL    | Test tool download URL (Contact us)          |
 | ASSETS_DL_URL | Enterprise TDengine download URL (Contact us)|
 
