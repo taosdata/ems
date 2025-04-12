@@ -5,7 +5,7 @@ services:
   center-node:
     image: tdengine/tdengine-ee:3.3.5.10
     container_name: center-node
-    hostname: buildkitsandbox
+    hostname: center-node
     ports:
       - "6030:6030"
       - "6041:6041"
@@ -17,7 +17,9 @@ services:
     environment:
       TAOS_FQDN: center-node  # Set FQDN to container name
       TAOS_FIRST_EP: center-node  # Set first EP to container name
-
+      MONITOR_FQDN: center-node
+      EXPLORER_CLUSTER: http://center-node:6041
+      TAOS_KEEPER_TDENGINE_HOST: center-node
 
   # Edge Node 1 - FlashMQ
   edge-node1-flashmq:
@@ -36,7 +38,7 @@ services:
   edge-node1-tdengine:
     image: tdengine/tdengine-ee:3.3.5.10
     container_name: edge-node1-tdengine
-    hostname: buildkitsandbox
+    hostname: edge-node1-tdengine
     ports:
       - "7030:6030"  # Avoid port conflict with central node
       - "7041:6041"  # Avoid port conflict with central node
@@ -46,9 +48,13 @@ services:
     networks:
       - tdengine-net
     environment:
-      TAOS_FQDN: edge-node1-tdengine  # Set FQDN to container name
-      TAOS_FIRST_EP: edge-node1-tdengine  # Set first EP to central node
-      MQTT_HOST: edge-node1-flashmq  # Set MQTT service address
+      TAOS_FQDN: edge-node1-tdengine
+      TAOS_FIRST_EP: edge-node1-tdengine
+      MQTT_HOST: edge-node1-flashmq
+      MONITOR_FQDN: edge-node1-tdengine
+      EXPLORER_CLUSTER: edge-node1-tdengine
+      TAOS_KEEPER_TDENGINE_HOST: center-node
+      TAOS_KEEPER_TDENGINE_PORT : "6041"
     depends_on:
       - edge-node1-flashmq
 
@@ -81,13 +87,31 @@ services:
     depends_on:
       - edge-node1-flashmq
 
+  grafana:
+    image: grafana/grafana-oss:latest-ubuntu
+    container_name: grafana
+    restart: always
+    user: '0'
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - tdengine-net
+    environment:
+      GF_INSTALL_PLUGINS: "tdengine-datasource"
+      TDENGINE_API: "http://center-node:6041"
+      TDENGINE_BASIC_AUTH: "cm9vdDp0YW9zZGF0YQ=="
+    depends_on:
+      - center-node
+
 volumes:
   tdengine-data:
   edge-node1-tdengine-data:
+  grafana-data:
 
 networks:
   tdengine-net:
     driver: bridge
-
-
-
+    attachable: true
