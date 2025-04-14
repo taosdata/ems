@@ -54,7 +54,7 @@ services:
       MONITOR_FQDN: edge-node1-tdengine
       EXPLORER_CLUSTER: edge-node1-tdengine
       TAOS_KEEPER_TDENGINE_HOST: center-node
-      TAOS_KEEPER_TDENGINE_PORT : "6041"
+      TAOS_KEEPER_TDENGINE_PORT: "6041"
     depends_on:
       - edge-node1-flashmq
 
@@ -65,6 +65,7 @@ services:
     networks:
       - tdengine-net
     environment:
+      CLIENT_HOST: client-node
       EDGE_HOST: edge-node1-tdengine
       MQTT_HOST: edge-node1-flashmq
       CENTER_HOST: center-node
