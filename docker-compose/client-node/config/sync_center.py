@@ -107,16 +107,18 @@ if __name__ == "__main__":
     parser.add_argument(
         "--edge-host",
         type=str,
-        nargs="+",
-        default=["edge-node1", "edge-node2"],
-        help="List of edge node hosts",
+        default="edge-node1, edge-node2",
+        help="Strings of edge node hosts",
     )
     args = parser.parse_args()
-
+    edge_hosts = args.edge_host
+    center_hosts = args.center_host
+    center_host = center_hosts.split(",")[0]
+    # for edge_host in edge_hosts.split(","):
     # Call the main function
     main(
-        center_host=args.center_host,
+        center_host=center_host,
         center_dbname=args.center_dbname,
         edge_dbname=args.edge_dbname,
-        edge_host=args.edge_host,
+        edge_host=edge_hosts.split(","),
     )

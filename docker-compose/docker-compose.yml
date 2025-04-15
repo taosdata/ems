@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # TDengine Central Node
   center-node1:
-    image: tdengine/tdengine-ee:3.3.5.10
+    image: tdengine/tdengine-ee:3.3.6.0
     container_name: center-node1
     hostname: center-node1
     ports:
@@ -21,7 +21,7 @@ services:
       EXPLORER_CLUSTER: http://center-node1:6041
       TAOS_KEEPER_TDENGINE_HOST: center-node1
   center-node2:
-    image: tdengine/tdengine-ee:3.3.5.10
+    image: tdengine/tdengine-ee:3.3.6.0
     container_name: center-node2
     hostname: center-node2
     ports:
@@ -36,7 +36,7 @@ services:
       TAOS_FQDN: center-node2  # Set FQDN to container name
       TAOS_FIRST_EP: center-node1  # Set first EP to container name
   center-node3:
-    image: tdengine/tdengine-ee:3.3.5.10
+    image: tdengine/tdengine-ee:3.3.6.0
     container_name: center-node3
     hostname: center-node3
     ports:
@@ -78,7 +78,7 @@ services:
 
   # Edge Node 1 - TDengine
   edge-node1-tdengine:
-    image: tdengine/tdengine-ee:3.3.5.10
+    image: tdengine/tdengine-ee:3.3.6.0
     container_name: edge-node1-tdengine
     hostname: edge-node1-tdengine
     ports:
@@ -94,14 +94,15 @@ services:
       TAOS_FIRST_EP: edge-node1-tdengine
       MQTT_HOST: edge-node1-flashmq
       MONITOR_FQDN: edge-node1-tdengine
-      EXPLORER_CLUSTER: edge-node1-tdengine
+      EXPLORER_CLUSTER: http://edge-node1-tdengine:6041
       TAOS_KEEPER_TDENGINE_HOST: center-node1
       TAOS_KEEPER_TDENGINE_PORT: "6041"
     depends_on:
       - edge-node1-flashmq
+      - center-node1
 
   edge-node2-tdengine:
-    image: tdengine/tdengine-ee:3.3.5.10
+    image: tdengine/tdengine-ee:3.3.6.0
     container_name: edge-node2-tdengine
     hostname: edge-node2-tdengine
     ports:
@@ -117,17 +118,18 @@ services:
       TAOS_FIRST_EP: edge-node2-tdengine
       MQTT_HOST: edge-node2-flashmq
       MONITOR_FQDN: edge-node2-tdengine
-      EXPLORER_CLUSTER: edge-node2-tdengine
+      EXPLORER_CLUSTER: http://edge-node2-tdengine:6041
       TAOS_KEEPER_TDENGINE_HOST: center-node1
       TAOS_KEEPER_TDENGINE_PORT: "6041"
     depends_on:
       - edge-node2-flashmq
+      - center-node1
   # Client Node
   client-node:
     build:
       context : ./client-node
       args:
-        ENTERPRISE_CLIENT_VERSION: 3.3.5.10
+        ENTERPRISE_CLIENT_VERSION: 3.3.6.0
         WORKDIR: /app
     container_name: client-node
     networks:
@@ -144,10 +146,10 @@ services:
       - edge-node1-flashmq
 
   # MQTT Simulator
-  mqtt-simulator:
+  mqtt-simulator1:
     # build: ./mqtt-simulator
     image: tdengine/mqtt-simulator:1.0
-    container_name: mqtt-simulator
+    container_name: mqtt-simulator1
     networks:
       - tdengine-net
     environment:
@@ -155,6 +157,18 @@ services:
       - EDGE_HOST=edge-node1-flashmq
     depends_on:
       - edge-node1-flashmq
+
+  mqtt-simulator2:
+    # build: ./mqtt-simulator
+    image: tdengine/mqtt-simulator:1.0
+    container_name: mqtt-simulator2
+    networks:
+      - tdengine-net
+    environment:
+      - MQTT_PUB_INTERVAL=1000
+      - EDGE_HOST=edge-node2-flashmq
+    depends_on:
+      - edge-node2-flashmq
 
   grafana:
     image: grafana/grafana-oss:latest-ubuntu
