@@ -59,8 +59,8 @@ RUN apt update -y && \
 #     # taostest --convert-json=ems-query.json
 #     # taostest --setup=ems-center.yaml --case=customer_scenarios/ems/start.py --keep
 
-COPY config/config.yaml config/parser.yaml config/mqtt_datain.py \
-     config/sync_center.py config/stop.py config/summary.py config/query.json \
+COPY config/config.yaml config/parser.yaml \
+     scripts/*.py config/query.json \
      ${WORKDIR}/
 # RUN apt update -y && apt install -y procps
 RUN pip install --no-cache-dir pyyaml requests

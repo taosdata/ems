@@ -78,7 +78,8 @@ class Summary():
 
 
     def get_compression_ratio(self):
-        taosd_url = f'http://{os.environ["CENTER_HOST"]}:6041/rest/sql'
+        center_first_ep_host = os.environ["CENTER_HOST"].split(",")[0]
+        taosd_url = f'http://{center_first_ep_host}:6041/rest/sql'
         headers = {"Authorization": "Basic cm9vdDp0YW9zZGF0YQ=="}
         sql = f'show {self.dbname}.disk_info;'
         # Flush the database first

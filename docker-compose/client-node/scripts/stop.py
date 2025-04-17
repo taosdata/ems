@@ -50,7 +50,7 @@ class Stop():
         for task_info in task_list:
             task_id = task_info["id"]
             # stop task
-            requests.post(data=None, url=f'http://{host}:6060/api/x/tasks/{task_id}/stop', headers=headers)
+            # requests.post(data=None, url=f'http://{host}:6060/api/x/tasks/{task_id}/stop', headers=headers)
             # get task metrics
             task_metrics = requests.get(data=None, url=f'http://{host}:6060/api/x/tasks/{task_id}/metrics',headers=headers)
             task_metrics_dict[task_id] = task_metrics.json()
