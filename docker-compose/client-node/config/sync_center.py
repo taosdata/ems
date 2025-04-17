@@ -2,6 +2,7 @@ import json
 import requests
 import argparse
 from typing import List
+import os
 from mqtt_datain import load_yaml, get_cluster_id, create_database, check_ports
 
 
@@ -25,13 +26,14 @@ def create_task(
     Returns:
         str: The ID of the created task.
     """
-    compression_param = ""
-        # "from": f"taos+ws://{edge_host}:6041/{edge_dbname}?mode=all&schema=always&schema-polling-interval=5s",
+    compression_param = os.environ["ENABLE_COMPRESSION"]
+        # "from": f"taos+ws://{edge_host}:6041/{edge_dbname}?mode=all&schema=always&schema-polling-interval=5s&compression={self.compression_param}",
     case_data = {
-        "from": f"tmq+ws://{edge_host}:6041/{edge_dbname}?auto.offset.reset=earliest&client.id=10&experimental.snapshot.enable=true",
-        "to": f"taos+ws://{center_host}:6041/{center_dbname}?{compression_param}",
+        "from": f"tmq+ws://{edge_host}:6041/{edge_dbname}?auto.offset.reset=earliest&client.id=10&experimental.snapshot.enable=true&compression={compression_param}",
+        "to": f"taos+ws://{center_host}:6041/{center_dbname}",
         "labels": labels,
     }
+
     task_url = f"http://{center_host}:6060/api/x/tasks"
     headers = {"Content-Type": "application/json"}
     response = requests.post(task_url, data=json.dumps(case_data), headers=headers)

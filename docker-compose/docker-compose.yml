@@ -1,9 +1,21 @@
 version: '3.8'
 
+x-common-env: &common-env
+  MQTT_PUB_INTERVAL: 1000
+
+x-common-args: &common-args
+  TD_VERSION: 3.3.6.0
+  WORKDIR: /app
+  EXEC_TIME: 120
+  ENABLE_COMPRESSION: "true"
+
+x-common-image: &common-image
+  image: tdengine/tdengine-ee:3.3.6.0
+
 services:
   # TDengine Central Node
   center-node1:
-    image: tdengine/tdengine-ee:3.3.6.0
+    <<: *common-image
     container_name: center-node1
     hostname: center-node1
     ports:
@@ -21,7 +33,7 @@ services:
       EXPLORER_CLUSTER: http://center-node1:6041
       TAOS_KEEPER_TDENGINE_HOST: center-node1
   center-node2:
-    image: tdengine/tdengine-ee:3.3.6.0
+    <<: *common-image
     container_name: center-node2
     hostname: center-node2
     ports:
@@ -36,7 +48,7 @@ services:
       TAOS_FQDN: center-node2  # Set FQDN to container name
       TAOS_FIRST_EP: center-node1  # Set first EP to container name
   center-node3:
-    image: tdengine/tdengine-ee:3.3.6.0
+    <<: *common-image
     container_name: center-node3
     hostname: center-node3
     ports:
@@ -78,7 +90,7 @@ services:
 
   # Edge Node 1 - TDengine
   edge-node1-tdengine:
-    image: tdengine/tdengine-ee:3.3.6.0
+    <<: *common-image
     container_name: edge-node1-tdengine
     hostname: edge-node1-tdengine
     ports:
@@ -102,7 +114,7 @@ services:
       - center-node1
 
   edge-node2-tdengine:
-    image: tdengine/tdengine-ee:3.3.6.0
+    <<: *common-image
     container_name: edge-node2-tdengine
     hostname: edge-node2-tdengine
     ports:
@@ -129,16 +141,18 @@ services:
     build:
       context : ./client-node
       args:
-        ENTERPRISE_CLIENT_VERSION: 3.3.6.0
-        WORKDIR: /app
+        <<: *common-args
     container_name: client-node
     networks:
       - tdengine-net
+    volumes:
+      - ./report:/report
     environment:
+      <<: *common-env
       CLIENT_HOST: client-node
       EDGE_HOST: edge-node1-tdengine,edge-node2-tdengine
       MQTT_HOST: edge-node1-flashmq,edge-node2-flashmq
-      CENTER_HOST: center-node1
+      CENTER_HOST: center-node1,center-node2,center-node3
       TARGET_DBNAME: mqtt_datain
       CENTER_DBNAME: center_db
     depends_on:
@@ -153,8 +167,8 @@ services:
     networks:
       - tdengine-net
     environment:
-      - MQTT_PUB_INTERVAL=1000
-      - EDGE_HOST=edge-node1-flashmq
+      <<: *common-env
+      EDGE_HOST: edge-node1-flashmq
     depends_on:
       - edge-node1-flashmq
 
@@ -165,8 +179,8 @@ services:
     networks:
       - tdengine-net
     environment:
-      - MQTT_PUB_INTERVAL=1000
-      - EDGE_HOST=edge-node2-flashmq
+      <<: *common-env
+      EDGE_HOST: edge-node2-flashmq
     depends_on:
       - edge-node2-flashmq
 
@@ -195,7 +209,6 @@ volumes:
   tdengine-data3:
   edge-node1-tdengine-data:
   edge-node2-tdengine-data:
-  grafana-data:
 
 networks:
   tdengine-net:
