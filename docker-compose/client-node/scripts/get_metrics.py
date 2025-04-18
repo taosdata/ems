@@ -15,7 +15,7 @@ import json
 import os
 import requests
 
-class Stop():
+class GetMetrics():
     def __init__(self):
         self.case_config = json.load(open(os.path.join(os.environ["WORKDIR"], "test_env.json")))
         self.log_path = f'/report/{self.case_config["test_start_time"]}'
@@ -127,6 +127,5 @@ class Stop():
         #     json.dump(self.workflow_config, config_file, indent=4)
 
 if __name__ == "__main__":
-    # Configure command-line arguments
-    main = Stop()
+    main = GetMetrics()
     main.run()
