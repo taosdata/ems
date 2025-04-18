@@ -139,6 +139,7 @@ def set_mqtt_datain_payload(
     Returns:
         List[Dict[str, Any]]: A list of task payloads for MQTT data ingestion.
     """
+    numbers_str = ''.join(filter(str.isdigit, edge_host))
     task_list = []
     cluster_id = get_cluster_id(edge_host)
     case_data_org = load_yaml("config.yaml")
@@ -148,15 +149,16 @@ def set_mqtt_datain_payload(
 
     for topic_id, _ in case_data_from["topics"].items():
         task_data = {}
+
         mqtt_parser[topic_id]["parser"]["s_model"]["name"] = (
-            f'site_{topic_id}_{edge_host.replace("-", "_")}'
+            f'site_{topic_id}_mqtt_{numbers_str}'
         )
         child_table_model = mqtt_parser[topic_id]["parser"]["model"]["name"]
         mqtt_parser[topic_id]["parser"]["model"]["using"] = (
-            f'site_{topic_id}_{edge_host.replace("-", "_")}'
+            f'site_{topic_id}_mqtt_{numbers_str}'
         )
         mqtt_parser[topic_id]["parser"]["model"]["name"] = (
-            f"{child_table_model}_{edge_host.replace('-', '_')}"
+            f"{child_table_model}_{numbers_str}"
         )
         cliend_id = get_long_name(4, "numbers")
         task_data["from"] = (
@@ -305,7 +307,9 @@ if __name__ == "__main__":
         "--edge-dbname", type=str, default="mqtt_datain", help="Target Database Name"
     )
     args = parser.parse_args()
-
-    main(
-        edge_host=args.edge_host, edge_dbname=args.edge_dbname, mqtt_host=args.mqtt_host
-    )
+    edge_hosts = args.edge_host
+    mqtt_hosts = args.mqtt_host
+    for edge_host, mqtt_host in zip(edge_hosts.split(","), mqtt_hosts.split(",")):
+        main(
+            edge_host=edge_host, edge_dbname=args.edge_dbname, mqtt_host=mqtt_host
+        )

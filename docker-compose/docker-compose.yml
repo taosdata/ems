@@ -1,30 +1,86 @@
 version: '3.8'
 
+x-common-env: &common-env
+  MQTT_PUB_INTERVAL: 0
+
+x-common-args: &common-args
+  TD_VERSION: 3.3.6.3
+  WORKDIR: /app
+  EXEC_TIME: 120
+  ENABLE_COMPRESSION: "true"
+
+x-common-image: &common-image
+  image: tdengine/tdengine-ee:3.3.6.3
+
 services:
   # TDengine Central Node
-  center-node:
-    image: tdengine/tdengine-ee:3.3.5.10
-    container_name: center-node
-    hostname: buildkitsandbox
+  center-node1:
+    <<: *common-image
+    container_name: center-node1
+    hostname: center-node1
     ports:
-      - "6030:6030"
-      - "6041:6041"
-      - "6060:6060"
+      - "16030:6030"
+      - "16041:6041"
+      - "16060:6060"
     volumes:
-      - tdengine-data:/var/lib/taos
+      - tdengine-data1:/var/lib/taos
     networks:
       - tdengine-net
     environment:
-      TAOS_FQDN: center-node  # Set FQDN to container name
-      TAOS_FIRST_EP: center-node  # Set first EP to container name
-
+      TAOS_FQDN: center-node1  # Set FQDN to container name
+      TAOS_FIRST_EP: center-node1  # Set first EP to container name
+      MONITOR_FQDN: center-node1
+      EXPLORER_CLUSTER: http://center-node1:6041
+      TAOS_KEEPER_TDENGINE_HOST: center-node1
+  center-node2:
+    <<: *common-image
+    container_name: center-node2
+    hostname: center-node2
+    ports:
+      - "26030:6030"
+      - "26041:6041"
+      - "26060:6060"
+    volumes:
+      - tdengine-data2:/var/lib/taos
+    networks:
+      - tdengine-net
+    environment:
+      TAOS_FQDN: center-node2  # Set FQDN to container name
+      TAOS_FIRST_EP: center-node1  # Set first EP to container name
+  center-node3:
+    <<: *common-image
+    container_name: center-node3
+    hostname: center-node3
+    ports:
+      - "36030:6030"
+      - "36041:6041"
+      - "36060:6060"
+    volumes:
+      - tdengine-data3:/var/lib/taos
+    networks:
+      - tdengine-net
+    environment:
+      TAOS_FQDN: center-node3  # Set FQDN to container name
+      TAOS_FIRST_EP: center-node1  # Set first EP to container name
 
   # Edge Node 1 - FlashMQ
   edge-node1-flashmq:
     image: privatecoder/flashmq:latest
     container_name: edge-node1-flashmq
     ports:
-      - "1883:1883"   # MQTT standard port
+      - "11883:1883"   # MQTT standard port
+    volumes:
+      - ./edge-node/flashmq/flashmq.conf:/etc/flashmq/flashmq.conf
+    networks:
+      - tdengine-net
+    environment:
+      FLASHMQ_LOG_LEVEL: debug  # Debug log level
+
+  edge-node2-flashmq:
+    image: privatecoder/flashmq:latest
+    container_name: edge-node2-flashmq
+    ports:
+      - "21883:1883"   # MQTT standard port
     volumes:
       - ./edge-node/flashmq/flashmq.conf:/etc/flashmq/flashmq.conf
     networks:
@@ -34,9 +90,9 @@ services:
 
   # Edge Node 1 - TDengine
   edge-node1-tdengine:
-    image: tdengine/tdengine-ee:3.3.5.10
+    <<: *common-image
     container_name: edge-node1-tdengine
-    hostname: buildkitsandbox
+    hostname: edge-node1-tdengine
     ports:
       - "7030:6030"  # Avoid port conflict with central node
       - "7041:6041"  # Avoid port conflict with central node
@@ -46,22 +102,57 @@ services:
     networks:
       - tdengine-net
     environment:
-      TAOS_FQDN: edge-node1-tdengine  # Set FQDN to container name
-      TAOS_FIRST_EP: edge-node1-tdengine  # Set first EP to central node
-      MQTT_HOST: edge-node1-flashmq  # Set MQTT service address
+      TAOS_FQDN: edge-node1-tdengine
+      TAOS_FIRST_EP: edge-node1-tdengine
+      MQTT_HOST: edge-node1-flashmq
+      MONITOR_FQDN: edge-node1-tdengine
+      EXPLORER_CLUSTER: http://edge-node1-tdengine:6041
+      TAOS_KEEPER_TDENGINE_HOST: center-node1
+      TAOS_KEEPER_TDENGINE_PORT: "6041"
     depends_on:
       - edge-node1-flashmq
+      - center-node1
 
-  # Client Node
-  client-node:
-    build: ./client-node
-    container_name: client-node
+  edge-node2-tdengine:
+    <<: *common-image
+    container_name: edge-node2-tdengine
+    hostname: edge-node2-tdengine
+    ports:
+      - "8030:6030"  # Avoid port conflict with central node
+      - "8041:6041"  # Avoid port conflict with central node
+      - "8060:6060"  # Avoid port conflict with central node
+    volumes:
+      - edge-node2-tdengine-data:/var/lib/taos
     networks:
       - tdengine-net
     environment:
-      EDGE_HOST: edge-node1-tdengine
-      MQTT_HOST: edge-node1-flashmq
-      CENTER_HOST: center-node
+      TAOS_FQDN: edge-node2-tdengine
+      TAOS_FIRST_EP: edge-node2-tdengine
+      MQTT_HOST: edge-node2-flashmq
+      MONITOR_FQDN: edge-node2-tdengine
+      EXPLORER_CLUSTER: http://edge-node2-tdengine:6041
+      TAOS_KEEPER_TDENGINE_HOST: center-node1
+      TAOS_KEEPER_TDENGINE_PORT: "6041"
+    depends_on:
+      - edge-node2-flashmq
+      - center-node1
+  # Client Node
+  client-node:
+    build:
+      context : ./client-node
+      args:
+        <<: *common-args
+    container_name: client-node
+    networks:
+      - tdengine-net
+    volumes:
+      - ./report:/report
+    environment:
+      <<: *common-env
+      CLIENT_HOST: client-node
+      EDGE_HOST: edge-node1-tdengine,edge-node2-tdengine
+      MQTT_HOST: edge-node1-flashmq,edge-node2-flashmq
+      CENTER_HOST: center-node1,center-node2,center-node3
       TARGET_DBNAME: mqtt_datain
       CENTER_DBNAME: center_db
     depends_on:
@@ -69,25 +160,57 @@ services:
       - edge-node1-flashmq
 
   # MQTT Simulator
-  mqtt-simulator:
+  mqtt-simulator1:
     # build: ./mqtt-simulator
     image: tdengine/mqtt-simulator:1.0
-    container_name: mqtt-simulator
+    container_name: mqtt-simulator1
     networks:
       - tdengine-net
     environment:
-      - MQTT_PUB_INTERVAL=1000
-      - EDGE_HOST=edge-node1-flashmq
+      <<: *common-env
+      EDGE_HOST: edge-node1-flashmq
     depends_on:
       - edge-node1-flashmq
 
+  mqtt-simulator2:
+    # build: ./mqtt-simulator
+    image: tdengine/mqtt-simulator:1.0
+    container_name: mqtt-simulator2
+    networks:
+      - tdengine-net
+    environment:
+      <<: *common-env
+      EDGE_HOST: edge-node2-flashmq
+    depends_on:
+      - edge-node2-flashmq
+
+  grafana:
+    image: grafana/grafana-oss:latest-ubuntu
+    container_name: grafana
+    restart: always
+    user: '0'
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - tdengine-net
+    environment:
+      GF_INSTALL_PLUGINS: "tdengine-datasource"
+      TDENGINE_API: "http://center-node1:6041"
+      TDENGINE_BASIC_AUTH: "cm9vdDp0YW9zZGF0YQ=="
+    depends_on:
+      - center-node1
+
 volumes:
-  tdengine-data:
+  tdengine-data1:
+  tdengine-data2:
+  tdengine-data3:
   edge-node1-tdengine-data:
+  edge-node2-tdengine-data:
 
 networks:
   tdengine-net:
     driver: bridge
-
-
-
+    attachable: true
