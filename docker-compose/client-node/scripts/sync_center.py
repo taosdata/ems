@@ -29,7 +29,7 @@ def create_task(
     compression_param = os.environ["ENABLE_COMPRESSION"]
         # "from": f"taos+ws://{edge_host}:6041/{edge_dbname}?mode=all&schema=always&schema-polling-interval=5s&compression={self.compression_param}",
     case_data = {
-        "from": f"tmq+ws://{edge_host}:6041/{edge_dbname}?auto.offset.reset=earliest&client.id=10&experimental.snapshot.enable=true",
+        "from": f"tmq+ws://{edge_host}:6041/{edge_dbname}?auto.offset.reset=earliest&client.id=10&experimental.snapshot.enable=true&compression={compression_param}",
         "to": f"taos+ws://{center_host}:6041/{center_dbname}",
         "labels": labels,
     }
