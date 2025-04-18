@@ -1,16 +1,16 @@
 version: '3.8'
 
 x-common-env: &common-env
-  MQTT_PUB_INTERVAL: 1000
+  MQTT_PUB_INTERVAL: 0
 
 x-common-args: &common-args
-  TD_VERSION: 3.3.6.0
+  TD_VERSION: 3.3.6.3
   WORKDIR: /app
   EXEC_TIME: 120
   ENABLE_COMPRESSION: "true"
 
 x-common-image: &common-image
-  image: tdengine/tdengine-ee:3.3.6.0
+  image: tdengine/tdengine-ee:3.3.6.3
 
 services:
   # TDengine Central Node
