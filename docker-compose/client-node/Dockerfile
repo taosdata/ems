@@ -25,7 +25,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 # ADD ./TDengine-enterprise-client-${TD_VERSION}-Linux-x64.tar.gz ${WORKDIR}
 
 RUN apt update -y && \
-    apt install -y python3-pip jq && \
+    apt install -y python3-pip jq wget && \
     wget https://www.taosdata.com/assets-download/3.0/TDengine-enterprise-client-${TD_VERSION}-Linux-x64.tar.gz && \
     tar -xf TDengine-enterprise-client-${TD_VERSION}-Linux-x64.tar.gz && \
     cd TDengine-enterprise-client-${TD_VERSION} && \
@@ -70,7 +70,7 @@ CMD \
     python3 mqtt_datain.py --edge-host $EDGE_HOST --mqtt-host $MQTT_HOST --edge-dbname $EDGE_DBNAME && \
     python3 sync_center.py --center-host $CENTER_HOST --center-dbname $CENTER_DBNAME --edge-dbname $EDGE_DBNAME --edge-host $EDGE_HOST && \
     sleep ${EXEC_TIME} && \
-    python3 stop.py && \
+    python3 get_metrics.py && \
     taosBenchmark -f ${WORKDIR}/query.json > ${WORKDIR}/query_result.txt && \
     python3 summary.py && \
     while true; do sleep 1; done" \
