@@ -29,6 +29,7 @@ class Summary():
         self.center_first_ep_host = os.environ["CENTER_HOST"].split(",")[0]
         self.taosd_url = f'http://{self.center_first_ep_host}:6041/rest/sql'
         self.taosd_headers = {"Authorization": "Basic cm9vdDp0YW9zZGF0YQ=="}
+        self.mqtt_received_bytes = 0
 
     def _execute_query(self, node: str, sql: str) -> Dict:
         url = f"http://{node}:6041/rest/sql"
@@ -56,6 +57,13 @@ class Summary():
             return int(result["data"][0][0])
         return 0
 
+    def _get_compression_data(self) -> float:
+        sql = f'select sum(data1+data2+data3) from information_schema.ins_disk_usage where db_name = "{self.center_dbname}";'
+        result = self._execute_query(self.center_first_ep_host, sql)
+        if result.get("code") == 0 and result.get("data"):
+            return float(result["data"][0][0])
+        return 0
+
     def collect_edge_data(self):
         total = 0
         for node in self.edge_host_list:
@@ -70,7 +78,7 @@ class Summary():
         center_total = self._get_center_data()
 
         if edge_total == center_total:
-            return f"100% ({center_total}/{edge_total})"
+            return [f"100%", center_total, edge_total]
 
         start_time = time.time()
         last_center_count = 0
@@ -154,6 +162,9 @@ class Summary():
                 file_path = os.path.join(self.summary_log_path, filename)
                 with open(file_path, 'r') as json_file:
                     data = json.load(json_file)
+                    if "mqtt_received_bytes" in data:
+                        self.mqtt_received_bytes += data["mqtt_received_bytes"]
+                        del data["mqtt_received_bytes"]
                     insert_res_list.append(data)
         return insert_res_list
 
@@ -228,12 +239,15 @@ class Summary():
     def run(self):
         insert_perf = self.get_insert_result()
         query_perf = self.get_query_detail_result()
-        compression_ratio = self.get_compression_ratio()
+        compression_ratio_disk_info = self.get_compression_ratio()
         data_retention_ratio, center_total_rows, edge_total_rows = self.validate_sync()
         data_retention_info = dict()
         data_retention_info["data_retention_ratio"] = data_retention_ratio
         data_retention_info["center_total_rows"] = center_total_rows
         data_retention_info["edge_total_rows"] = edge_total_rows
+        compression_data_size = self._get_compression_data()
+        compression_ratio = f'{round(self.mqtt_received_bytes/(compression_data_size*1024), 2)}:1' if compression_data_size != 0 else 'Null'
+
         grafana_url = self.get_grafana_url()
         test_specs = self.get_test_specs()
         final_res_dict = {

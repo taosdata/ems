@@ -64,23 +64,24 @@ class GetMetrics():
         query_summary_metrics = {
             "role": "edge",
             "host": "edge_host",
-            "total_rows_per_second":0,
-            "total_points_per_second":0,
-            "total_written_rows":0,
-            "total_written_points":0
+            "total_rows_per_second": 0,
+            "total_points_per_second": 0,
+            "total_written_rows": 0,
+            "total_written_points": 0,
+            "mqtt_received_bytes": 0
         }
         tmq_summary_metrics = {
             "role": "center",
             "host": "center_host",
-            "total_messages":0,
-            "total_execute_time":0,
-            "total_consume_cost_ms":0,
-            "total_messages_of_data":0,
-            "total_messages_of_meta":0,
-            "total_out_of_range_rows":0,
-            "total_success_messages":0,
-            "total_write_cost_ms":0,
-            "total_write_raw_cost_ms":0
+            "total_messages": 0,
+            "total_execute_time": 0,
+            "total_consume_cost_ms": 0,
+            "total_messages_of_data": 0,
+            "total_messages_of_meta": 0,
+            "total_out_of_range_rows": 0,
+            "total_success_messages": 0,
+            "total_write_cost_ms": 0,
+            "total_write_raw_cost_ms": 0
         }
         for host in os.environ["EDGE_HOST"].split(",") + [os.environ["CENTER_HOST"].split(",")[0]]:
             task_url = f'http://{host}:6060/api/x/tasks'
@@ -97,6 +98,10 @@ class GetMetrics():
                     query_summary_metrics["total_written_points"] += metrics_dict[task_id]["total"]["total_written_points"]
                     query_summary_metrics["total_written_rows"] += metrics_dict[task_id]["total"]["total_written_rows"]
                     query_summary_metrics["total_rows_per_second"] += metrics_dict[task_id]["total"]["total_rows_per_second"]
+                    if "mqtt_received_bytes" in metrics_dict[task_id]["current"]:
+                        query_summary_metrics["mqtt_received_bytes"] += metrics_dict[task_id]["current"]["mqtt_received_bytes"]
+                    else:
+                        query_summary_metrics["mqtt_received_bytes"] += 0
                 else:
                     self.api_type = 1
                     tmq_summary_metrics["role"] = self.get_role(host)

@@ -13,7 +13,7 @@ type = "object"
 
 [schema.payload.properties]
 ts = { type = "timestamp", start_time = 2023-10-01T00:00:00.888000999, interval = "1ms", tick = 4 }
-value = { type = "string", length = { range = { min = 10, max = 100 } } }
+value = { type = "string", length = {fixed = 12 } }
 
 # number type
 
