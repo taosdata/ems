@@ -361,7 +361,12 @@ jobs:
             ems_toml="$GITHUB_WORKSPACE/config/ems.toml"
             echo "EMS_TOML=$ems_toml" >> $GITHUB_ENV
             current_time=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ" -d '+8 hours')
-            interval="${{ github.event.inputs.source-interval }}ms"
+            # interval="${{ github.event.inputs.source-interval }}"
+            if [ "${{ github.event.inputs.source-interval }}" -eq 0 ]; then
+                interval=1
+            else
+                interval="${{ github.event.inputs.source-interval }}"
+            fi
             sed -i "s/\(start_time = \)[^,]*/\1$current_time/" $ems_toml
             sed -i "s/\(interval = \"\)[^\"]*/\1${interval}ms/" $ems_toml
             rm -f /etc/taos/test.toml && mkdir -p /etc/taos && cp $ems_toml /etc/taos/test.toml
