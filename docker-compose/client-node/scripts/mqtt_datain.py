@@ -160,9 +160,9 @@ def set_mqtt_datain_payload(
         mqtt_parser[topic_id]["parser"]["model"]["name"] = (
             f"{child_table_model}_{numbers_str}"
         )
-        cliend_id = get_long_name(4, "numbers")
+        client_id = get_long_name(4, "numbers")
         task_data["from"] = (
-            f"""mqtt://{mqtt_host}:1883?version=5.0&client_id={cliend_id}&char_encoding=UTF_8&keep_alive=60&clean_session=true&topics={case_data_from["topics"][topic_id]}::0&topic_pattern={case_data_from["topic_patterns"][topic_id]}"""
+            f"""mqtt://{mqtt_host}:1883?version=5.0&client_id={client_id}&char_encoding=UTF_8&keep_alive=60&clean_session=true&topics={case_data_from["topics"][topic_id]}::0&topic_pattern={case_data_from["topic_patterns"][topic_id]}"""
         )
         task_data["parser"] = mqtt_parser[topic_id]
         task_data["to"] = f"taos+ws://{edge_host}:6041/{edge_dbname}"
