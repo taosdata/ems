@@ -38,7 +38,7 @@ on:
       enable-compression:
         description: 'enable-compression'
         required: true
-        default: "false"
+        default: "true"
         type: choice
         options:
           - true
@@ -63,7 +63,7 @@ env :
   MONITORING_PROCESS_NAMES: "taosd,taosadapter,taostest,taosBenchmark"
   ROLE_FILE: "role_info.json"
   WORKFLOW_CONFIG_FILE: "workflow_config.json"
-  GRAFANA_DATASOURCE_NAME: "tdengine-processes-u3-190"
+  GRAFANA_DATASOURCE_NAME: "tdengine-processes"
 
 jobs:
   filter-runners:
@@ -353,9 +353,14 @@ jobs:
             ems_toml="$GITHUB_WORKSPACE/config/ems.toml"
             echo "EMS_TOML=$ems_toml" >> $GITHUB_ENV
             current_time=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ" -d '+8 hours')
-            interval="${{ github.event.inputs.source-interval }}ms"
+            # interval="${{ github.event.inputs.source-interval }}"
+            if [ "${{ github.event.inputs.source-interval }}" -eq 0 ]; then
+                interval=1
+            else
+                interval="${{ github.event.inputs.source-interval }}"
+            fi
             sed -i "s/\(start_time = \)[^,]*/\1$current_time/" $ems_toml
-            sed -i "s/\(interval = \"\)[^\"]*/\1$interval/" $ems_toml
+            sed -i "s/\(interval = \"\)[^\"]*/\1${interval}ms/" $ems_toml
             rm -f /etc/taos/test.toml && mkdir -p /etc/taos && cp $ems_toml /etc/taos/test.toml
 
   deploy-client-nodes:
@@ -582,9 +587,9 @@ jobs:
           taostest --use=ems-query.yaml --case=customer_scenarios/ems/ems_query.py --keep
           sleep ${{ github.event.inputs.exec-time }}
           for ((i=1; i<=$EDGE_COUNT; i++)); do
-            taostest --use=ems-edge-$i.yaml --case=customer_scenarios/ems/stop.py --keep
+            taostest --use=ems-edge-$i.yaml --case=customer_scenarios/ems/get_metrics.py --keep
           done
-          taostest --use=ems-center.yaml --case=customer_scenarios/ems/stop.py --keep
+          taostest --use=ems-center.yaml --case=customer_scenarios/ems/get_metrics.py --keep
           taostest --use=ems-query.yaml --case=customer_scenarios/ems/ems_summary.py --keep
           echo "🔄 Test finished at $(date)"
           cp "$TEST_ROOT/env/perf_report_$test_start_time.txt" $GITHUB_WORKSPACE/
