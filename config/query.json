@@ -19,7 +19,7 @@
         "result": "./query_res0.txt"
       },
       {
-        "sql": "select ( case 1.0 * `def` / 20.0 when eee = 1.0 and fee = 1.0 then 1.0 else 0.0 end ) as mean, 'system_availability' as point_name from site_topic9_mqtt_1 where ts between (TIMETRUNCATE(NOW(), 1h) - 5h) and TIMETRUNCATE(NOW(), 1h) partition by site_controller_id;;",
+        "sql": "select ( case 1.0 * `def` / 20.0 when eee = 1.0 and fee = 1.0 then 1.0 else 0.0 end ) as mean, 'system_availability' as point_name from site_topic9_mqtt_1 where ts between (TIMETRUNCATE(NOW(), 1h) - 24h) and TIMETRUNCATE(NOW(), 24h) partition by site_controller_id;",
         "result": "./query_res1.txt"
       }
     ]
