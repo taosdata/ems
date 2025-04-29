@@ -6,7 +6,7 @@ on:
       td-version:
         description: 'Enter the version of TDengine to install'
         required: true
-        default: '3.3.5.5'
+        default: '3.3.6.5'
         type: string
       edge-dnode-count:
         description: 'edge-dnode-count (1~N)'
