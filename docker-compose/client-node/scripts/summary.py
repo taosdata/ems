@@ -102,7 +102,7 @@ class Summary():
 
         final_center = self._get_center_data()
         ratio = final_center / edge_total if edge_total > 0 else 0
-        return [f"{ratio*100}%", final_center, edge_total]
+        return [f"{round(ratio*100, 2)}%", final_center, edge_total]
 
     def _get_center_data(self) -> int:
         stables = self._get_stables(self.center_first_ep_host, self.center_dbname)
