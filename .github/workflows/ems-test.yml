@@ -415,7 +415,7 @@ jobs:
 
       - name: Deploy Taostest
         id: deploy-taostest
-        uses: taosdata/.github/.github/actions/deploy-taostest@main
+        uses: taosdata/.github/.github/actions/deploy-taostest@test/TD-34600
         with:
           pub_dl_url: ${{ secrets.PUB_DL_URL }}
 
@@ -444,7 +444,7 @@ jobs:
           process_names: "${{ env.MONITORING_PROCESS_NAMES }}"
 
       - name: Gen Taostest Hosts
-        uses: taosdata/.github/.github/actions/gen-taostest-env@main
+        uses: taosdata/.github/.github/actions/gen-taostest-env@test/TD-34600
         with:
           json_file: "$RUNNER_WORKSPACE/${{ env.HOSTS_DIRNAME }}/${{ env.ROLE_FILE }}"
           test_root: "$GITHUB_WORKSPACE/tests"
