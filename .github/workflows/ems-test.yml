@@ -6,7 +6,7 @@ on:
       td-version:
         description: 'Enter the version of TDengine to install'
         required: true
-        default: '3.3.6.4'
+        default: '3.3.6.5'
         type: string
       edge-dnode-count:
         description: 'edge-dnode-count (1~N)'
@@ -38,7 +38,7 @@ on:
       enable-compression:
         description: 'enable-compression'
         required: true
-        default: "false"
+        default: "true"
         type: choice
         options:
           - true
