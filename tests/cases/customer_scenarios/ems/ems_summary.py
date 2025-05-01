@@ -281,14 +281,14 @@ class EMSSummary(TDCase):
         pass
 
     def run(self):
-        insert_perf = self.get_insert_result()
-        query_perf = self.get_query_detail_result()
-        compression_ratio_disk_info = self.get_compression_ratio()
         data_retention_ratio, center_total_rows, edge_total_rows = self.validate_sync()
         data_retention_info = dict()
         data_retention_info["data_retention_ratio"] = data_retention_ratio
         data_retention_info["center_total_rows"] = center_total_rows
         data_retention_info["edge_total_rows"] = edge_total_rows
+        insert_perf = self.get_insert_result()
+        query_perf = self.get_query_detail_result()
+        compression_ratio_disk_info = self.get_compression_ratio()
         compression_data_size = self._get_compression_data()
         compression_ratio = f'{round(self.mqtt_received_bytes/(compression_data_size*1024), 2)}:1' if compression_data_size != 0 else 'Null'
         grafana_url = self.get_grafana_url()
