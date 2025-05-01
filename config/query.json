@@ -15,7 +15,7 @@
     "concurrent": 10,
     "sqls": [
       {
-        "sql": "SELECT ts, _value, last(ts) as last_ts, unit_controller_id FROM (SELECT _wstart ts, CONCAT(CASE  WHEN last_row(`ddd`) IS NOT NULL THEN last_row (`ddd`) ELSE '' END, '-', CASE WHEN last_row(`fff`) IS NOT NULL THEN last_row(`fff`) ELSE '' END) as _value, unit_controller_id FROM site_topic9_mqtt_1 WHERE ts > now()-1d AND ts <= now() partition by unit_controller_id interval(1m) fill(PREV));",
+        "sql": "SELECT ts, _value, last(ts) as last_ts, unit_controller_id FROM (SELECT _wstart ts, CONCAT(CASE  WHEN last_row(`ddd`) IS NOT NULL THEN last_row (`ddd`) ELSE '' END, '-', CASE WHEN last_row(`fff`) IS NOT NULL THEN last_row(`fff`) ELSE '' END) as _value, unit_controller_id FROM site_topic9_mqtt_1 WHERE ts > now()-1d partition by unit_controller_id interval(1m) fill(PREV));",
         "result": "./query_res0.txt"
       },
       {

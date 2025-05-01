@@ -109,7 +109,8 @@ class EMSSummary(TDCase):
 
             completeness = current_center / edge_total if edge_total > 0 else 0
             self._remote._logger.info(f"Current sync progress: {completeness*100}%")
-
+            if int(completeness) == 1:
+                break
             time.sleep(self.query_interval)
 
         final_center = self._get_center_data()
