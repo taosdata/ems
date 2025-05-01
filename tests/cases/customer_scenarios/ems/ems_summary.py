@@ -23,7 +23,7 @@ class EMSSummary(TDCase):
         self.summary_log_path = f'{self.log_path}/summary'
         self._remote.cmd("localhost", [f'mkdir -p {self.detail_log_path}', f'mkdir -p {self.summary_log_path}'])
         self.timeout = 20  # Maximum wait time in seconds
-        self.retention_timeout = self.case_config["exec_time"]
+        self.retention_timeout = int(self.case_config["exec_time"])
         self.query_interval = 3
         self.retry_times = 3
         self.edge_dbname = "mqtt_datain"
