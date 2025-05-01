@@ -23,7 +23,7 @@ class EMSSummary(TDCase):
         self.summary_log_path = f'{self.log_path}/summary'
         self._remote.cmd("localhost", [f'mkdir -p {self.detail_log_path}', f'mkdir -p {self.summary_log_path}'])
         self.timeout = 20  # Maximum wait time in seconds
-        self.retention_timeout = 120
+        self.retention_timeout = self.case_config["exec_time"]
         self.query_interval = 3
         self.retry_times = 3
         self.edge_dbname = "mqtt_datain"
@@ -84,8 +84,8 @@ class EMSSummary(TDCase):
     def validate_sync(self):
         edge_total = self.collect_edge_data()
         center_total = self._get_center_data()
-        self._remote._logger.info(f'init edge_total:', edge_total)
-        self._remote._logger.info(f'init center_total:', center_total)
+        self._remote._logger.info(f'init edge_total: {edge_total}')
+        self._remote._logger.info(f'init center_total: {center_total}')
 
         if edge_total == center_total:
             return [f"100%", center_total, edge_total]
@@ -96,8 +96,8 @@ class EMSSummary(TDCase):
 
         while time.time() - start_time < self.retention_timeout:
             current_center = self._get_center_data()
-            self._remote._logger.info(f'loop edge_total:', edge_total)
-            self._remote._logger.info(f'loop current_center:', current_center)
+            self._remote._logger.info(f'current edge data: {edge_total}')
+            self._remote._logger.info(f'current center data: {current_center}')
 
             if current_center == last_center_count:
                 stable_counter += 1
@@ -113,6 +113,8 @@ class EMSSummary(TDCase):
             time.sleep(self.query_interval)
 
         final_center = self._get_center_data()
+        if final_center != edge_total:
+            self._remote._logger.error(f"Migration was not completed within {self.retention_timeout} seconds, but the results were still printed.")
         ratio = final_center / edge_total if edge_total > 0 else 0
         return [f"{round(ratio*100, 2)}%", final_center, edge_total]
 
