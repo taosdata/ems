@@ -470,7 +470,7 @@ jobs:
       - name: Install Grafana Plugin
         uses: taosdata/.github/.github/actions/install-grafana-plugin@test/TD-34600
         with:
-          monitor-ip: http://${{ env.CENTER_IP }}:3000
+          monitor-ip: ${{ env.CENTER_IP }}
           monitor-port: 6041
 
       - name: Import Grafana Dashboard
