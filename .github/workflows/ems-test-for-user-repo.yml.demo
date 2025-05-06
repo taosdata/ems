@@ -63,7 +63,9 @@ env :
   MONITORING_PROCESS_NAMES: "taosd,taosadapter,taostest,taosBenchmark"
   ROLE_FILE: "role_info.json"
   WORKFLOW_CONFIG_FILE: "workflow_config.json"
-  GRAFANA_DATASOURCE_NAME: "tdengine-processes"
+  PROCESS_EXPORTER_DATASOURCE_NAME: "tdengine-processes"
+  TDINSIGHT_DASHBOARD_IDS: "18180,20631"
+  TDINSIGHT_DASHBOARD_UIDS: "td_ds_01,td_ds_02"
 
 jobs:
   filter-runners:
@@ -440,6 +442,11 @@ jobs:
           json_file: "$RUNNER_WORKSPACE/${{ env.HOSTS_DIRNAME }}/${{ env.ROLE_FILE }}"
           test_root: "$GITHUB_WORKSPACE/tests"
 
+      - name: Export Center FirstEp IP
+        run: |
+          center_ip=$(jq -r '.center[0].ip' "$RUNNER_WORKSPACE/${{ env.HOSTS_DIRNAME }}/${{ env.ROLE_FILE }}")
+          echo "CENTER_IP=$center_ip" >> $GITHUB_ENV
+
       - name: Configure SSH-Keyless Login
         uses: taosdata/.github/.github/actions/ssh-keyless-login@main
         with:
@@ -453,12 +460,25 @@ jobs:
           node_exporter_hosts: $HOSTNAME_INFO
           process_exporter_hosts: $HOSTNAME_INFO
 
-      - name: Import Grafana Dashboard
-        uses: taosdata/.github/.github/actions/import-grafana-dashboard@main
+      - name: Import Process Exporter Dashboard
+        uses: taosdata/.github/.github/actions/import-process-exporter-dashboard@test/TD-34600
         with:
-          grafana-url: http://grafana.tdengine.net:3000
+          grafana-url: http://${{ env.CLIENT_IP }}:3000
           prometheus-url: http://${{ env.CLIENT_IP }}:9090
-          datasource-name: ${{ env.GRAFANA_DATASOURCE_NAME }}
+          datasource-name: ${{ env.PROCESS_EXPORTER_DATASOURCE_NAME }}
+
+      - name: Install Grafana Plugin
+        uses: taosdata/.github/.github/actions/install-grafana-plugin@test/TD-34600
+        with:
+          monitor-ip: http://${{ env.CENTER_IP }}:3000
+          monitor-port: 6041
+
+      - name: Import Grafana Dashboard
+        uses: taosdata/.github/.github/actions/import-grafana-dashboard@test/TD-34600
+        with:
+          grafana-url: http://${{ env.CLIENT_IP }}:3000
+          dashboard-ids: ${{ env.TDINSIGHT_DASHBOARD_IDS }}
+          dashboard-uids: ${{ env.TDINSIGHT_DASHBOARD_UIDS }}
 
       - name: Print Hosts
         run: |
@@ -482,7 +502,7 @@ jobs:
           EDGE_DNODE_HOSTS=$SINGLE_DNODE_HOSTS
           TAOS_BENCHMARK_HOSTS=$TAOS_BENCHMARK_HOSTS
           CENTER_DNODE_HOSTS=$CLUSTER_HOSTS
-          GRAFANA_DATASOURCE_NAME=${{ env.GRAFANA_DATASOURCE_NAME }}
+          GRAFANA_DATASOURCE_NAME=$(echo "${{ env.TDINSIGHT_DASHBOARD_UIDS }}" | cut -d ',' -f 1)
 
           # Combine Inputs into a single JSON object
           COMBINED_JSON=$(jq -n \
