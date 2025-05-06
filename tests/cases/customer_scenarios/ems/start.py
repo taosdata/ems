@@ -16,7 +16,7 @@ from taostest.util.common import TDCom
 from taostest.util.remote import Remote
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 class Start(TDCase):
     def init(self):
@@ -24,7 +24,7 @@ class Start(TDCase):
         self._remote: Remote = Remote(self.logger)
         self.env_root = os.path.join(os.environ["TEST_ROOT"], "env")
         self.case_config = json.load(open(os.path.join(self.env_root, "workflow_config.json")))
-        self.start_time = datetime.utcnow()
+        self.start_time = datetime.utcnow() - timedelta(minutes=5)
         self.start_time_str = f"{self.start_time.isoformat(timespec='milliseconds')}Z"
         self.case_config["start_time"] = self.start_time_str
         with open(os.path.join(self.env_root, "workflow_config.json"), "w") as config_file:
