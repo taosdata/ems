@@ -64,7 +64,7 @@ env :
   ROLE_FILE: "role_info.json"
   WORKFLOW_CONFIG_FILE: "workflow_config.json"
   PROCESS_EXPORTER_DATASOURCE_NAME: "tdengine-processes"
-  TDINSIGHT_DASHBOARD_IDS: "18180,20631"
+  TDINSIGHT_DASHBOARD_IDS: "20631,18180"
   TDINSIGHT_DASHBOARD_UIDS: "td_ds_01,td_ds_02"
 
 jobs:
