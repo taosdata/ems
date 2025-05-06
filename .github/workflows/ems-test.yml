@@ -511,6 +511,7 @@ jobs:
           EDGE_DNODE_HOSTS=$SINGLE_DNODE_HOSTS
           TAOS_BENCHMARK_HOSTS=$TAOS_BENCHMARK_HOSTS
           CENTER_DNODE_HOSTS=$CLUSTER_HOSTS
+          GRAFANA_IP="${{ env.CLIENT_IP }}"
           GRAFANA_DATASOURCE_NAME=$(echo "${{ env.TDINSIGHT_DASHBOARD_UIDS }}" | cut -d ',' -f 1)
 
           # Combine Inputs into a single JSON object
@@ -521,6 +522,7 @@ jobs:
             --arg execTime "$EXEC_TIME" \
             --arg sourceInterval "$SOURCE_INTERVAL" \
             --arg enableCompression "$ENABLE_COMPRESSION" \
+            --arg grafanaIp "$GRAFANA_IP" \
             --arg grafanaDatasourceName "$GRAFANA_DATASOURCE_NAME" \
             --argjson mqttHosts "$MQTT_HOSTS" \
             --argjson edgeDnodeHosts "$EDGE_DNODE_HOSTS" \
@@ -533,6 +535,7 @@ jobs:
               exec_time: $execTime,
               source_interval: $sourceInterval,
               enable_compression: $enableCompression,
+              grafana_ip: $grafanaIp,
               grafana_datasource_name: $grafanaDatasourceName,
               mqtt_hosts: $mqttHosts,
               edge_dnode_hosts: $edgeDnodeHosts,
