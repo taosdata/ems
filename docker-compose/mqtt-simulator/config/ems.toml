@@ -1,8 +1,10 @@
 # string type
 [[schema]]
 topics = [
-    "ems/site/site_1/root/allowed_max_p/string",
-
+    "ems/site/topic_6_site/root/abc/string",
+    "ems/site/topic_7_site/source_device_a/source_device_1/abc/string",
+    "ems/site/topic_8_site/unit/unit_controller_1/root/abc/string",
+    "ems/site/topic_9_site/unit/unit_controller_1/souce_device_a/source_device_1/abc/string",
 ]
 qos = 0
 
@@ -11,14 +13,16 @@ type = "object"
 
 [schema.payload.properties]
 ts = { type = "timestamp", start_time = 2023-10-01T00:00:00.888000999, interval = "1ms", tick = 4 }
-value = { type = "string", length = { range = { min = 10, max = 100 } } }
+value = { type = "string", length = {fixed = 12 } }
 
 # number type
 
 [[schema]]
 topics = [
-    "ems/site/site_1/meter/meter_1/hz/integer",
-
+    "ems/site/topic_6_site/root/{def:3}/integer",
+    "ems/site/topic_7_site/source_device_a/source_device_1/{def:3}/integer",
+    "ems/site/topic_8_site/unit/unit_controller_1/root/{def:3}/integer",
+    "ems/site/topic_9_site/unit/unit_controller_1/souce_device_a/source_device_1/{def:3}/integer",
 ]
 qos = 0
 
@@ -33,7 +37,10 @@ value = { type = "number", range = { min = 1, max = 1000 } }
 
 [[schema]]
 topics = [
-    "ems/site/site_1/unit/unit_1/root/run_mode/float",
+    "ems/site/topic_6_site/root/{ghi:3}/float",
+    "ems/site/topic_7_site/source_device_a/source_device_1/{ghi:3}/float",
+    "ems/site/topic_8_site/unit/unit_controller_1/root/{ghi:3}/float",
+    "ems/site/topic_9_site/unit/unit_controller_1/souce_device_a/source_device_1/{ghi:3}/float",
 ]
 qos = 0
 
@@ -48,7 +55,10 @@ value = { type = "float", range = { min = 0.1, max = 0.9 } }
 
 [[schema]]
 topics = [
-    "ems/site/site_1/unit/unit_1/pcs/pcs_1/status/boolean_integer",
+    "ems/site/topic_6_site/root/{jkl:3}/boolean_integer",
+    "ems/site/topic_7_site/source_device_a/source_device_1/{jkl:3}/boolean_integer",
+    "ems/site/topic_8_site/unit/unit_controller_1/root/{jkl:3}/boolean_integer",
+    "ems/site/topic_9_site/unit/unit_controller_1/souce_device_a/source_device_1/{jkl:3}/boolean_integer",
 ]
 qos = 0
 
@@ -58,4 +68,3 @@ type = "object"
 [schema.payload.properties]
 ts = { type = "timestamp", start_time = 2023-10-01T00:00:00.888, interval = "1ms", tick = 200 }
 value = { type = "number", range = { min = 0, max = 1 } }
-

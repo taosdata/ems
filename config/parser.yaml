@@ -28,7 +28,7 @@ topic6:
             convert:
               boolean_integer: bool
               float: double
-              string: "varchar(128)"
+              string: "varchar(12)"
               integer: int
       - map:
           ts:
@@ -85,7 +85,7 @@ topic7:
             convert:
               boolean_integer: bool
               float: double
-              string: "varchar(128)"
+              string: "varchar(12)"
               integer: int
       - map:
           ts:
@@ -148,7 +148,7 @@ topic8:
             convert:
               boolean_integer: bool
               float: double
-              string: "varchar(128)"
+              string: "varchar(12)"
               integer: int
       - map:
           ts:
@@ -212,7 +212,7 @@ topic9:
             convert:
               boolean_integer: bool
               float: double
-              string: "varchar(128)"
+              string: "varchar(12)"
               integer: int
 
       - map:
@@ -250,4 +250,3 @@ topic9:
         - name: source_device_id
           length: 20
           type: "VARCHAR(20)"
-

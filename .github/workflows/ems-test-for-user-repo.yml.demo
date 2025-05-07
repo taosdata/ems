@@ -6,7 +6,7 @@ on:
       td-version:
         description: 'Enter the version of TDengine to install'
         required: true
-        default: '3.3.5.5'
+        default: '3.3.6.5'
         type: string
       edge-dnode-count:
         description: 'edge-dnode-count (1~N)'
@@ -38,7 +38,7 @@ on:
       enable-compression:
         description: 'enable-compression'
         required: true
-        default: "false"
+        default: "true"
         type: choice
         options:
           - true
@@ -63,7 +63,9 @@ env :
   MONITORING_PROCESS_NAMES: "taosd,taosadapter,taostest,taosBenchmark"
   ROLE_FILE: "role_info.json"
   WORKFLOW_CONFIG_FILE: "workflow_config.json"
-  GRAFANA_DATASOURCE_NAME: "tdengine-processes-u3-190"
+  PROCESS_EXPORTER_DATASOURCE_NAME: "tdengine-processes"
+  TDINSIGHT_DASHBOARD_IDS: "20631,18180"
+  TDINSIGHT_DASHBOARD_UIDS: "td_ds_01,td_ds_02"
 
 jobs:
   filter-runners:
@@ -353,9 +355,14 @@ jobs:
             ems_toml="$GITHUB_WORKSPACE/config/ems.toml"
             echo "EMS_TOML=$ems_toml" >> $GITHUB_ENV
             current_time=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ" -d '+8 hours')
-            interval="${{ github.event.inputs.source-interval }}ms"
+            # interval="${{ github.event.inputs.source-interval }}"
+            if [ "${{ github.event.inputs.source-interval }}" -eq 0 ]; then
+                interval=1
+            else
+                interval="${{ github.event.inputs.source-interval }}"
+            fi
             sed -i "s/\(start_time = \)[^,]*/\1$current_time/" $ems_toml
-            sed -i "s/\(interval = \"\)[^\"]*/\1$interval/" $ems_toml
+            sed -i "s/\(interval = \"\)[^\"]*/\1${interval}ms/" $ems_toml
             rm -f /etc/taos/test.toml && mkdir -p /etc/taos && cp $ems_toml /etc/taos/test.toml
 
   deploy-client-nodes:
@@ -435,6 +442,11 @@ jobs:
           json_file: "$RUNNER_WORKSPACE/${{ env.HOSTS_DIRNAME }}/${{ env.ROLE_FILE }}"
           test_root: "$GITHUB_WORKSPACE/tests"
 
+      - name: Export Center FirstEp IP
+        run: |
+          center_ip=$(jq -r '.center[0].ip' "$RUNNER_WORKSPACE/${{ env.HOSTS_DIRNAME }}/${{ env.ROLE_FILE }}")
+          echo "CENTER_IP=$center_ip" >> $GITHUB_ENV
+
       - name: Configure SSH-Keyless Login
         uses: taosdata/.github/.github/actions/ssh-keyless-login@main
         with:
@@ -448,12 +460,25 @@ jobs:
           node_exporter_hosts: $HOSTNAME_INFO
           process_exporter_hosts: $HOSTNAME_INFO
 
+      - name: Import Process Exporter Dashboard
+        uses: taosdata/.github/.github/actions/import-process-exporter-dashboard@main
+        with:
+          grafana-url: http://${{ env.CLIENT_IP }}:3000
+          prometheus-url: http://${{ env.CLIENT_IP }}:9090
+          datasource-name: ${{ env.PROCESS_EXPORTER_DATASOURCE_NAME }}
+
+      - name: Install Grafana Plugin
+        uses: taosdata/.github/.github/actions/install-grafana-plugin@main
+        with:
+          monitor-ip: ${{ env.CENTER_IP }}
+          monitor-port: 6041
+
       - name: Import Grafana Dashboard
         uses: taosdata/.github/.github/actions/import-grafana-dashboard@main
         with:
-          grafana-url: http://grafana.tdengine.net:3000
-          prometheus-url: http://${{ env.CLIENT_IP }}:9090
-          datasource-name: ${{ env.GRAFANA_DATASOURCE_NAME }}
+          grafana-url: http://${{ env.CLIENT_IP }}:3000
+          dashboard-ids: ${{ env.TDINSIGHT_DASHBOARD_IDS }}
+          dashboard-uids: ${{ env.TDINSIGHT_DASHBOARD_UIDS }}
 
       - name: Print Hosts
         run: |
@@ -477,7 +502,8 @@ jobs:
           EDGE_DNODE_HOSTS=$SINGLE_DNODE_HOSTS
           TAOS_BENCHMARK_HOSTS=$TAOS_BENCHMARK_HOSTS
           CENTER_DNODE_HOSTS=$CLUSTER_HOSTS
-          GRAFANA_DATASOURCE_NAME=${{ env.GRAFANA_DATASOURCE_NAME }}
+          GRAFANA_IP="${{ env.CLIENT_IP }}"
+          GRAFANA_DATASOURCE_NAME=$(echo "${{ env.TDINSIGHT_DASHBOARD_UIDS }}" | cut -d ',' -f 1)
 
           # Combine Inputs into a single JSON object
           COMBINED_JSON=$(jq -n \
@@ -487,6 +513,7 @@ jobs:
             --arg execTime "$EXEC_TIME" \
             --arg sourceInterval "$SOURCE_INTERVAL" \
             --arg enableCompression "$ENABLE_COMPRESSION" \
+            --arg grafanaIp "$GRAFANA_IP" \
             --arg grafanaDatasourceName "$GRAFANA_DATASOURCE_NAME" \
             --argjson mqttHosts "$MQTT_HOSTS" \
             --argjson edgeDnodeHosts "$EDGE_DNODE_HOSTS" \
@@ -499,6 +526,7 @@ jobs:
               exec_time: $execTime,
               source_interval: $sourceInterval,
               enable_compression: $enableCompression,
+              grafana_ip: $grafanaIp,
               grafana_datasource_name: $grafanaDatasourceName,
               mqtt_hosts: $mqttHosts,
               edge_dnode_hosts: $edgeDnodeHosts,
@@ -582,9 +610,9 @@ jobs:
           taostest --use=ems-query.yaml --case=customer_scenarios/ems/ems_query.py --keep
           sleep ${{ github.event.inputs.exec-time }}
           for ((i=1; i<=$EDGE_COUNT; i++)); do
-            taostest --use=ems-edge-$i.yaml --case=customer_scenarios/ems/stop.py --keep
+            taostest --use=ems-edge-$i.yaml --case=customer_scenarios/ems/get_metrics.py --keep
           done
-          taostest --use=ems-center.yaml --case=customer_scenarios/ems/stop.py --keep
+          taostest --use=ems-center.yaml --case=customer_scenarios/ems/get_metrics.py --keep
           taostest --use=ems-query.yaml --case=customer_scenarios/ems/ems_summary.py --keep
           echo "🔄 Test finished at $(date)"
           cp "$TEST_ROOT/env/perf_report_$test_start_time.txt" $GITHUB_WORKSPACE/

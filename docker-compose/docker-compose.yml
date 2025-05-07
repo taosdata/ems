@@ -4,13 +4,13 @@ x-common-env: &common-env
   MQTT_PUB_INTERVAL: 0
 
 x-common-args: &common-args
-  TD_VERSION: 3.3.6.3
+  TD_VERSION: 3.3.6.4
   WORKDIR: /app
   EXEC_TIME: 120
   ENABLE_COMPRESSION: "true"
 
 x-common-image: &common-image
-  image: tdengine/tdengine-ee:3.3.6.3
+  image: tdengine/tdengine-ee-amd64:3.3.6.4
 
 services:
   # TDengine Central Node
@@ -155,14 +155,21 @@ services:
       CENTER_HOST: center-node1,center-node2,center-node3
       TARGET_DBNAME: mqtt_datain
       CENTER_DBNAME: center_db
+      HOST_IP: $HOST_IP
+      EXTERNAL_GF_PORT: 13000
+      TDINSIGHT_DASHBOARD_IDS: "20631,18180"
+      TDINSIGHT_DASHBOARD_UIDS: "td_ds_01,td_ds_02"
     depends_on:
       - edge-node1-tdengine
-      - edge-node1-flashmq
+      - edge-node2-tdengine
 
   # MQTT Simulator
   mqtt-simulator1:
-    # build: ./mqtt-simulator
-    image: tdengine/mqtt-simulator:1.0
+    build:
+      context: ./mqtt-simulator
+      args:
+        <<: *common-args
+    # image: tdengine/mqtt-simulator:1.0
     container_name: mqtt-simulator1
     networks:
       - tdengine-net
@@ -173,8 +180,11 @@ services:
       - edge-node1-flashmq
 
   mqtt-simulator2:
-    # build: ./mqtt-simulator
-    image: tdengine/mqtt-simulator:1.0
+    build:
+      context: ./mqtt-simulator
+      args:
+        <<: *common-args
+    # image: tdengine/mqtt-simulator:1.0
     container_name: mqtt-simulator2
     networks:
       - tdengine-net
@@ -190,7 +200,7 @@ services:
     restart: always
     user: '0'
     ports:
-      - "3000:3000"
+      - "13000:3000"
     volumes:
       - ./grafana/data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning
