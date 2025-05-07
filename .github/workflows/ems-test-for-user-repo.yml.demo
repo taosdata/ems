@@ -461,20 +461,20 @@ jobs:
           process_exporter_hosts: $HOSTNAME_INFO
 
       - name: Import Process Exporter Dashboard
-        uses: taosdata/.github/.github/actions/import-process-exporter-dashboard@test/TD-34600
+        uses: taosdata/.github/.github/actions/import-process-exporter-dashboard@main
         with:
           grafana-url: http://${{ env.CLIENT_IP }}:3000
           prometheus-url: http://${{ env.CLIENT_IP }}:9090
           datasource-name: ${{ env.PROCESS_EXPORTER_DATASOURCE_NAME }}
 
       - name: Install Grafana Plugin
-        uses: taosdata/.github/.github/actions/install-grafana-plugin@test/TD-34600
+        uses: taosdata/.github/.github/actions/install-grafana-plugin@main
         with:
           monitor-ip: ${{ env.CENTER_IP }}
           monitor-port: 6041
 
       - name: Import Grafana Dashboard
-        uses: taosdata/.github/.github/actions/import-grafana-dashboard@test/TD-34600
+        uses: taosdata/.github/.github/actions/import-grafana-dashboard@main
         with:
           grafana-url: http://${{ env.CLIENT_IP }}:3000
           dashboard-ids: ${{ env.TDINSIGHT_DASHBOARD_IDS }}
@@ -502,6 +502,7 @@ jobs:
           EDGE_DNODE_HOSTS=$SINGLE_DNODE_HOSTS
           TAOS_BENCHMARK_HOSTS=$TAOS_BENCHMARK_HOSTS
           CENTER_DNODE_HOSTS=$CLUSTER_HOSTS
+          GRAFANA_IP="${{ env.CLIENT_IP }}"
           GRAFANA_DATASOURCE_NAME=$(echo "${{ env.TDINSIGHT_DASHBOARD_UIDS }}" | cut -d ',' -f 1)
 
           # Combine Inputs into a single JSON object
@@ -512,6 +513,7 @@ jobs:
             --arg execTime "$EXEC_TIME" \
             --arg sourceInterval "$SOURCE_INTERVAL" \
             --arg enableCompression "$ENABLE_COMPRESSION" \
+            --arg grafanaIp "$GRAFANA_IP" \
             --arg grafanaDatasourceName "$GRAFANA_DATASOURCE_NAME" \
             --argjson mqttHosts "$MQTT_HOSTS" \
             --argjson edgeDnodeHosts "$EDGE_DNODE_HOSTS" \
@@ -524,6 +526,7 @@ jobs:
               exec_time: $execTime,
               source_interval: $sourceInterval,
               enable_compression: $enableCompression,
+              grafana_ip: $grafanaIp,
               grafana_datasource_name: $grafanaDatasourceName,
               mqtt_hosts: $mqttHosts,
               edge_dnode_hosts: $edgeDnodeHosts,

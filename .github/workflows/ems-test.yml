@@ -417,7 +417,7 @@ jobs:
 
       - name: Deploy Taostest
         id: deploy-taostest
-        uses: taosdata/.github/.github/actions/deploy-taostest@test/TD-34600
+        uses: taosdata/.github/.github/actions/deploy-taostest@main
         with:
           pub_dl_url: ${{ secrets.PUB_DL_URL }}
 
@@ -446,7 +446,7 @@ jobs:
           process_names: "${{ env.MONITORING_PROCESS_NAMES }}"
 
       - name: Gen Taostest Hosts
-        uses: taosdata/.github/.github/actions/gen-taostest-env@test/TD-34600
+        uses: taosdata/.github/.github/actions/gen-taostest-env@main
         with:
           json_file: "$RUNNER_WORKSPACE/${{ env.HOSTS_DIRNAME }}/${{ env.ROLE_FILE }}"
           test_root: "$GITHUB_WORKSPACE/tests"
@@ -470,20 +470,20 @@ jobs:
           process_exporter_hosts: $HOSTNAME_INFO
 
       - name: Import Process Exporter Dashboard
-        uses: taosdata/.github/.github/actions/import-process-exporter-dashboard@test/TD-34600
+        uses: taosdata/.github/.github/actions/import-process-exporter-dashboard@main
         with:
           grafana-url: http://${{ env.CLIENT_IP }}:3000
           prometheus-url: http://${{ env.CLIENT_IP }}:9090
           datasource-name: ${{ env.PROCESS_EXPORTER_DATASOURCE_NAME }}
 
       - name: Install Grafana Plugin
-        uses: taosdata/.github/.github/actions/install-grafana-plugin@test/TD-34600
+        uses: taosdata/.github/.github/actions/install-grafana-plugin@main
         with:
           monitor-ip: ${{ env.CENTER_IP }}
           monitor-port: 6041
 
       - name: Import Grafana Dashboard
-        uses: taosdata/.github/.github/actions/import-grafana-dashboard@test/TD-34600
+        uses: taosdata/.github/.github/actions/import-grafana-dashboard@main
         with:
           grafana-url: http://${{ env.CLIENT_IP }}:3000
           dashboard-ids: ${{ env.TDINSIGHT_DASHBOARD_IDS }}
