@@ -15,11 +15,11 @@
       "concurrent": 10,
       "sqls": [
         {
-          "sql": "SELECT ts, _value, last(ts) as last_ts, unit_controller_id FROM (SELECT _wstart ts, CONCAT(CASE  WHEN last_row(`ddd`) IS NOT NULL THEN last_row (`ddd`) ELSE '' END, '-', CASE WHEN last_row(`fff`) IS NOT NULL THEN last_row(`fff`) ELSE '' END) as _value, unit_controller_id FROM site_topic9_mqtt_1 WHERE ts > now()-1d AND ts <= now() partition by unit_controller_id interval(1m) fill(PREV));",
+          "sql": "SELECT ts, _value, last(ts) as last_ts, unit_controller_id FROM (SELECT _wstart ts, CONCAT(CASE  WHEN last_row(`ddd`) IS NOT NULL THEN last_row (`ddd`) ELSE '' END, '-', CASE WHEN last_row(`fff`) IS NOT NULL THEN last_row(`fff`) ELSE '' END) as _value, unit_controller_id FROM site_topic9_mqtt_1 WHERE ts > now()-1d AND ts <= now()+8h partition by unit_controller_id interval(1m) fill(PREV));",
           "result": "./query_res0.txt"
         },
         {
-          "sql": "select ( case 1.0 * `def` / 20.0 when eee = 1.0 and fee = 1.0 then 1.0 else 0.0 end ) as mean, 'system_availability' as point_name from site_topic9_mqtt_1 where ts between (TIMETRUNCATE(NOW(), 1h) - 24h) and TIMETRUNCATE(NOW(), 24h) partition by site_controller_id;",
+          "sql": "select ( case 1.0 * `def` / 20.0 when eee = 1.0 and fee = 1.0 then 1.0 else 0.0 end ) as mean, 'system_availability' as point_name from site_topic9_mqtt_1 where ts between (TIMETRUNCATE(NOW(), 1h) - 1h) and TIMETRUNCATE(NOW(), 1h) partition by site_controller_id;",
           "result": "./query_res1.txt"
         }
       ]

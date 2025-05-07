@@ -155,9 +155,13 @@ services:
       CENTER_HOST: center-node1,center-node2,center-node3
       TARGET_DBNAME: mqtt_datain
       CENTER_DBNAME: center_db
+      HOST_IP: $HOST_IP
+      EXTERNAL_GF_PORT: 13000
+      TDINSIGHT_DASHBOARD_IDS: "20631,18180"
+      TDINSIGHT_DASHBOARD_UIDS: "td_ds_01,td_ds_02"
     depends_on:
       - edge-node1-tdengine
-      - edge-node1-flashmq
+      - edge-node2-tdengine
 
   # MQTT Simulator
   mqtt-simulator1:
@@ -196,7 +200,7 @@ services:
     restart: always
     user: '0'
     ports:
-      - "3000:3000"
+      - "13000:3000"
     volumes:
       - ./grafana/data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning

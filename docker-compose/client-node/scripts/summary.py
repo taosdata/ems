@@ -5,7 +5,9 @@ import requests
 import time
 import shutil
 from typing import Dict, List
-
+from datetime import datetime, timedelta
+import subprocess
+import sys
 
 class Summary():
     def __init__(self):
@@ -218,9 +220,44 @@ class Summary():
     def get_retention_rate(self):
         pass
 
+    def import_dashboard(self, gf_url):
+        DL_FILES = ["import_grafana_dashboard.sh", "install_via_apt.sh"]
+
+        try:
+            for DL_FILE in DL_FILES:
+                DL_URL = f"https://raw.githubusercontent.com/taosdata/.github/main/.github/scripts/{DL_FILE}"
+                subprocess.run(
+                    ["wget", "-q", "--tries=3", "--timeout=15",
+                    "-O", f"/tmp/{DL_FILE}", DL_URL],
+                    check=True,
+                    stderr=subprocess.PIPE
+                )
+
+                subprocess.run(["chmod", "+x", f"/tmp/{DL_FILE}"], check=True)
+
+            subprocess.run(
+                [f"/tmp/{DL_FILES[0]}", gf_url, os.environ["TDINSIGHT_DASHBOARD_IDS"], os.environ["TDINSIGHT_DASHBOARD_UIDS"]],
+                check=True
+            )
+            print("✅ Import Successfully")
+
+        except subprocess.CalledProcessError as e:
+            print(f"❌ Exec Failed: {e}")
+            sys.exit(1)
 
     def get_grafana_url(self):
-        return "http://[your_ip]:3000"
+        start_time  = datetime.utcnow() - timedelta(seconds=int(os.environ["EXEC_TIME"])) - timedelta(minutes=10)
+        end_time = datetime.utcnow() + timedelta(minutes=10)
+        EXTERNAL_GF_IP = os.environ["HOST_IP"] if len(os.environ["HOST_IP"]) > 0 else "<your_host_ip>"
+        gf_url = f'http://{EXTERNAL_GF_IP}:{os.environ["EXTERNAL_GF_PORT"]}'
+        self.import_dashboard(gf_url)
+
+        url = (
+            f'{gf_url}/d/{os.environ["TDINSIGHT_DASHBOARD_UIDS"].split(",")[0]}'
+            f"?var-interval=10m&orgId=1&from={start_time.isoformat(timespec='milliseconds')}Z&to={end_time.isoformat(timespec='milliseconds')}Z"
+            f"&timezone=browser&var-processes=$__all&refresh=5s"
+        )
+        return url
 
     def get_test_specs(self):
         return {
