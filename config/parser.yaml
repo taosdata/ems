@@ -215,7 +215,7 @@ topic9:
               string: "varchar(12)"
               integer: int
           point_name:
-            regex: "(.*(BMU_|__))?(?<point_name>.+?)(\(ms\sor\ss\))?$"
+            regex: '(.*(BMU_|__))?(?<point_name>.+?)($ms\sor\ss$)?$'
       - map:
           ts:
             cast: ts
