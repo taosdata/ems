@@ -44,7 +44,7 @@ on:
           - "longbow-csv"
           - "random-simulator"
       mqtt-processes-per-node:
-        description: 'num of mqtt-processes per node'
+        description: 'Num of mqtt-processes per node (Only effective for longbow-csv)'
         required: true
         default: '1'
         type: string
@@ -374,7 +374,7 @@ jobs:
           process_names: "${{ env.MONITORING_PROCESS_NAMES }}"
 
       - name: Install MQTT CLI
-        uses: taosdata/.github/.github/actions/install-mqtt-simulator@feat/TS-6495
+        uses: taosdata/.github/.github/actions/install-mqtt-simulator@main
         with:
           pub_dl_url: ${{ secrets.PUB_DL_URL }}
           azure_blob_url: ${{ secrets.AZURE_BLOB_URL }}
