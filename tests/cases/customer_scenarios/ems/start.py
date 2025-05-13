@@ -26,7 +26,7 @@ class Start(TDCase):
         # mqtt_processes_per_node: $mqttProcessesPerNode,
         self.yml_name = sys.argv[1].split("=")[1]
         self.numbers_str = ''.join(filter(str.isdigit, self.yml_name))
-        self.mqtt_node_idx = int(self.numbers_str)
+        self.mqtt_node_idx = int(self.numbers_str) if "edge" in " ".join(sys.argv) else 1
         self.tdCom = TDCom(self.tdSql)
         self._remote: Remote = Remote(self.logger)
         self.env_root = os.path.join(os.environ["TEST_ROOT"], "env")
