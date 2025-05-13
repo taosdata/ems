@@ -93,7 +93,7 @@ class Start(TDCase):
             cmd_list = list()
             for mqtt_toml in self.toml_file_list:
                 self._remote.put(mqtt_host, mqtt_toml, os.path.dirname(mqtt_toml))
-                cmd_list.append(f"screen -d -m mqtt_pub --csv-file /opt/longbow_recording_fuzzy.csv --csv-header topic,payload,qos,a,b,c --schema {mqtt_toml} --host {edge_host} --interval {mqtt_pub_interval}ms --exec-duration {exec_time}s > {mqtt_toml}.log")
+                cmd_list.append(f"screen -L -Logfile /var/log/taos/{mqtt_toml}.log -d -m mqtt_pub --csv-file /opt/longbow_recording_fuzzy.csv --csv-header topic,payload,qos,a,b,c --schema {mqtt_toml} --host {edge_host} --interval {mqtt_pub_interval}ms --exec-duration {exec_time}s")
             self._remote.cmd(mqtt_host, cmd_list)
 # ./mqtt_pub  --csv-file longbow_recording.csv --csv-header topic,payload,qos,a,b,c --schema longbow.toml --interval 0s --host ems-edge-2
 
