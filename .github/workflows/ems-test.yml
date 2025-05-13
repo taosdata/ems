@@ -73,7 +73,7 @@ env :
   HOSTS_DIRNAME: "ip-hostname"
   PROMETHEUS_YML_PATH: /etc/prometheus/prometheus.yml
   PROCESS_EXPORTER_YML_PATH: "/etc/process_exporter.yml"
-  MONITORING_PROCESS_NAMES: "taosd,taosadapter,taostest,taosBenchmark"
+  MONITORING_PROCESS_NAMES: "taosd,taosadapter,taostest,taosBenchmark,mqtt_pub"
   ROLE_FILE: "role_info.json"
   WORKFLOW_CONFIG_FILE: "workflow_config.json"
   PROCESS_EXPORTER_DATASOURCE_NAME: "tdengine-processes"
@@ -360,6 +360,18 @@ jobs:
     steps:
       # - name: Checkout code
       #   uses: actions/checkout@v4
+
+      - name: Install Node Exporter In TDengine Nodes
+        uses: taosdata/.github/.github/actions/install-node-exporter@main
+
+      - name: Install Process Exporter In TDengine Nodes
+        uses: taosdata/.github/.github/actions/install-process-exporter@main
+
+      - name: Config Process Exporter YAML In TDengine Nodes
+        uses: taosdata/.github/.github/actions/config-process-exporter-yml@main
+        with:
+          yml_file_path: "${{ env.PROCESS_EXPORTER_YML_PATH }}"
+          process_names: "${{ env.MONITORING_PROCESS_NAMES }}"
 
       - name: Install MQTT CLI
         uses: taosdata/.github/.github/actions/install-mqtt-simulator@feat/TS-6495
