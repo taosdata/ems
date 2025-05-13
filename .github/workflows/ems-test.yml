@@ -397,7 +397,8 @@ jobs:
 
       - name: Copy Toml
         run: |
-          rm -f /etc/taos/test.toml && mkdir -p /etc/taos && cp $ems_toml /etc/taos/test.toml
+          echo $EMS_TOML
+          rm -f /etc/taos/test.toml && mkdir -p /etc/taos && cp $EMS_TOML /etc/taos/test.toml
 
   deploy-client-nodes:
     needs:
