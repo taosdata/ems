@@ -35,6 +35,19 @@ on:
         required: true
         default: '1000'
         type: string
+      mqtt-data-source:
+        description: 'data source of mqtt'
+        required: true
+        default: "longbow-csv"
+        type: choice
+        options:
+          - "longbow-csv"
+          - "random-simulator"
+      mqtt-processes-per-node:
+        description: 'Num of mqtt-processes per node (Only effective for longbow-csv)'
+        required: true
+        default: '1'
+        type: string
       enable-compression:
         description: 'enable-compression'
         required: true
@@ -60,7 +73,7 @@ env :
   HOSTS_DIRNAME: "ip-hostname"
   PROMETHEUS_YML_PATH: /etc/prometheus/prometheus.yml
   PROCESS_EXPORTER_YML_PATH: "/etc/process_exporter.yml"
-  MONITORING_PROCESS_NAMES: "taosd,taosadapter,taostest,taosBenchmark"
+  MONITORING_PROCESS_NAMES: "taosd,taosadapter,taosx,taostest,taosBenchmark,mqtt_pub"
   ROLE_FILE: "role_info.json"
   WORKFLOW_CONFIG_FILE: "workflow_config.json"
   PROCESS_EXPORTER_DATASOURCE_NAME: "tdengine-processes"
@@ -348,30 +361,57 @@ jobs:
       # - name: Checkout code
       #   uses: actions/checkout@v4
 
+      - name: Install Node Exporter In TDengine Nodes
+        uses: taosdata/.github/.github/actions/install-node-exporter@main
+
+      - name: Install Process Exporter In TDengine Nodes
+        uses: taosdata/.github/.github/actions/install-process-exporter@main
+
+      - name: Config Process Exporter YAML In TDengine Nodes
+        uses: taosdata/.github/.github/actions/config-process-exporter-yml@main
+        with:
+          yml_file_path: "${{ env.PROCESS_EXPORTER_YML_PATH }}"
+          process_names: "${{ env.MONITORING_PROCESS_NAMES }}"
+
       - name: Install MQTT CLI
         uses: taosdata/.github/.github/actions/install-mqtt-simulator@main
         with:
           pub_dl_url: ${{ secrets.PUB_DL_URL }}
+          azure_blob_url: ${{ secrets.AZURE_BLOB_URL }}
 
-      - name: Find mqtt_pub binary and ems toml
+      - name: Get mqtt_pub
         run: |
             mqtt_pub_path=$(find $GITHUB_WORKSPACE -name mqtt_pub 2>/dev/null | head -n 1)
             echo "MQTT_PUB_PATH=$mqtt_pub_path" >> $GITHUB_ENV
             rm -f /usr/bin/mqtt_pub && cp $mqtt_pub_path /usr/bin/mqtt_pub
             chmod +x /usr/bin/mqtt_pub
-            # ems_toml=$(find $GITHUB_WORKSPACE -name ems.toml 2>/dev/null | head -n 1)
-            ems_toml="$GITHUB_WORKSPACE/config/ems.toml"
+
+      - name: Handle longbow CSV
+        if: ${{ inputs.mqtt-data-source == 'longbow-csv' }}
+        run: |
+            ems_toml="$GITHUB_WORKSPACE/config/longbow.toml"
             echo "EMS_TOML=$ems_toml" >> $GITHUB_ENV
-            current_time=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ" -d '+8 hours')
-            # interval="${{ github.event.inputs.source-interval }}"
-            if [ "${{ github.event.inputs.source-interval }}" -eq 0 ]; then
-                interval=1
-            else
-                interval="${{ github.event.inputs.source-interval }}"
-            fi
-            sed -i "s/\(start_time = \)[^,]*/\1$current_time/" $ems_toml
-            sed -i "s/\(interval = \"\)[^\"]*/\1${interval}ms/" $ems_toml
-            rm -f /etc/taos/test.toml && mkdir -p /etc/taos && cp $ems_toml /etc/taos/test.toml
+
+      - name: Handle random simulator
+        if: ${{ inputs.mqtt-data-source == 'random-simulator' }}
+        run: |
+          # ems_toml=$(find $GITHUB_WORKSPACE -name ems.toml 2>/dev/null | head -n 1)
+          ems_toml="$GITHUB_WORKSPACE/config/ems.toml"
+          echo "EMS_TOML=$ems_toml" >> $GITHUB_ENV
+          current_time=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ" -d '+8 hours')
+          # interval="${{ github.event.inputs.source-interval }}"
+          if [ "${{ github.event.inputs.source-interval }}" -eq 0 ]; then
+              interval=1
+          else
+              interval="${{ github.event.inputs.source-interval }}"
+          fi
+          sed -i "s/\(start_time = \)[^,]*/\1$current_time/" $ems_toml
+          sed -i "s/\(interval = \"\)[^\"]*/\1${interval}ms/" $ems_toml
+
+      - name: Copy Toml
+        run: |
+          echo $EMS_TOML
+          rm -f /etc/taos/test.toml && mkdir -p /etc/taos && cp $EMS_TOML /etc/taos/test.toml
 
   deploy-client-nodes:
     needs:
@@ -506,6 +546,8 @@ jobs:
           CENTER_DNODE_COUNT="${{ github.event.inputs.center-dnode-count }}"
           EXEC_TIME="${{ github.event.inputs.exec-time }}"
           SOURCE_INTERVAL="${{ github.event.inputs.source-interval }}"
+          MQTT_DATA_SOURCE="${{ github.event.inputs.mqtt-data-source }}"
+          MQTT_PROCESSES_PER_NODE="${{ github.event.inputs.mqtt-processes-per-node }}"
           ENABLE_COMPRESSION="${{ github.event.inputs.enable-compression }}"
           MQTT_HOSTS=$MQTT_HOSTS
           EDGE_DNODE_HOSTS=$SINGLE_DNODE_HOSTS
@@ -521,6 +563,8 @@ jobs:
             --arg center_dnode_count "$CENTER_DNODE_COUNT" \
             --arg execTime "$EXEC_TIME" \
             --arg sourceInterval "$SOURCE_INTERVAL" \
+            --arg mqttDataSource "$MQTT_DATA_SOURCE" \
+            --arg mqttProcessesPerNode "$MQTT_PROCESSES_PER_NODE" \
             --arg enableCompression "$ENABLE_COMPRESSION" \
             --arg grafanaIp "$GRAFANA_IP" \
             --arg grafanaDatasourceName "$GRAFANA_DATASOURCE_NAME" \
@@ -534,6 +578,8 @@ jobs:
               center_dnode_count: $center_dnode_count,
               exec_time: $execTime,
               source_interval: $sourceInterval,
+              mqtt_data_source: $mqttDataSource,
+              mqtt_processes_per_node: $mqttProcessesPerNode,
               enable_compression: $enableCompression,
               grafana_ip: $grafanaIp,
               grafana_datasource_name: $grafanaDatasourceName,

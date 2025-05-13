@@ -1,0 +1,10 @@
+base = "k7p3z9b2q5m1s6x4r8l0vjydwftnghcouaei"
+topic_patterns = [
+    "ems/site/_/root/+/+",
+    "ems/site/_/_/_/+/+",
+    "ems/site/_/unit/_/root/+/+",
+    "ems/site/_/unit/_/_/_/+/+",
+]
+
+[parser]
+delta = "1d"
