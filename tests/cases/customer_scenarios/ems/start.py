@@ -27,6 +27,7 @@ class Start(TDCase):
         self.yml_name = sys.argv[1].split("=")[1]
         self.numbers_str = ''.join(filter(str.isdigit, self.yml_name))
         self.mqtt_node_idx = int(self.numbers_str) if "edge" in " ".join(sys.argv) else 1
+        self.mqtt_start_idx = 1
         self.tdCom = TDCom(self.tdSql)
         self._remote: Remote = Remote(self.logger)
         self.env_root = os.path.join(os.environ["TEST_ROOT"], "env")
@@ -81,14 +82,17 @@ class Start(TDCase):
             edge_config = self.tdCom.get_components_setting(self.env_setting["settings"], "taosd")
             edge_host = edge_config["fqdn"][0]
             mqtt_host = mqtt_client_config["fqdn"][0]
+            print(f"mqtt_host: {mqtt_host}")
             # mqtt_pub_path = mqtt_client_config["spec"]["config"]
             mqtt_pub_path = mqtt_client_config["spec"]["config_file"]
             #mqtt_pub_interval= mqtt_client_config["spec"]["interval"]
             mqtt_pub_interval = self.case_config["source_interval"]
             exec_time = self.case_config["exec_time"]
+            self._remote.get(mqtt_host, mqtt_pub_path, mqtt_pub_path)
             self.generate_tomls(mqtt_pub_path)
             cmd_list = list()
             for mqtt_toml in self.toml_file_list:
+                self._remote.put(mqtt_host, mqtt_toml, mqtt_toml)
                 cmd_list.append(f"nohup mqtt_pub --csv-file /opt/longbow_recording_fuzzy.csv --csv-header topic,payload,qos,a,b,c --schema {mqtt_toml} --host {edge_host} --interval {mqtt_pub_interval}ms --exec-duration {exec_time}s > {mqtt_toml}.log 2>&1 &")
             self._remote.cmd(mqtt_host, cmd_list)
 # ./mqtt_pub  --csv-file longbow_recording.csv --csv-header topic,payload,qos,a,b,c --schema longbow.toml --interval 0s --host ems-edge-2
