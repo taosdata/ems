@@ -73,7 +73,7 @@ env :
   HOSTS_DIRNAME: "ip-hostname"
   PROMETHEUS_YML_PATH: /etc/prometheus/prometheus.yml
   PROCESS_EXPORTER_YML_PATH: "/etc/process_exporter.yml"
-  MONITORING_PROCESS_NAMES: "taosd,taosadapter,taostest,taosBenchmark,mqtt_pub"
+  MONITORING_PROCESS_NAMES: "taosd,taosadapter,taosx,taostest,taosBenchmark,mqtt_pub"
   ROLE_FILE: "role_info.json"
   WORKFLOW_CONFIG_FILE: "workflow_config.json"
   PROCESS_EXPORTER_DATASOURCE_NAME: "tdengine-processes"
@@ -377,6 +377,7 @@ jobs:
         uses: taosdata/.github/.github/actions/install-mqtt-simulator@feat/TS-6495
         with:
           pub_dl_url: ${{ secrets.PUB_DL_URL }}
+          azure_blob_url: ${{ secrets.AZURE_BLOB_URL }}
 
       - name: Get mqtt_pub
         run: |
