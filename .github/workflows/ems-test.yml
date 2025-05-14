@@ -632,6 +632,8 @@ jobs:
           echo "🔄 Center dnode count: ${{ github.event.inputs.center-dnode-count }}"
           echo "🔄 Exec time: ${{ github.event.inputs.exec-time }}"
           echo "🔄 Source interval: ${{ github.event.inputs.source-interval }}"
+          echo "🔄 Mqtt data source: ${{ github.event.inputs.mqtt-data-source }}"
+          echo "🔄 Mqtt processes per node: ${{ github.event.inputs.mqtt-processes-per-node }}"
           echo "🔄 Enable compression: ${{ github.event.inputs.enable-compression }}"
           echo "🔄 Test started at $(date)"
           echo "%PWD%: $PWD"
