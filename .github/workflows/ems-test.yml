@@ -38,13 +38,13 @@ on:
       mqtt-data-source:
         description: 'data source of mqtt'
         required: true
-        default: "longbow-csv"
+        default: "battery-storage-data"
         type: choice
         options:
-          - "longbow-csv"
+          - "battery-storage-data"
           - "random-simulator"
       mqtt-processes-per-node:
-        description: 'Num of mqtt-processes per node (Only effective for longbow-csv)'
+        description: 'Num of mqtt-processes per node (Only effective for battery-storage-data)'
         required: true
         default: '1'
         type: string
@@ -386,10 +386,10 @@ jobs:
             rm -f /usr/bin/mqtt_pub && cp $mqtt_pub_path /usr/bin/mqtt_pub
             chmod +x /usr/bin/mqtt_pub
 
-      - name: Handle longbow CSV
-        if: ${{ inputs.mqtt-data-source == 'longbow-csv' }}
+      - name: Handle battery storage data
+        if: ${{ inputs.mqtt-data-source == 'battery-storage-data' }}
         run: |
-            ems_toml="$GITHUB_WORKSPACE/config/longbow.toml"
+            ems_toml="$GITHUB_WORKSPACE/config/battery-storage-data.toml"
             echo "EMS_TOML=$ems_toml" >> $GITHUB_ENV
 
       - name: Handle random simulator
@@ -632,6 +632,8 @@ jobs:
           echo "🔄 Center dnode count: ${{ github.event.inputs.center-dnode-count }}"
           echo "🔄 Exec time: ${{ github.event.inputs.exec-time }}"
           echo "🔄 Source interval: ${{ github.event.inputs.source-interval }}"
+          echo "🔄 Mqtt data source: ${{ github.event.inputs.mqtt-data-source }}"
+          echo "🔄 Mqtt processes per node: ${{ github.event.inputs.mqtt-processes-per-node }}"
           echo "🔄 Enable compression: ${{ github.event.inputs.enable-compression }}"
           echo "🔄 Test started at $(date)"
           echo "%PWD%: $PWD"

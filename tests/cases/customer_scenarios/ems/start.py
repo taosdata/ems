@@ -76,7 +76,7 @@ class Start(TDCase):
             exec_time = self.case_config["exec_time"]
             self._remote.cmd(mqtt_host, f"nohup mqtt_pub --schema {mqtt_pub_path} --host {edge_host} --interval {mqtt_pub_interval}ms --exec-duration {exec_time}s > mqtt_pub.log 2>&1 &")
 
-    def start_longbow_datain(self):
+    def start_battery_storage_datain(self):
         if "edge" in " ".join(sys.argv):
             mqtt_client_config = self.tdCom.get_components_setting(self.env_setting["settings"], "mqtt_client")
             edge_config = self.tdCom.get_components_setting(self.env_setting["settings"], "taosd")
@@ -92,7 +92,7 @@ class Start(TDCase):
             cmd_list = list()
             for mqtt_toml in self.toml_file_list:
                 self._remote.put(mqtt_host, mqtt_toml, os.path.dirname(mqtt_toml))
-                cmd_list.append(f"screen -L -Logfile /var/log/taos/{Path(mqtt_toml).stem}.log -d -m mqtt_pub --csv-file /opt/longbow_recording_fuzzy.csv --csv-header topic,payload,qos,a,b,c --schema {mqtt_toml} --host {edge_host} --interval {mqtt_pub_interval}ms --exec-duration {exec_time}s")
+                cmd_list.append(f"screen -L -Logfile /var/log/taos/{Path(mqtt_toml).stem}.log -d -m mqtt_pub --csv-file /opt/battery_storage_data.csv --csv-header topic,payload,qos,a,b,c --schema {mqtt_toml} --host {edge_host} --interval {mqtt_pub_interval}ms --exec-duration {exec_time}s")
             self._remote.cmd(mqtt_host, cmd_list)
 
     def start_taosx_service(self,host):
@@ -106,8 +106,8 @@ class Start(TDCase):
         taosx_host = taosd_setting["fqdn"][0]
         self.start_taosx_service(taosx_host)
         # start mqtt simulator
-        if self.mqtt_data_source == "longbow-csv":
-            self.start_longbow_datain()
+        if self.mqtt_data_source == "battery-storage-data":
+            self.start_battery_storage_datain()
         else:
             self.start_mqtt_simulator()
 
