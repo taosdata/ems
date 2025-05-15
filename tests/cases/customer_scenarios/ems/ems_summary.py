@@ -122,13 +122,14 @@ class EMSSummary(TDCase):
         return [f"{round(ratio*100, 2)}%", final_center, edge_total]
 
     def write_final_edge_perf(self, insert_perf):
-        for node, perf_info in list(zip(self.edge_host_list, insert_perf)):
-            if perf_info["host"] == node:
-                perf_info["total_written_rows"] = self.stable_data[node]
-                perf_info["total_rows_per_second"] = round(self.stable_data[node]/self.task_run_time, 2)
-                perf_info["total_points_per_second"] = round(perf_info["total_written_rows"]/self.task_run_time, 2)
-                perf_info["total_rows_per_second"] = self.stable_data[node]
-        return perf_info
+        perf_info_list = list()
+        for perf_info in insert_perf:
+            if perf_info["host"] in self.edge_host_list:
+                perf_info["total_written_rows"] = int(self.stable_data[perf_info["host"]]["count"])
+                perf_info["total_rows_per_second"] = round(perf_info["total_written_rows"]/self.task_run_time, 2)
+                perf_info["total_points_per_second"] = round(perf_info["total_written_points"]/self.task_run_time, 2)
+                perf_info_list.append(perf_info)
+        return perf_info_list
 
     def _get_center_data(self) -> int:
         stables = self._get_stables(self.center_first_ep_host, self.center_dbname)
