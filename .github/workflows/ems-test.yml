@@ -425,10 +425,11 @@ jobs:
       group: customers
       labels: ${{ matrix.runner }}
     steps:
-      - name: Export Client IP
+      - name: Export Client Host
         run: |
-          ip=$(hostname -I | awk '{print $1}')
-          echo "CLIENT_IP=$ip" >> $GITHUB_ENV
+          # ip=$(hostname -I | awk '{print $1}')
+          # echo "CLIENT_IP=$ip" >> $GITHUB_ENV
+          echo "CLIENT_HOST=$HOSTNAME" >> $GITHUB_ENV
 
       # - name: Sync Repo - taos-test-framework
       #   uses: taosdata/.github/.github/actions/sync-repo@main
@@ -512,8 +513,8 @@ jobs:
       - name: Import Process Exporter Dashboard
         uses: taosdata/.github/.github/actions/import-process-exporter-dashboard@main
         with:
-          grafana-url: http://${{ env.CLIENT_IP }}:3000
-          prometheus-url: http://${{ env.CLIENT_IP }}:9090
+          grafana-url: http://${{ env.CLIENT_HOST }}:3000
+          prometheus-url: http://${{ env.CLIENT_HOST }}:9090
           datasource-name: ${{ env.PROCESS_EXPORTER_DATASOURCE_NAME }}
 
       - name: Install Grafana Plugin
@@ -525,7 +526,7 @@ jobs:
       - name: Import Grafana Dashboard
         uses: taosdata/.github/.github/actions/import-grafana-dashboard@main
         with:
-          grafana-url: http://${{ env.CLIENT_IP }}:3000
+          grafana-url: http://${{ env.CLIENT_HOST }}:3000
           dashboard-ids: ${{ env.TDINSIGHT_DASHBOARD_IDS }}
           dashboard-uids: ${{ env.TDINSIGHT_DASHBOARD_UIDS }}
 
@@ -553,7 +554,7 @@ jobs:
           EDGE_DNODE_HOSTS=$SINGLE_DNODE_HOSTS
           TAOS_BENCHMARK_HOSTS=$TAOS_BENCHMARK_HOSTS
           CENTER_DNODE_HOSTS=$CLUSTER_HOSTS
-          GRAFANA_IP="${{ env.CLIENT_IP }}"
+          GRAFANA_IP="${{ env.CLIENT_HOST }}"
           GRAFANA_DATASOURCE_NAME=$(echo "${{ env.TDINSIGHT_DASHBOARD_UIDS }}" | cut -d ',' -f 1)
 
           # Combine Inputs into a single JSON object

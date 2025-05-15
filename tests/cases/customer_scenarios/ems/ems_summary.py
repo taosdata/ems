@@ -35,6 +35,7 @@ class EMSSummary(TDCase):
         self.taosd_url = f'http://{self.center_first_ep_host}:6041/rest/sql'
         self.taosd_headers = {"Authorization": "Basic cm9vdDp0YW9zZGF0YQ=="}
         self.mqtt_received_bytes = 0
+        self.task_run_time = int(self.case_config["exec_time"]) - (self.case_config["task_start_time"] - self.case_config["mqtt_start_time"])
         self.test_robot_url = (
     "https://open.feishu.cn/open-apis/bot/v2/hook/11e9e452-34a0-4c88-b014-10e21cb521dd"
 )
@@ -95,6 +96,7 @@ class EMSSummary(TDCase):
         stable_counter = 0
 
         while time.time() - start_time < self.retention_timeout:
+            edge_total = self.collect_edge_data()
             current_center = self._get_center_data()
             self._remote._logger.info(f'current edge data: {edge_total}')
             self._remote._logger.info(f'current center data: {current_center}')
@@ -118,6 +120,15 @@ class EMSSummary(TDCase):
             self._remote._logger.error(f"Migration was not completed within {self.retention_timeout} seconds, but the results were still printed.")
         ratio = final_center / edge_total if edge_total > 0 else 0
         return [f"{round(ratio*100, 2)}%", final_center, edge_total]
+
+    def write_final_edge_perf(self, insert_perf):
+        for node, perf_info in list(zip(self.edge_host_list, insert_perf)):
+            if perf_info["host"] == node:
+                perf_info["total_written_rows"] = self.stable_data[node]
+                perf_info["total_rows_per_second"] = round(self.stable_data[node]/self.task_run_time, 2)
+                perf_info["total_points_per_second"] = round(perf_info["total_written_rows"]/self.task_run_time, 2)
+                perf_info["total_rows_per_second"] = self.stable_data[node]
+        return perf_info
 
     def _get_center_data(self) -> int:
         stables = self._get_stables(self.center_first_ep_host, self.center_dbname)
@@ -288,6 +299,7 @@ class EMSSummary(TDCase):
         data_retention_info["center_total_rows"] = center_total_rows
         data_retention_info["edge_total_rows"] = edge_total_rows
         insert_perf = self.get_insert_result()
+        insert_perf_info = self.write_final_edge_perf(insert_perf)
         query_perf = self.get_query_detail_result()
         compression_ratio_disk_info = self.get_compression_ratio()
         compression_data_size = self._get_compression_data()
@@ -296,7 +308,7 @@ class EMSSummary(TDCase):
         test_specs = self.get_test_specs()
         final_res_dict = {
             "Test Specs": test_specs,
-            "Insert Performance": insert_perf,
+            "Insert Performance": insert_perf_info,
             "Query Performance": query_perf,
             "Compression Ratio": compression_ratio,
             "Data Retention Info": data_retention_info,

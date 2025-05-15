@@ -5,6 +5,7 @@ from taostest.util.common import TDCom
 from taostest.util.rest import TDRest
 from taostest.util import file
 import sys
+import time
 class EMSEdge(TDCase):
     def init(self):
         self.yml_name = sys.argv[1].split("=")[1]
@@ -63,6 +64,11 @@ class EMSEdge(TDCase):
             response = self.tdRest.request(data=case_data, method='POST', url=task_url,header=headers)
             task_info = response.json()
             task_list.append(task_info["id"])
+
+        task_start_time = time.time()
+        self.case_config["task_start_time"] = task_start_time
+        with open(os.path.join(self.env_root, "workflow_config.json"), "w") as config_file:
+            json.dump(self.case_config, config_file, indent=4)
 
         # time.sleep(self.execute_time)
 
