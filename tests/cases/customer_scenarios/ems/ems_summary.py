@@ -256,6 +256,8 @@ class EMSSummary(TDCase):
             "center_dnode_count": int(self.case_config["center_dnode_count"]),
             "exec_time": f'{self.case_config["exec_time"]}s',
             "source_interval": f'{self.case_config["source_interval"]}ms',
+            "mqtt_data_source": self.case_config["mqtt_data_source"],
+            "mqtt_processes_per_node": int(self.case_config["mqtt_processes_per_node"]),
             "enable_compression": self.case_config["enable_compression"],
             "test_start_time": self.case_config["test_start_time"],
         }
