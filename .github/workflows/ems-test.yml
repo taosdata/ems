@@ -73,7 +73,7 @@ env :
   HOSTS_DIRNAME: "ip-hostname"
   PROMETHEUS_YML_PATH: /etc/prometheus/prometheus.yml
   PROCESS_EXPORTER_YML_PATH: "/etc/process_exporter.yml"
-  MONITORING_PROCESS_NAMES: "taosd,taosadapter,taosx,taostest,taosBenchmark,mqtt_pub"
+  MONITORING_PROCESS_NAMES: "taosd,taosadapter,taosx,taostest,taosBenchmark,mqtt_pub,flashmq"
   ROLE_FILE: "role_info.json"
   WORKFLOW_CONFIG_FILE: "workflow_config.json"
   PROCESS_EXPORTER_DATASOURCE_NAME: "tdengine-processes"
