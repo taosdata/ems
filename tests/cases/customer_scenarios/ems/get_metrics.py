@@ -76,7 +76,6 @@ class GetMetrics(TDCase):
             "total_rows_per_second": 0,
             "total_points_per_second": 0,
             "total_written_rows": 0,
-            "total_written_points": 0,
             "processed_messages": 0,
             "mqtt_received_bytes": 0
         }
