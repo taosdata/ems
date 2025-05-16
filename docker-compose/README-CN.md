@@ -35,9 +35,15 @@ git clone <repository-url>
 cd <repository-folder>/docker-compose
 ```
 3. 启动所有服务：
+
+> **NOTE:**
+> `HOST_IP`用于显示在报告的 `grafana-url` 中，如果不设置需要手动替换下 `grafana-url`。
+>
+
 ```bash
-docker-compose up -d
+HOST_IP=<your_host_ip> docker-compose up -d
 ```
+
 4. 验证服务是否正常运行：
 ```bash
 docker-compose ps
@@ -51,7 +57,6 @@ docker-compose ps
 - 实时查看数据写入状态
 - 执行查询获取结果
 - 停止/启动相关任务
-
 
 > **NOTE:**
 > 在 docker-compose 部署模式下，数据写入不会自动停止，可前往`数据写入`页面手动终止相关任务。

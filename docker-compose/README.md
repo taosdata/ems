@@ -34,8 +34,14 @@ git clone <repository-url>
 cd <repository-folder>/docker-compose
 ```
 3. Start all services:
+
+> **NOTE:**
+> `HOST_IP` is used to display in the `grafana-url` of the report.
+> If not set, you need to manually replace the `grafana-url`.
+>
+
 ```bash
-docker-compose up -d
+HOST_IP=<your_host_ip> docker-compose up -d
 ```
 4. Verify if the services are running properly:
 ```bash

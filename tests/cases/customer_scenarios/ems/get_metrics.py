@@ -20,7 +20,7 @@ import sys
 from datetime import datetime, timedelta
 from taostest.util.rest import TDRest
 
-class Stop(TDCase):
+class GetMetrics(TDCase):
     def init(self):
         self.tdCom = TDCom(self.tdSql)
         self._remote: Remote = Remote(self.logger)
@@ -73,10 +73,10 @@ class Stop(TDCase):
         query_summary_metrics = {
             "role": self.get_role(),
             "host": self.host,
-            "total_rows_per_second":0,
-            "total_points_per_second":0,
-            "total_written_rows":0,
-            "total_written_points":0,
+            "total_rows_per_second": 0,
+            "total_points_per_second": 0,
+            "total_written_rows": 0,
+            "processed_messages": 0,
             "mqtt_received_bytes": 0
         }
         tmq_summary_metrics = {
@@ -96,10 +96,8 @@ class Stop(TDCase):
             # query_summary_metrics["total_inserted_sqls"] += metrics_dict[task_id]["total"]["total_inserted_sqls"]
             if "total_points_per_second" in metrics_dict[task_id]["total"]:
                 self.api_type = 0
-                query_summary_metrics["total_points_per_second"] += round(metrics_dict[task_id]["total"]["total_points_per_second"], 2)
-                query_summary_metrics["total_written_points"] += round(metrics_dict[task_id]["total"]["total_written_points"], 2)
-                query_summary_metrics["total_written_rows"] += round(metrics_dict[task_id]["total"]["total_written_rows"], 2)
-                query_summary_metrics["total_rows_per_second"] += round(metrics_dict[task_id]["total"]["total_rows_per_second"], 2)
+                query_summary_metrics["processed_messages"] += round(metrics_dict[task_id]["current"]["processed_messages"], 2)
+                # query_summary_metrics["total_written_points"] += round(metrics_dict[task_id]["total"]["total_written_points"], 2)
                 if "mqtt_received_bytes" in metrics_dict[task_id]["current"]:
                     query_summary_metrics["mqtt_received_bytes"] += round(metrics_dict[task_id]["current"]["mqtt_received_bytes"], 2)
                 else:

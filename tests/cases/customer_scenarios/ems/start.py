@@ -20,6 +20,7 @@ from datetime import datetime, timedelta
 import json
 from pathlib import Path
 import toml
+import time
 class Start(TDCase):
     def init(self):
         # mqtt_data_source: $mqttDataSource,
@@ -90,10 +91,15 @@ class Start(TDCase):
             self._remote.get(mqtt_host, mqtt_pub_path, mqtt_pub_path)
             self.generate_tomls(mqtt_pub_path)
             cmd_list = list()
+            self._remote.cmd(mqtt_host, ['mkdir -p /var/log/taos'])
             for mqtt_toml in self.toml_file_list:
                 self._remote.put(mqtt_host, mqtt_toml, os.path.dirname(mqtt_toml))
-                cmd_list.append(f"screen -L -Logfile /var/log/taos/{Path(mqtt_toml).stem}.log -d -m mqtt_pub --csv-file /opt/battery_storage_data.csv --csv-header topic,payload,qos,a,b,c --schema {mqtt_toml} --host {edge_host} --interval {mqtt_pub_interval}ms --exec-duration {exec_time}s")
+                cmd_list.append(f"screen -L -Logfile /var/log/taos/mqtt_{Path(mqtt_toml).stem}.log -d -m mqtt_pub --csv-file /opt/battery_storage_data.csv --csv-header topic,payload,qos,a,b,c --schema {mqtt_toml} --host {edge_host} --interval {mqtt_pub_interval}ms --exec-duration {exec_time}s")
             self._remote.cmd(mqtt_host, cmd_list)
+            mqtt_start_time = time.time()
+            self.case_config["mqtt_start_time"] = mqtt_start_time
+            with open(os.path.join(self.env_root, "workflow_config.json"), "w") as config_file:
+                json.dump(self.case_config, config_file, indent=4)
 
     def start_taosx_service(self,host):
         self._remote.cmd(host,"systemctl stop taos-explorer")
