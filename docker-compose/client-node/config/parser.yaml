@@ -28,7 +28,7 @@ topic6:
             convert:
               boolean_integer: bool
               float: double
-              string: "varchar(12)"
+              string: "varchar(32)"
               integer: int
       - map:
           ts:
@@ -39,7 +39,7 @@ topic6:
             as: "${data_type}"
           site_controller_id:
             cast: site_controller_id
-            as: "VARCHAR(20)"
+            as: "VARCHAR(32)"
     s_model:
       name: site
       columns:
@@ -52,7 +52,7 @@ topic6:
       tags:
         - name: site_controller_id
           length: 20
-          type: "VARCHAR(20)"
+          type: "VARCHAR(32)"
 
 topic7:
   parser:
@@ -85,7 +85,7 @@ topic7:
             convert:
               boolean_integer: bool
               float: double
-              string: "varchar(12)"
+              string: "varchar(32)"
               integer: int
       - map:
           ts:
@@ -96,10 +96,10 @@ topic7:
             as: "${data_type}"
           site_controller_id:
             cast: site_controller_id
-            as: "VARCHAR(20)"
+            as: "VARCHAR(32)"
           source_device_id:
             cast: source_device_id
-            as: "VARCHAR(20)"
+            as: "VARCHAR(32)"
     s_model:
       name: "site_${source_device_type}"
       columns:
@@ -112,10 +112,10 @@ topic7:
       tags:
         - name: site_controller_id
           length: 20
-          type: "VARCHAR(20)"
+          type: "VARCHAR(32)"
         - name: source_device_id
           length: 20
-          type: "VARCHAR(20)"
+          type: "VARCHAR(32)"
 
 topic8:
   parser:
@@ -148,7 +148,7 @@ topic8:
             convert:
               boolean_integer: bool
               float: double
-              string: "varchar(12)"
+              string: "varchar(32)"
               integer: int
       - map:
           ts:
@@ -159,10 +159,10 @@ topic8:
             as: "${data_type}"
           site_controller_id:
             cast: site_controller_id
-            as: "VARCHAR(20)"
+            as: "VARCHAR(32)"
           unit_controller_id:
             cast: unit_controller_id
-            as: "VARCHAR(20)"
+            as: "VARCHAR(32)"
     s_model:
       name: unit
       columns:
@@ -175,10 +175,10 @@ topic8:
       tags:
         - name: site_controller_id
           length: 20
-          type: "VARCHAR(20)"
+          type: "VARCHAR(32)"
         - name: unit_controller_id
           length: 20
-          type: "VARCHAR(20)"
+          type: "VARCHAR(32)"
 
 topic9:
   parser:
@@ -212,7 +212,7 @@ topic9:
             convert:
               boolean_integer: bool
               float: double
-              string: "varchar(12)"
+              string: "varchar(32)"
               integer: int
 
       - map:
@@ -224,13 +224,13 @@ topic9:
             as: "${data_type}"
           site_controller_id:
             cast: site_controller_id
-            as: "VARCHAR(20)"
+            as: "VARCHAR(32)"
           unit_controller_id:
             cast: unit_controller_id
-            as: "VARCHAR(20)"
+            as: "VARCHAR(32)"
           source_device_id:
             cast: source_device_id
-            as: "VARCHAR(20)"
+            as: "VARCHAR(32)"
     s_model:
       name: "unit_${source_device_type}"
       columns:
@@ -243,11 +243,11 @@ topic9:
       tags:
         - name: site_controller_id
           length: 20
-          type: "VARCHAR(20)"
+          type: "VARCHAR(32)"
         - name: unit_controller_id
           length: 20
-          type: "VARCHAR(20)"
+          type: "VARCHAR(32)"
         - name: source_device_id
           length: 20
-          type: "VARCHAR(20)"
+          type: "VARCHAR(32)"
 
