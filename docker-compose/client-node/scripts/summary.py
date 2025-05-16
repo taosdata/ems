@@ -250,7 +250,7 @@ class Summary():
         end_time = datetime.utcnow() + timedelta(minutes=10)
         EXTERNAL_GF_IP = os.environ["HOST_IP"] if len(os.environ["HOST_IP"]) > 0 else "<your_host_ip>"
         gf_url = f'http://{EXTERNAL_GF_IP}:{os.environ["EXTERNAL_GF_PORT"]}'
-        self.import_dashboard(gf_url)
+        self.import_dashboard(f"http://grafana:3000")
 
         url = (
             f'{gf_url}/d/{os.environ["TDINSIGHT_DASHBOARD_UIDS"].split(",")[0]}'
