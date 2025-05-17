@@ -39,6 +39,16 @@ class Start(TDCase):
         self.mqtt_data_source = self.case_config["mqtt_data_source"]
         self.mqtt_processes_per_node = self.case_config["mqtt_processes_per_node"]
         self.toml_file_list = list()
+        if "edge" in " ".join(sys.argv):
+            self.mqtt_client_config = self.tdCom.get_components_setting(self.env_setting["settings"], "mqtt_client")
+            self.edge_config = self.tdCom.get_components_setting(self.env_setting["settings"], "taosd")
+            self.flashmq_config = self.tdCom.get_components_setting(self.env_setting["settings"], "flashmq")
+            self.edge_host = self.edge_config["fqdn"][0]
+            self.flashmq_host = self.flashmq_config["fqdn"][0]
+            self.mqtt_host = self.mqtt_client_config["fqdn"][0]
+            self.mqtt_pub_path = self.mqtt_client_config["spec"]["config_file"]
+            self.mqtt_pub_interval = self.case_config["source_interval"]
+            self.exec_time = self.case_config["self.exec_time"]
         with open(os.path.join(self.env_root, "workflow_config.json"), "w") as config_file:
             json.dump(self.case_config, config_file, indent=4)
         pass
@@ -66,36 +76,18 @@ class Start(TDCase):
 
     def start_mqtt_simulator(self):
         if "edge" in " ".join(sys.argv):
-            mqtt_client_config = self.tdCom.get_components_setting(self.env_setting["settings"], "mqtt_client")
-            edge_config = self.tdCom.get_components_setting(self.env_setting["settings"], "taosd")
-            edge_host = edge_config["fqdn"][0]
-            mqtt_host = mqtt_client_config["fqdn"][0]
-            # mqtt_pub_path = mqtt_client_config["spec"]["config"]
-            mqtt_pub_path = mqtt_client_config["spec"]["config_file"]
-            #mqtt_pub_interval= mqtt_client_config["spec"]["interval"]
-            mqtt_pub_interval = self.case_config["source_interval"]
-            exec_time = self.case_config["exec_time"]
-            self._remote.cmd(mqtt_host, f"nohup mqtt_pub --schema {mqtt_pub_path} --host {edge_host} --interval {mqtt_pub_interval}ms --exec-duration {exec_time}s > mqtt_pub.log 2>&1 &")
+            self._remote.cmd(self.mqtt_host, f"nohup mqtt_pub --schema {self.mqtt_pub_path} --host {self.flashmq_host} --interval {self.mqtt_pub_interval}ms --exec-duration {self.exec_time}s > mqtt_pub.log 2>&1 &")
 
     def start_battery_storage_datain(self):
         if "edge" in " ".join(sys.argv):
-            mqtt_client_config = self.tdCom.get_components_setting(self.env_setting["settings"], "mqtt_client")
-            edge_config = self.tdCom.get_components_setting(self.env_setting["settings"], "taosd")
-            edge_host = edge_config["fqdn"][0]
-            mqtt_host = mqtt_client_config["fqdn"][0]
-            # mqtt_pub_path = mqtt_client_config["spec"]["config"]
-            mqtt_pub_path = mqtt_client_config["spec"]["config_file"]
-            #mqtt_pub_interval= mqtt_client_config["spec"]["interval"]
-            mqtt_pub_interval = self.case_config["source_interval"]
-            exec_time = self.case_config["exec_time"]
-            self._remote.get(mqtt_host, mqtt_pub_path, mqtt_pub_path)
-            self.generate_tomls(mqtt_pub_path)
+            self._remote.get(self.mqtt_host, self.mqtt_pub_path, self.mqtt_pub_path)
+            self.generate_tomls(self.mqtt_pub_path)
             cmd_list = list()
-            self._remote.cmd(mqtt_host, ['mkdir -p /var/log/taos'])
+            self._remote.cmd(self.mqtt_host, ['mkdir -p /var/log/taos'])
             for mqtt_toml in self.toml_file_list:
-                self._remote.put(mqtt_host, mqtt_toml, os.path.dirname(mqtt_toml))
-                cmd_list.append(f"screen -L -Logfile /var/log/taos/mqtt_{Path(mqtt_toml).stem}.log -d -m mqtt_pub --csv-file /opt/battery_storage_data.csv --csv-header topic,payload,qos,a,b,c --schema {mqtt_toml} --host {edge_host} --interval {mqtt_pub_interval}ms --exec-duration {exec_time}s")
-            self._remote.cmd(mqtt_host, cmd_list)
+                self._remote.put(self.mqtt_host, mqtt_toml, os.path.dirname(mqtt_toml))
+                cmd_list.append(f"screen -L -Logfile /var/log/taos/mqtt_{Path(mqtt_toml).stem}.log -d -m mqtt_pub --csv-file /opt/battery_storage_data.csv --csv-header topic,payload,qos,a,b,c --schema {mqtt_toml} --host {self.flashmq_host} --interval {self.mqtt_pub_interval}ms --exec-duration {self.exec_time}s")
+            self._remote.cmd(self.mqtt_host, cmd_list)
             mqtt_start_time = time.time()
             self.case_config["mqtt_start_time"] = mqtt_start_time
             with open(os.path.join(self.env_root, "workflow_config.json"), "w") as config_file:
