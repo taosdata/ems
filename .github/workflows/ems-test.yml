@@ -35,14 +35,14 @@ on:
         required: true
         default: '1000'
         type: string
-      # mqtt-data-source:
-      #   description: 'data source of mqtt'
-      #   required: true
-      #   default: "battery-storage-data"
-      #   type: choice
-      #   options:
-      #     - "battery-storage-data"
-      #     - "random-simulator"
+      mqtt-data-source:
+        description: 'data source of mqtt'
+        required: true
+        default: "battery-storage-data"
+        type: choice
+        options:
+          - "battery-storage-data"
+          - "random-simulator"
       mqtt-processes-per-node:
         description: 'Num of mqtt-processes per node (Only effective for battery-storage-data)'
         required: true
@@ -449,26 +449,26 @@ jobs:
             chmod +x /usr/bin/mqtt_pub
 
       - name: Handle battery storage data
-        # if: ${{ inputs.mqtt-data-source == 'battery-storage-data' }}
+        if: ${{ inputs.mqtt-data-source == 'battery-storage-data' }}
         run: |
             ems_toml="$GITHUB_WORKSPACE/config/battery-storage-data.toml"
             echo "EMS_TOML=$ems_toml" >> $GITHUB_ENV
 
-      # - name: Handle random simulator
-      #   if: ${{ inputs.mqtt-data-source == 'random-simulator' }}
-      #   run: |
-      #     # ems_toml=$(find $GITHUB_WORKSPACE -name ems.toml 2>/dev/null | head -n 1)
-      #     ems_toml="$GITHUB_WORKSPACE/config/ems.toml"
-      #     echo "EMS_TOML=$ems_toml" >> $GITHUB_ENV
-      #     current_time=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ" -d '+8 hours')
-      #     # interval="${{ github.event.inputs.source-interval }}"
-      #     if [ "${{ github.event.inputs.source-interval }}" -eq 0 ]; then
-      #         interval=1
-      #     else
-      #         interval="${{ github.event.inputs.source-interval }}"
-      #     fi
-      #     sed -i "s/\(start_time = \)[^,]*/\1$current_time/" $ems_toml
-      #     sed -i "s/\(interval = \"\)[^\"]*/\1${interval}ms/" $ems_toml
+      - name: Handle random simulator
+        if: ${{ inputs.mqtt-data-source == 'random-simulator' }}
+        run: |
+          # ems_toml=$(find $GITHUB_WORKSPACE -name ems.toml 2>/dev/null | head -n 1)
+          ems_toml="$GITHUB_WORKSPACE/config/ems.toml"
+          echo "EMS_TOML=$ems_toml" >> $GITHUB_ENV
+          current_time=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ" -d '+8 hours')
+          # interval="${{ github.event.inputs.source-interval }}"
+          if [ "${{ github.event.inputs.source-interval }}" -eq 0 ]; then
+              interval=1
+          else
+              interval="${{ github.event.inputs.source-interval }}"
+          fi
+          sed -i "s/\(start_time = \)[^,]*/\1$current_time/" $ems_toml
+          sed -i "s/\(interval = \"\)[^\"]*/\1${interval}ms/" $ems_toml
 
       - name: Copy Toml
         run: |
@@ -620,10 +620,6 @@ jobs:
           CENTER_DNODE_HOSTS=$CLUSTER_HOSTS
           GRAFANA_IP="${{ env.CLIENT_HOST }}"
           GRAFANA_DATASOURCE_NAME=$(echo "${{ env.TDINSIGHT_DASHBOARD_UIDS }}" | cut -d ',' -f 1)
-
-          echo "---debug"
-          echo $MQTT_HOSTS
-          echo $FLASHMQ_HOSTS
 
           # Combine Inputs into a single JSON object
           COMBINED_JSON=$(jq -n \

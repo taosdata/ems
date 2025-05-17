@@ -21,10 +21,9 @@ import json
 from pathlib import Path
 import toml
 import time
+import copy
 class Start(TDCase):
     def init(self):
-        # mqtt_data_source: $mqttDataSource,
-        # mqtt_processes_per_node: $mqttProcessesPerNode,
         self.yml_name = sys.argv[1].split("=")[1]
         self.numbers_str = ''.join(filter(str.isdigit, self.yml_name))
         self.mqtt_node_idx = int(self.numbers_str) if "edge" in " ".join(sys.argv) else 1
@@ -36,8 +35,7 @@ class Start(TDCase):
         self.start_time = datetime.utcnow() - timedelta(minutes=5)
         self.start_time_str = f"{self.start_time.isoformat(timespec='milliseconds')}Z"
         self.case_config["start_time"] = self.start_time_str
-        # self.mqtt_data_source = self.case_config["mqtt_data_source"]
-        self.mqtt_data_source = "battery-storage-data"
+        self.mqtt_data_source = self.case_config["mqtt_data_source"]
         self.mqtt_processes_per_node = self.case_config["mqtt_processes_per_node"]
         self.toml_file_list = list()
         if "edge" in " ".join(sys.argv):
@@ -54,6 +52,26 @@ class Start(TDCase):
             json.dump(self.case_config, config_file, indent=4)
         pass
 
+    def adjust_ems_toml_start_time(self, toml_data, days_to_subtract):
+        adjusted_data = copy.deepcopy(toml_data)
+
+        for schema in adjusted_data.get('schema', []):
+            if 'payload' in schema and 'properties' in schema['payload']:
+                props = schema['payload']['properties']
+                if 'ts' in props and 'start_time' in props['ts']:
+                    original_time = props['ts']['start_time']
+
+                    if isinstance(original_time, datetime):
+                        new_time = original_time - timedelta(days=days_to_subtract)
+                        props['ts']['start_time'] = new_time
+                    else:
+                        try:
+                            new_time = datetime.fromisoformat(str(original_time)) - timedelta(days=days_to_subtract)
+                            props['ts']['start_time'] = new_time
+                        except (ValueError, TypeError) as e:
+                            continue
+        return adjusted_data
+
     def generate_idxs(self, idx, chunk_size):
         start = (idx - 1) * chunk_size + 1
         arr = list(range(start, start + chunk_size))
@@ -62,24 +80,54 @@ class Start(TDCase):
     def generate_tomls(self, config_path):
         with open(config_path, 'r', encoding='utf-8') as f:
             config = toml.load(f)
-        if 'parser' not in config or 'delta' not in config['parser']:
-            raise ValueError("no parser or delta in toml file")
-
         idx = self.generate_idxs(self.mqtt_node_idx, int(self.mqtt_processes_per_node))
         original_path = Path(config_path)
         for id in idx:
             new_path = original_path.with_stem(original_path.stem + str(id))
             self.toml_file_list.append(new_path)
-
-            config['parser']['delta'] = f'{id*2}d'
+            if self.mqtt_data_source == "battery-storage-data":
+                if 'parser' not in config or 'delta' not in config['parser']:
+                    raise ValueError("no parser or delta in toml file")
+                config['parser']['delta'] = f'{id*2}d'
+                new_config = config
+            else:
+                new_config = self.adjust_ems_toml_start_time(config, id*2)
             with open(new_path, 'w', encoding='utf-8') as f:
-                toml.dump(config, f)
+                toml.dump(new_config, f)
 
-    def start_mqtt_simulator(self):
-        if "edge" in " ".join(sys.argv):
-            self._remote.cmd(self.mqtt_host, f"nohup mqtt_pub --schema {self.mqtt_pub_path} --host {self.flashmq_host} --interval {self.mqtt_pub_interval}ms --exec-duration {self.exec_time}s > mqtt_pub.log 2>&1 &")
+    # def start_mqtt_simulator(self):
+    #     if "edge" in " ".join(sys.argv):
+    #         self._remote.get(self.mqtt_host, self.mqtt_pub_path, self.mqtt_pub_path)
+    #         self.generate_tomls(self.mqtt_pub_path)
+    #         cmd_list = list()
+    #         self._remote.cmd(self.mqtt_host, ['mkdir -p /var/log/taos'])
+    #         for mqtt_toml in self.toml_file_list:
+    #             self._remote.put(self.mqtt_host, mqtt_toml, os.path.dirname(mqtt_toml))
+    #             cmd_list.append(f"screen -L -Logfile /var/log/taos/mqtt_{Path(mqtt_toml).stem}.log -d -m mqtt_pub --schema {mqtt_toml} --host {self.flashmq_host} --interval {self.mqtt_pub_interval}ms --exec-duration {self.exec_time}s")
+    #         self._remote.cmd(self.mqtt_host, cmd_list)
+    #         mqtt_start_time = time.time()
+    #         self.case_config["mqtt_start_time"] = mqtt_start_time
+    #         with open(os.path.join(self.env_root, "workflow_config.json"), "w") as config_file:
+    #             json.dump(self.case_config, config_file, indent=4)
+    #     # if "edge" in " ".join(sys.argv):
+    #     #     self._remote.cmd(self.mqtt_host, f"nohup mqtt_pub --schema {self.mqtt_pub_path} --host {self.flashmq_host} --interval {self.mqtt_pub_interval}ms --exec-duration {self.exec_time}s > mqtt_pub.log 2>&1 &")
 
-    def start_battery_storage_datain(self):
+    # def start_battery_storage_datain(self):
+    #     if "edge" in " ".join(sys.argv):
+    #         self._remote.get(self.mqtt_host, self.mqtt_pub_path, self.mqtt_pub_path)
+    #         self.generate_tomls(self.mqtt_pub_path)
+    #         cmd_list = list()
+    #         self._remote.cmd(self.mqtt_host, ['mkdir -p /var/log/taos'])
+    #         for mqtt_toml in self.toml_file_list:
+    #             self._remote.put(self.mqtt_host, mqtt_toml, os.path.dirname(mqtt_toml))
+    #             cmd_list.append(f"screen -L -Logfile /var/log/taos/mqtt_{Path(mqtt_toml).stem}.log -d -m mqtt_pub --csv-file /opt/battery_storage_data.csv --csv-header topic,payload,qos,a,b,c --schema {mqtt_toml} --host {self.flashmq_host} --interval {self.mqtt_pub_interval}ms --exec-duration {self.exec_time}s")
+    #         self._remote.cmd(self.mqtt_host, cmd_list)
+    #         mqtt_start_time = time.time()
+    #         self.case_config["mqtt_start_time"] = mqtt_start_time
+    #         with open(os.path.join(self.env_root, "workflow_config.json"), "w") as config_file:
+    #             json.dump(self.case_config, config_file, indent=4)
+
+    def start_mqtt_pub(self):
         if "edge" in " ".join(sys.argv):
             self._remote.get(self.mqtt_host, self.mqtt_pub_path, self.mqtt_pub_path)
             self.generate_tomls(self.mqtt_pub_path)
@@ -87,7 +135,11 @@ class Start(TDCase):
             self._remote.cmd(self.mqtt_host, ['mkdir -p /var/log/taos'])
             for mqtt_toml in self.toml_file_list:
                 self._remote.put(self.mqtt_host, mqtt_toml, os.path.dirname(mqtt_toml))
-                cmd_list.append(f"screen -L -Logfile /var/log/taos/mqtt_{Path(mqtt_toml).stem}.log -d -m mqtt_pub --csv-file /opt/battery_storage_data.csv --csv-header topic,payload,qos,a,b,c --schema {mqtt_toml} --host {self.flashmq_host} --interval {self.mqtt_pub_interval}ms --exec-duration {self.exec_time}s")
+                if self.mqtt_data_source == "battery-storage-data":
+                    cmd_list.append(f"screen -L -Logfile /var/log/taos/mqtt_{Path(mqtt_toml).stem}.log -d -m mqtt_pub --csv-file /opt/battery_storage_data.csv --csv-header topic,payload,qos,a,b,c --schema {mqtt_toml} --host {self.flashmq_host} --interval {self.mqtt_pub_interval}ms --exec-duration {self.exec_time}s")
+                else:
+                    cmd_list.append(f"screen -L -Logfile /var/log/taos/mqtt_{Path(mqtt_toml).stem}.log -d -m mqtt_pub --schema {mqtt_toml} --host {self.flashmq_host} --interval {self.mqtt_pub_interval}ms --exec-duration {self.exec_time}s")
+            self._remote.cmd(self.mqtt_host, ["killall mqtt_pub"])
             self._remote.cmd(self.mqtt_host, cmd_list)
             mqtt_start_time = time.time()
             self.case_config["mqtt_start_time"] = mqtt_start_time
@@ -105,10 +157,11 @@ class Start(TDCase):
         taosx_host = taosd_setting["fqdn"][0]
         self.start_taosx_service(taosx_host)
         # start mqtt simulator
-        if self.mqtt_data_source == "battery-storage-data":
-            self.start_battery_storage_datain()
-        else:
-            self.start_mqtt_simulator()
+        self.start_mqtt_pub()
+        # if self.mqtt_data_source == "battery-storage-data":
+        #     self.start_battery_storage_datain()
+        # else:
+        #     self.start_mqtt_simulator()
 
     def cleanup(self):
         pass
