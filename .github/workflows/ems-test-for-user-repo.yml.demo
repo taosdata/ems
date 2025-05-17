@@ -63,6 +63,7 @@ permissions:
 
 env :
   MQTT_LABEL : "4C8G"
+  FLASHMQ_LABEL : "4C4G"
   EDGE_LABEL : "4C10G"
   CENTER_LABEL : "4C10G"
   CLIENT_LABEL : "8C12G"
@@ -73,7 +74,7 @@ env :
   HOSTS_DIRNAME: "ip-hostname"
   PROMETHEUS_YML_PATH: /etc/prometheus/prometheus.yml
   PROCESS_EXPORTER_YML_PATH: "/etc/process_exporter.yml"
-  MONITORING_PROCESS_NAMES: "taosd,taosadapter,taosx,taostest,taosBenchmark,mqtt_pub"
+  MONITORING_PROCESS_NAMES: "taosd,taosadapter,taosx,taostest,taosBenchmark,mqtt_pub,flashmq"
   ROLE_FILE: "role_info.json"
   WORKFLOW_CONFIG_FILE: "workflow_config.json"
   PROCESS_EXPORTER_DATASOURCE_NAME: "tdengine-processes"
@@ -88,6 +89,7 @@ jobs:
       edge_runner_list: ${{ steps.get-edge-runners.outputs.runners }}
       center_runner_list: ${{ steps.center-edge-runners.outputs.runners }}
       mqtt_runner_list: ${{ steps.get-mqtt-runners.outputs.runners }}
+      flashmq_runner_list: ${{ steps.get-flashmq-runners.outputs.runners }}
       client_runner_list: ${{ steps.get-client-runners.outputs.runners }}
     steps:
       - name: Get Client Runners
@@ -105,6 +107,16 @@ jobs:
         uses: taosdata/.github/.github/actions/get-runners@main
         with:
           include_labels: ${{ env.MQTT_LABEL }}
+          required_count: ${{ env.EDGE_DNODE_COUNT }}
+          gh_token: ${{ secrets.RUNNER_PAT }}
+          scope: ${{ env.SCOPE }}
+          target: ${{ env.TARGET }}
+
+      - name: Get FLASHMQ Runners
+        id: get-flashmq-runners
+        uses: taosdata/.github/.github/actions/get-runners@main
+        with:
+          include_labels: ${{ env.FLASHMQ_LABEL }}
           required_count: ${{ env.EDGE_DNODE_COUNT }}
           gh_token: ${{ secrets.RUNNER_PAT }}
           scope: ${{ env.SCOPE }}
@@ -136,6 +148,7 @@ jobs:
           echo "🔄 Selected edge_runner_list: ${{ steps.get-edge-runners.outputs.runners }}"
           echo "🔄 Selected center_runner_list: ${{ steps.center-edge-runners.outputs.runners }}"
           echo "🔄 Selected mqtt_runner_list: ${{ steps.get-mqtt-runners.outputs.runners }}"
+          echo "🔄 Selected flashmq_runner_list: ${{ steps.get-flashmq-runners.outputs.runners }}"
           echo "🔄 Selected client_runner_list: ${{ steps.get-client-runners.outputs.runners }}"
           echo "🔄 Github workspace: $GITHUB_WORKSPACE"
           echo "🔄 Github home: $GITHUB_HOME"
@@ -230,10 +243,34 @@ jobs:
           name:  "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}"
           path: "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}.*"
 
+  upload-flashmq-hosts-info:
+    needs: filter-runners
+    strategy:
+      matrix:
+        runner:
+          - ${{ fromJson(needs.filter-runners.outputs.flashmq_runner_list || '[]') }}
+    runs-on:
+      group: customers
+      labels: ${{ matrix.runner }}
+    steps:
+      - name: Run Host Info Collection
+        id: collect-host-info
+        uses: taosdata/.github/.github/actions/upload-host-info@main
+        with:
+          hosts_dirname: ${{ env.HOSTS_DIRNAME }}
+          role: "flashmq"
+
+      - name: Upload Host Info
+        uses: actions/upload-artifact@v4
+        with:
+          name:  "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}"
+          path: "${{ env.HOSTS_DIRNAME }}-${{ steps.collect-host-info.outputs.hostname }}.*"
+
   combine-and-update-hosts:
     needs:
       - filter-runners
       - upload-mqtt-hosts-info
+      - upload-flashmq-hosts-info
       - upload-edge-hosts-info
       - upload-center-hosts-info
       - upload-client-hosts-info
@@ -243,6 +280,7 @@ jobs:
           - ${{ fromJson(needs.filter-runners.outputs.edge_runner_list || '[]') }}
           - ${{ fromJson(needs.filter-runners.outputs.center_runner_list || '[]') }}
           - ${{ fromJson(needs.filter-runners.outputs.mqtt_runner_list || '[]') }}
+          - ${{ fromJson(needs.filter-runners.outputs.flashmq_runner_list || '[]') }}
           - ${{ fromJson(needs.filter-runners.outputs.client_runner_list || '[]') }}
     runs-on:
       labels: ${{ matrix.runner }}
@@ -307,6 +345,33 @@ jobs:
           yml_file_path: "${{ env.PROCESS_EXPORTER_YML_PATH }}"
           process_names: "${{ env.MONITORING_PROCESS_NAMES }}"
 
+  deploy-flashmq-nodes:
+    needs:
+      - filter-runners
+      - combine-and-update-hosts
+    strategy:
+      matrix:
+        runner:
+          - ${{ fromJson(needs.filter-runners.outputs.flashmq_runner_list || '[]') }}
+    runs-on:
+      group: customers
+      labels: ${{ matrix.runner }}
+    steps:
+      - name: Install Flashmq
+        uses: taosdata/.github/.github/actions/install-flashmq@main
+
+      - name: Install Node Exporter In TDengine Nodes
+        uses: taosdata/.github/.github/actions/install-node-exporter@main
+
+      - name: Install Process Exporter In TDengine Nodes
+        uses: taosdata/.github/.github/actions/install-process-exporter@main
+
+      - name: Config Process Exporter YAML In TDengine Nodes
+        uses: taosdata/.github/.github/actions/config-process-exporter-yml@main
+        with:
+          yml_file_path: "${{ env.PROCESS_EXPORTER_YML_PATH }}"
+          process_names: "${{ env.MONITORING_PROCESS_NAMES }}"
+
   deploy-edge-nodes:
     needs:
       - filter-runners
@@ -318,9 +383,6 @@ jobs:
     runs-on:
       labels: ${{ matrix.runner }}
     steps:
-      - name: Install Flashmq
-        uses: taosdata/.github/.github/actions/install-flashmq@main
-
       - name: Install TDengine Enterprise
         uses: taosdata/.github/.github/actions/install-tdengine-enterprise@main
         with:
@@ -416,10 +478,11 @@ jobs:
     runs-on:
       labels: ${{ matrix.runner }}
     steps:
-      - name: Export Client IP
+      - name: Export Client Host
         run: |
-          ip=$(hostname -I | awk '{print $1}')
-          echo "CLIENT_IP=$ip" >> $GITHUB_ENV
+          # ip=$(hostname -I | awk '{print $1}')
+          # echo "CLIENT_IP=$ip" >> $GITHUB_ENV
+          echo "CLIENT_HOST=$HOSTNAME" >> $GITHUB_ENV
 
       # - name: Sync Repo - taos-test-framework
       #   uses: taosdata/.github/.github/actions/sync-repo@main
@@ -503,8 +566,8 @@ jobs:
       - name: Import Process Exporter Dashboard
         uses: taosdata/.github/.github/actions/import-process-exporter-dashboard@main
         with:
-          grafana-url: http://${{ env.CLIENT_IP }}:3000
-          prometheus-url: http://${{ env.CLIENT_IP }}:9090
+          grafana-url: http://${{ env.CLIENT_HOST }}:3000
+          prometheus-url: http://${{ env.CLIENT_HOST }}:9090
           datasource-name: ${{ env.PROCESS_EXPORTER_DATASOURCE_NAME }}
 
       - name: Install Grafana Plugin
@@ -516,7 +579,7 @@ jobs:
       - name: Import Grafana Dashboard
         uses: taosdata/.github/.github/actions/import-grafana-dashboard@main
         with:
-          grafana-url: http://${{ env.CLIENT_IP }}:3000
+          grafana-url: http://${{ env.CLIENT_HOST }}:3000
           dashboard-ids: ${{ env.TDINSIGHT_DASHBOARD_IDS }}
           dashboard-uids: ${{ env.TDINSIGHT_DASHBOARD_UIDS }}
 
@@ -524,6 +587,7 @@ jobs:
         run: |
           echo "TEST_ROOT: $GITHUB_WORKSPACE/tests"
           echo "MQTT Hosts: $MQTT_HOSTS"
+          echo "FLASHMQ Hosts: $FLASHMQ_HOSTS"
           echo "Single Dnode Hosts: $SINGLE_DNODE_HOSTS"
           echo "Taos Benchmark Hosts: $TAOS_BENCHMARK_HOSTS"
           echo "Cluster Hosts: $CLUSTER_HOSTS"
@@ -541,10 +605,11 @@ jobs:
           MQTT_PROCESSES_PER_NODE="${{ github.event.inputs.mqtt-processes-per-node }}"
           ENABLE_COMPRESSION="${{ github.event.inputs.enable-compression }}"
           MQTT_HOSTS=$MQTT_HOSTS
+          FLASHMQ_HOSTS=$FLASHMQ_HOSTS
           EDGE_DNODE_HOSTS=$SINGLE_DNODE_HOSTS
           TAOS_BENCHMARK_HOSTS=$TAOS_BENCHMARK_HOSTS
           CENTER_DNODE_HOSTS=$CLUSTER_HOSTS
-          GRAFANA_IP="${{ env.CLIENT_IP }}"
+          GRAFANA_IP="${{ env.CLIENT_HOST }}"
           GRAFANA_DATASOURCE_NAME=$(echo "${{ env.TDINSIGHT_DASHBOARD_UIDS }}" | cut -d ',' -f 1)
 
           # Combine Inputs into a single JSON object
@@ -560,6 +625,7 @@ jobs:
             --arg grafanaIp "$GRAFANA_IP" \
             --arg grafanaDatasourceName "$GRAFANA_DATASOURCE_NAME" \
             --argjson mqttHosts "$MQTT_HOSTS" \
+            --argjson flashmqHosts "$FLASHMQ_HOSTS" \
             --argjson edgeDnodeHosts "$EDGE_DNODE_HOSTS" \
             --argjson taosBenchmarkHosts "$TAOS_BENCHMARK_HOSTS" \
             --argjson centerDnodeHosts "$CENTER_DNODE_HOSTS" \
@@ -575,6 +641,7 @@ jobs:
               grafana_ip: $grafanaIp,
               grafana_datasource_name: $grafanaDatasourceName,
               mqtt_hosts: $mqttHosts,
+              flashmq_hosts: $flashmqHosts,
               edge_dnode_hosts: $edgeDnodeHosts,
               taos_benchmark_hosts: $taosBenchmarkHosts,
               center_dnode_hosts: $centerDnodeHosts
