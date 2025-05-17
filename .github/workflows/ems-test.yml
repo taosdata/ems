@@ -621,6 +621,10 @@ jobs:
           GRAFANA_IP="${{ env.CLIENT_HOST }}"
           GRAFANA_DATASOURCE_NAME=$(echo "${{ env.TDINSIGHT_DASHBOARD_UIDS }}" | cut -d ',' -f 1)
 
+          echo "---debug"
+          echo $MQTT_HOSTS
+          echo $FLASHMQ_HOSTS
+
           # Combine Inputs into a single JSON object
           COMBINED_JSON=$(jq -n \
             --arg td_version "$TD_VERSION" \
