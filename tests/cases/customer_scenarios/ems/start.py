@@ -36,7 +36,8 @@ class Start(TDCase):
         self.start_time = datetime.utcnow() - timedelta(minutes=5)
         self.start_time_str = f"{self.start_time.isoformat(timespec='milliseconds')}Z"
         self.case_config["start_time"] = self.start_time_str
-        self.mqtt_data_source = self.case_config["mqtt_data_source"]
+        # self.mqtt_data_source = self.case_config["mqtt_data_source"]
+        self.mqtt_data_source = "battery-storage-data"
         self.mqtt_processes_per_node = self.case_config["mqtt_processes_per_node"]
         self.toml_file_list = list()
         if "edge" in " ".join(sys.argv):
@@ -48,7 +49,7 @@ class Start(TDCase):
             self.mqtt_host = self.mqtt_client_config["fqdn"][0]
             self.mqtt_pub_path = self.mqtt_client_config["spec"]["config_file"]
             self.mqtt_pub_interval = self.case_config["source_interval"]
-            self.exec_time = self.case_config["self.exec_time"]
+            self.exec_time = self.case_config["exec_time"]
         with open(os.path.join(self.env_root, "workflow_config.json"), "w") as config_file:
             json.dump(self.case_config, config_file, indent=4)
         pass
