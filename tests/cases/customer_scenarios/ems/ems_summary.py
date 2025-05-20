@@ -129,6 +129,8 @@ class EMSSummary(TDCase):
                 perf_info["total_rows_per_second"] = round(perf_info["total_written_rows"]/self.task_run_time, 2)
                 perf_info["total_points_per_second"] = round(perf_info["processed_messages"]/self.task_run_time, 2)
                 perf_info_list.append(perf_info)
+            else:
+                perf_info_list.append(perf_info)
         return perf_info_list
 
     def _get_center_data(self) -> int:

@@ -12,10 +12,12 @@ class EMSQuery(TDCase):
         self.tdCom = TDCom(self.tdSql, self.env_setting)
         self.tdRest = TDRest(env_setting=self.env_setting)
         self._remote: Remote = Remote(self.logger)
-        self.query_file_name = "query.json"
+
         self.env_root = os.path.join(os.environ["TEST_ROOT"], "env")
         self.taosd_setting = self.tdCom.get_components_setting(self.env_setting["settings"], "taosd")
         self.case_config = json.load(open(os.path.join(self.env_root, "workflow_config.json")))
+        self.mqtt_data_source = self.case_config["mqtt_data_source"]
+        self.query_file_name = "query.json" if self.mqtt_data_source != "battery-storage-data" else "battery-storage-query.json"
         self.taosBenchmark_config = dict()
         self.json_file_path = os.path.join(self.env_root, self.query_file_name)
 
