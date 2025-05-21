@@ -733,12 +733,12 @@ jobs:
           done
           sleep 60
           taostest --use=ems-center.yaml --case=customer_scenarios/ems/ems_center.py --keep
-          taostest --use=ems-query.yaml --case=customer_scenarios/ems/ems_query.py --keep
           sleep ${{ github.event.inputs.exec-time }}
           for ((i=1; i<=$EDGE_COUNT; i++)); do
             taostest --use=ems-edge-$i.yaml --case=customer_scenarios/ems/get_metrics.py --keep
           done
           taostest --use=ems-center.yaml --case=customer_scenarios/ems/get_metrics.py --keep
+          taostest --use=ems-query.yaml --case=customer_scenarios/ems/ems_query.py --keep
           taostest --use=ems-query.yaml --case=customer_scenarios/ems/ems_summary.py --keep
           echo "🔄 Test finished at $(date)"
           cp "$workflow_config_path/perf_report_$test_start_time.txt" $GITHUB_WORKSPACE/
