@@ -58,7 +58,8 @@ class GetMetrics(TDCase):
         for task_info in task_list:
             task_id = task_info["id"]
             # stop task
-            # self.tdRest.request(data=None, method='POST', url=f'http://{self.host}:6060/api/x/tasks/{task_id}/stop',header=headers)
+            if "edge" in " ".join(sys.argv):
+                self.tdRest.request(data=None, method='POST', url=f'http://{self.host}:6060/api/x/tasks/{task_id}/stop',header=headers)
             # get task metrics
             task_metrics = self.tdRest.request(data=None, method='GET', url=f'http://{self.host}:6060/api/x/tasks/{task_id}/metrics',header=headers)
             task_metrics_dict[task_id] = task_metrics.json()
