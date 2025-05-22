@@ -733,9 +733,8 @@ jobs:
           done
           sleep 60
           taostest --use=ems-center.yaml --case=customer_scenarios/ems/ems_center.py --keep
-          sleep 30
-          taostest --use=ems-query.yaml --case=customer_scenarios/ems/ems_query.py --keep
           sleep ${{ github.event.inputs.exec-time }}
+          taostest --use=ems-query.yaml --case=customer_scenarios/ems/ems_query.py --keep
           for ((i=1; i<=$EDGE_COUNT; i++)); do
             taostest --use=ems-edge-$i.yaml --case=customer_scenarios/ems/get_metrics.py --keep
           done
