@@ -26,7 +26,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 RUN apt update -y && \
     apt install -y python3-pip jq wget && \
-    wget https://www.taosdata.com/assets-download/3.0/TDengine-enterprise-client-${TD_VERSION}-Linux-x64.tar.gz && \
+    wget https://tdengine.com/assets-download/3.0/TDengine-enterprise-client-${TD_VERSION}-Linux-x64.tar.gz && \
     tar -xf TDengine-enterprise-client-${TD_VERSION}-Linux-x64.tar.gz && \
     cd TDengine-enterprise-client-${TD_VERSION} && \
     /bin/bash install_client.sh -e no && \
@@ -50,7 +50,7 @@ RUN pip install --no-cache-dir pyyaml requests
 #     ${WORKDIR}/generate_role_info.sh && \
 #     ${WORKDIR}/.github/.github/scripts/deploy_taostest.sh ${PUB_DL_URL} ${TEST_ROOT} ${PIP_SOURCE} && \
 #     ${WORKDIR}/.github/.github/scripts/gen_taostest_env.sh ${WORKDIR}/role_info.json ${TEST_ROOT} && \
-#     # wget https://www.taosdata.com/assets-download/3.0/TDengine-enterprise-client-${TD_VERSION}-Linux-x64.tar.gz && \
+#     # wget https://tdengine.com/assets-download/3.0/TDengine-enterprise-client-${TD_VERSION}-Linux-x64.tar.gz && \
 #     # tar -xf TDengine-enterprise-client-${TD_VERSION}-Linux-x64.tar.gz && \
 #     ADD TDengine-enterprise-client-${TD_VERSION}-Linux-x64.tar.gz ${WORKDIR} && \
 #     cd TDengine-enterprise-client-${TD_VERSION} && \
