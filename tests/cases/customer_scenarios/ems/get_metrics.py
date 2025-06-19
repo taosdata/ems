@@ -34,6 +34,7 @@ class GetMetrics(TDCase):
         self.host = self.taosd_setting["fqdn"][0]
         self.log_path = f'{os.environ["TEST_ROOT"]}/run/workflow_logs/{self.workflow_config["test_start_time"]}'
         self.api_type = 0
+        self.task_list = list()
         pass
 
     def get_role(self):
@@ -49,27 +50,34 @@ class GetMetrics(TDCase):
             self._remote.cmd(mqtt_host,f"killall mqtt_pub")
         else:
             return
-    def stop_tasks_get_metrics(self,task_url=None,headers=None):
+    def get_metrics(self,task_url=None,headers=None):
         # get task list
         response = self.tdRest.request(data=None, method='GET', url=task_url,header=headers)
-        task_list = response.json()
+        self.task_list = response.json()
         task_metrics_dict = {}
 
-        for task_info in task_list:
+        for task_info in self.task_list:
             task_id = task_info["id"]
             # stop task
-            # self.tdRest.request(data=None, method='POST', url=f'http://{self.host}:6060/api/x/tasks/{task_id}/stop',header=headers)
             # get task metrics
             task_metrics = self.tdRest.request(data=None, method='GET', url=f'http://{self.host}:6060/api/x/tasks/{task_id}/metrics',header=headers)
             task_metrics_dict[task_id] = task_metrics.json()
 
         return task_metrics_dict
+
+    def stop_tasks(self, headers=None):
+        for task_info in self.task_list:
+            task_id = task_info["id"]
+            # stop task
+            if "edge" in " ".join(sys.argv):
+                self.tdRest.request(data=None, method='POST', url=f'http://{self.host}:6060/api/x/tasks/{task_id}/stop',header=headers)
+
     def run(self) -> bool:
         # stop mqtt simulator
         # self.stop_mqtt_simulator()
         headers = {"Content-Type": "application/json"}
         task_url = f'http://{self.host}:6060/api/x/tasks'
-        metrics_dict = self.stop_tasks_get_metrics(task_url=task_url,headers=headers)
+        metrics_dict = self.get_metrics(task_url=task_url,headers=headers)
         query_summary_metrics = {
             "role": self.get_role(),
             "host": self.host,
@@ -129,6 +137,8 @@ class GetMetrics(TDCase):
         self.workflow_config["grafana_url"] = url
         with open(f'{os.environ["TEST_ROOT"]}/env/workflow_config.json', "w") as config_file:
             json.dump(self.workflow_config, config_file, indent=4)
+
+        self.stop_tasks(headers=headers)
 
 
     def cleanup(self):
