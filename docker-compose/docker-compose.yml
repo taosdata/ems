@@ -1,5 +1,3 @@
-version: '3.8'
-
 x-common-env: &common-env
   MQTT_PUB_INTERVAL: 0
 
