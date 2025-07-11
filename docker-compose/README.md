@@ -37,7 +37,7 @@ cd <repository-folder>/docker-compose
 
 > **NOTE:**
 > `HOST_IP` is used to display in the `grafana-url` of the report.
-> If not set, you need to manually replace the `grafana-url`.
+> If not set, it will default to 127.0.0.1.
 >
 
 ```bash

@@ -248,7 +248,7 @@ class Summary():
     def get_grafana_url(self):
         start_time  = datetime.utcnow() - timedelta(seconds=int(os.environ["EXEC_TIME"])) - timedelta(minutes=10)
         end_time = datetime.utcnow() + timedelta(minutes=10)
-        EXTERNAL_GF_IP = os.environ["HOST_IP"] if len(os.environ["HOST_IP"]) > 0 else "<your_host_ip>"
+        EXTERNAL_GF_IP = os.environ["HOST_IP"] if len(os.environ["HOST_IP"]) > 0 else "127.0.0.1"
         gf_url = f'http://{EXTERNAL_GF_IP}:{os.environ["EXTERNAL_GF_PORT"]}'
         self.import_dashboard(f"http://grafana:3000")
 
