@@ -37,7 +37,7 @@ cd <repository-folder>/docker-compose
 3. 启动所有服务：
 
 > **NOTE:**
-> `HOST_IP`用于显示在报告的 `grafana-url` 中，如果不设置需要手动替换下 `grafana-url`。
+> `HOST_IP`用于显示在报告的 `grafana-url` 中，如果不设置，它会被默认设置为 `127.0.0.1`。
 >
 
 ```bash
